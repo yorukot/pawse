@@ -2,6 +2,7 @@ import AppKit
 import CoreGraphics
 import Foundation
 import Observation
+import UniformTypeIdentifiers
 
 enum BreakBackgroundMode: String, CaseIterable, Identifiable, Codable, Sendable {
     case systemWallpaper
@@ -91,7 +92,7 @@ final class BreakBackgroundService: BreakBackgroundProviding {
         guard let displayID = Self.displayID(for: screen) else { return nil }
         if let cached = wallpaperCache[displayID] { return cached }
         guard let url = NSWorkspace.shared.desktopImageURL(for: screen),
-              let image = Self.loadImage(at: url) else {
+            let image = Self.loadImage(at: url) else {
             errorMessage = "The desktop wallpaper could not be loaded. Breaks will use a dark background."
             return nil
         }
@@ -143,10 +144,58 @@ final class BreakBackgroundService: BreakBackgroundProviding {
     }
 
     private static func loadImage(at url: URL) -> NSImage? {
-        guard let data = try? Data(contentsOf: url),
-              let image = NSImage(data: data),
-              image.isValid else { return nil }
-        return image
+        // On some macOS releases (and for dynamic wallpapers), NSWorkspace
+        // returns the wallpaper package/directory rather than one image file.
+        // Resolve that directory to a readable image before constructing the
+        // NSImage. The old implementation attempted Data(contentsOf:) on the
+        // directory and consequently always fell back to a black background.
+        let candidateURLs: [URL]
+        if Self.isDirectory(url) {
+            let fileManager = FileManager.default
+            candidateURLs = (fileManager.enumerator(
+                at: url,
+                includingPropertiesForKeys: [.isDirectoryKey, .contentTypeKey],
+                options: [.skipsHiddenFiles]
+            )?.compactMap { item in
+                guard let itemURL = item as? URL,
+                      !Self.isDirectory(itemURL),
+                      Self.isImageFile(itemURL) else { return nil }
+                return itemURL
+            } ?? []).sorted { $0.path < $1.path }
+        } else {
+            candidateURLs = [url]
+        }
+
+        for candidateURL in candidateURLs {
+            if let image = NSImage(contentsOf: candidateURL), image.isValid {
+                return image
+            }
+
+            // NSImage(contentsOf:) handles most formats, while the data path
+            // is useful for a few image representations on older macOS builds.
+            if let data = try? Data(contentsOf: candidateURL),
+               let image = NSImage(data: data),
+               image.isValid {
+                return image
+            }
+        }
+        return nil
+    }
+
+    private static func isDirectory(_ url: URL) -> Bool {
+        var directory = ObjCBool(false)
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &directory)
+            && directory.boolValue
+    }
+
+    private static func isImageFile(_ url: URL) -> Bool {
+        if let type = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType,
+           type.conforms(to: .image) {
+            return true
+        }
+        return ["jpg", "jpeg", "png", "heic", "heif", "tif", "tiff", "webp"].contains(
+            url.pathExtension.lowercased()
+        )
     }
 }
 
