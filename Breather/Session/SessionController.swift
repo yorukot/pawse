@@ -231,6 +231,30 @@ final class SessionController {
         isEmergencyExitConfirmationPresented = false
     }
 
+    func handleBreakEnvironmentFailure() {
+        switch state {
+        case .running(let session) where session.mode.isBreak:
+            let now = clock.now
+            finalize(
+                session,
+                outcome: .stopped,
+                endedAt: now,
+                activeDuration: session.activeDuration(at: now)
+            )
+            cleanupBreakEnvironment()
+            lastError = "Breather could not keep every display covered. The break was canceled for safety."
+            state = .idle(selectedMode: .focus)
+            nowSnapshot = now
+        case .breakEntering:
+            cleanupBreakEnvironment()
+            lastError = "Breather could not keep every display covered. The break was canceled for safety."
+            state = .idle(selectedMode: .focus)
+            refreshNow()
+        default:
+            break
+        }
+    }
+
     func prepareForTermination() {
         let now = clock.now
         switch state {
