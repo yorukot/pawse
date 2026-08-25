@@ -78,14 +78,17 @@ final class FakeSessionRecorder: SessionRecording {
 @MainActor
 final class FakeBreakEnvironment: BreakEnvironmentManaging {
     private(set) var reminderModes: [SessionMode] = []
+    private(set) var pendingReminders: [PendingBreak] = []
     private(set) var hideReminderCount = 0
     private(set) var overlayModes: [SessionMode] = []
     private(set) var commitPresentationCount = 0
     private(set) var cleanupCount = 0
+    private(set) var cleanupAnimationValues: [Bool] = []
     var shouldFailOverlay = false
 
-    func showReminder(for mode: SessionMode) {
-        reminderModes.append(mode)
+    func showReminder(for pendingBreak: PendingBreak) {
+        pendingReminders.append(pendingBreak)
+        reminderModes.append(pendingBreak.mode)
     }
 
     func hideReminder() {
@@ -101,8 +104,9 @@ final class FakeBreakEnvironment: BreakEnvironmentManaging {
         commitPresentationCount += 1
     }
 
-    func cleanup() {
+    func cleanup(animated: Bool) {
         cleanupCount += 1
+        cleanupAnimationValues.append(animated)
     }
 }
 
