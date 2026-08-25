@@ -71,6 +71,14 @@ Pawse only checks aggregate system idle time while a scheduled break is waiting 
 
 Read the full [Privacy documentation](docs/PRIVACY.md).
 
+## Support the Project
+
+Pawse is and will always remain completely free. Every update and feature is available to everyone.
+
+If Pawse helps you, you can support its ongoing development:
+
+[Support Pawse](https://yorukot.me/donate)
+
 ## Contributing
 
 Pawse is free and open source. Bug reports, translations, documentation, and focused code contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
