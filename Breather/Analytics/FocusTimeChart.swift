@@ -11,7 +11,7 @@ struct FocusTimeChart: View {
                     x: .value("Day", value.date, unit: .day),
                     y: .value("Focused Minutes", value.duration / 60)
                 )
-                .foregroundStyle(.blue.gradient)
+                .foregroundStyle(Color.accentColor)
             }
             .chartYAxisLabel("Minutes")
             .frame(height: 190)

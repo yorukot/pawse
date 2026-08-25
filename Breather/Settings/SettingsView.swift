@@ -1,5 +1,41 @@
 import SwiftUI
 
+private enum SettingsSection: String, CaseIterable, Identifiable {
+    case timers
+    case cycle
+    case breaks
+    case sounds
+    case appearance
+    case general
+    case privacy
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .timers: "Timers"
+        case .cycle: "Cycle"
+        case .breaks: "Break Behavior"
+        case .sounds: "Sounds"
+        case .appearance: "Appearance"
+        case .general: "General"
+        case .privacy: "Privacy"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .timers: "timer"
+        case .cycle: "repeat"
+        case .breaks: "hand.raised"
+        case .sounds: "speaker.wave.2"
+        case .appearance: "paintbrush"
+        case .general: "gearshape"
+        case .privacy: "lock.shield"
+        }
+    }
+}
+
 struct SettingsView: View {
     @Bindable var settings: SettingsStore
     @Bindable var soundService: SoundService
@@ -9,33 +45,32 @@ struct SettingsView: View {
     @State private var confirmsCycleReset = false
     @State private var confirmsSettingsReset = false
     @State private var confirmsAnalyticsClear = false
+    @State private var selectedSection: SettingsSection? = .timers
 
     var body: some View {
-        TabView {
-            timerSettings
-                .tabItem { Label("Timers", systemImage: "timer") }
-            cycleSettings
-                .tabItem { Label("Cycle", systemImage: "repeat") }
-            breakSettings
-                .tabItem { Label("Breaks", systemImage: "hand.raised") }
-            soundSettings
-                .tabItem { Label("Sounds", systemImage: "speaker.wave.2") }
-            appearanceSettings
-                .tabItem { Label("Appearance", systemImage: "paintbrush") }
-            generalSettings
-                .tabItem { Label("General", systemImage: "gearshape") }
-            privacySettings
-                .tabItem { Label("Privacy", systemImage: "lock.shield") }
+        NavigationSplitView {
+            List(SettingsSection.allCases, selection: $selectedSection) { section in
+                Label(section.title, systemImage: section.symbolName)
+                    .tag(section)
+            }
+            .listStyle(.sidebar)
+            .navigationTitle("Breather")
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+        } detail: {
+            let section = selectedSection ?? .timers
+            settingsContent(for: section)
+                .navigationTitle(section.title)
         }
+        .navigationSplitViewStyle(.balanced)
         .formStyle(.grouped)
-        .frame(width: 680, height: 500)
+        .frame(minWidth: 760, idealWidth: 820, minHeight: 520, idealHeight: 560)
         .confirmationDialog(
-            "Reset Focus Cycle?",
+            "Reset Break Cycle?",
             isPresented: $confirmsCycleReset,
             titleVisibility: .visible
         ) {
-            Button("Reset Focus Cycle", role: .destructive) {
-                settings.resetFocusCycle()
+            Button("Reset Break Cycle", role: .destructive) {
+                settings.resetBreakCycle()
             }
         } message: {
             Text("Session history will not be changed.")
@@ -66,11 +101,29 @@ struct SettingsView: View {
         }
     }
 
+    @ViewBuilder
+    private func settingsContent(for section: SettingsSection) -> some View {
+        switch section {
+        case .timers: timerSettings
+        case .cycle: cycleSettings
+        case .breaks: breakSettings
+        case .sounds: soundSettings
+        case .appearance: appearanceSettings
+        case .general: generalSettings
+        case .privacy: privacySettings
+        }
+    }
+
     private var timerSettings: some View {
         Form {
             Section("Timers") {
                 Stepper("Focus: \(settings.focusMinutes) minutes", value: $settings.focusMinutes, in: 1...180)
-                Stepper("Short Break: \(settings.shortBreakMinutes) minutes", value: $settings.shortBreakMinutes, in: 1...60)
+                Stepper(
+                    "Short Break: \(DurationFormatter.concise(TimeInterval(settings.shortBreakSeconds)))",
+                    value: $settings.shortBreakSeconds,
+                    in: 10...3_600,
+                    step: 10
+                )
                 Stepper("Long Break: \(settings.longBreakMinutes) minutes", value: $settings.longBreakMinutes, in: 1...120)
             }
             Text("Changes apply to the next session and never move an active session’s deadline.")
@@ -81,12 +134,19 @@ struct SettingsView: View {
 
     private var cycleSettings: some View {
         Form {
-            Section("Focus Cycle") {
-                Stepper("Long Break Every: \(settings.longBreakEvery) Focus sessions", value: $settings.longBreakEvery, in: 2...12)
+            Section("Focus and Break Cycle") {
+                Stepper(
+                    "Short Breaks Before Long Break: \(settings.shortBreaksBeforeLongBreak)",
+                    value: $settings.shortBreaksBeforeLongBreak,
+                    in: 1...12
+                )
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
                 LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
-                Button("Reset Focus Cycle…", role: .destructive) {
+                Text("With the current setting, Breather schedules \(settings.shortBreaksBeforeLongBreak) Short Breaks before each Long Break.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Reset Break Cycle…", role: .destructive) {
                     confirmsCycleReset = true
                 }
             }
@@ -164,6 +224,7 @@ struct SettingsView: View {
     private var generalSettings: some View {
         Form {
             Section("General") {
+                LabeledContent("Starts on Launch", value: "Focus")
                 Toggle(
                     "Launch at Login",
                     isOn: Binding(

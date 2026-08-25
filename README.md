@@ -2,7 +2,7 @@
 
 Breather is a native macOS focus timer that waits for a natural stopping point before making you take a break.
 
-It lives in the menu bar and alternates between Focus, Short Break, and Long Break sessions. When a scheduled Focus session finishes, Breather can show a compact **Break soon** HUD and wait until the Mac has been idle for a few seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
+It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather can show a compact **Break soon** HUD and wait until the Mac has been idle for a few seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
 
 ## Requirements
 
@@ -16,8 +16,9 @@ It lives in the menu bar and alternates between Focus, Short Break, and Long Bre
 - Focus, Short Break, and Long Break modes with absolute-deadline timers
 - Pause/resume for Focus with paused time excluded from analytics
 - Confirmation-gated switching from an active Focus session
-- Automatic Short/Long Break cycle, with a configurable Long Break threshold
-- Optional automatic breaks and automatic next Focus sessions
+- Automatic two-Short-Break cycle with a configurable number of Short Breaks before each Long Break
+- Automatic Focus at launch, with optional automatic breaks and next Focus sessions
+- Menu-bar countdown ring that drains around the current mode icon
 - Privacy-preserving natural-break detection using aggregate Core Graphics idle state
 - Non-activating, top-center **Break soon** HUD that does not steal keyboard focus
 - Grace-period retreat when keyboard or pointer activity resumes during break entry
@@ -25,8 +26,8 @@ It lives in the menu bar and alternates between Focus, Short Break, and Long Bre
 - In-overlay Emergency Exit confirmation on every display
 - Exact restoration of the app’s previous macOS presentation options
 - Native system sounds, runtime availability filtering, volume, and previews
-- Persisted native Settings for timers, cycle, break behavior, sounds, appearance, and launch at login
-- Local SwiftData session history, Swift Charts daily Focus chart, native recent-session Table, date ranges, and clear-history controls
+- Persisted native sidebar Settings for timers, cycle, break behavior, sounds, appearance, and launch at login
+- Local SwiftData session history in a native sidebar window, with a Swift Charts daily Focus chart, recent-session Table, date ranges, and clear-history controls
 - Accessibility labels, monospaced countdowns, keyboard-accessible native controls, and no decorative continuous animation
 
 ## Natural stopping-point behavior
@@ -58,7 +59,7 @@ xcodebuild \
   build
 ```
 
-Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts idle in the menu bar and does not open a normal window.
+Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts Focus in the menu bar and does not open a normal window.
 
 ## Test
 

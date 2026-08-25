@@ -14,7 +14,11 @@ final class AppModel {
     let launchAtLoginService: LaunchAtLoginService
     let analyticsPersistenceNotice: String?
 
-    init(defaults: UserDefaults = .standard, modelContainer providedContainer: ModelContainer? = nil) {
+    init(
+        defaults: UserDefaults = .standard,
+        modelContainer providedContainer: ModelContainer? = nil,
+        startsFocusOnLaunch: Bool = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
+    ) {
         let settings = SettingsStore(defaults: defaults)
         let container: ModelContainer
         var persistenceNotice: String?
@@ -58,5 +62,8 @@ final class AppModel {
             controller?.startPendingBreakNow()
         }
         AppDelegate.sessionController = controller
+        if startsFocusOnLaunch {
+            controller.startFocusAtLaunch()
+        }
     }
 }

@@ -6,9 +6,9 @@ import Observation
 final class SettingsStore {
     enum Key {
         static let focusMinutes = "focusMinutes"
-        static let shortBreakMinutes = "shortBreakMinutes"
+        static let shortBreakSeconds = "shortBreakSeconds"
         static let longBreakMinutes = "longBreakMinutes"
-        static let longBreakEvery = "longBreakEvery"
+        static let shortBreaksBeforeLongBreak = "shortBreaksBeforeLongBreak"
         static let automaticallyStartBreaks = "automaticallyStartBreaks"
         static let automaticallyStartNextFocus = "automaticallyStartNextFocus"
         static let waitForNaturalBreak = "waitForNaturalBreak"
@@ -34,29 +34,29 @@ final class SettingsStore {
             persist(Key.focusMinutes, focusMinutes)
         }
     }
-    var shortBreakMinutes = 5 {
+    var shortBreakSeconds = 30 {
         didSet {
-            let validated = clamped(shortBreakMinutes, 1...60)
-            guard validated == shortBreakMinutes else { shortBreakMinutes = validated; return }
-            persist(Key.shortBreakMinutes, shortBreakMinutes)
+            let validated = clamped(shortBreakSeconds, 10...3_600)
+            guard validated == shortBreakSeconds else { shortBreakSeconds = validated; return }
+            persist(Key.shortBreakSeconds, shortBreakSeconds)
         }
     }
-    var longBreakMinutes = 15 {
+    var longBreakMinutes = 10 {
         didSet {
             let validated = clamped(longBreakMinutes, 1...120)
             guard validated == longBreakMinutes else { longBreakMinutes = validated; return }
             persist(Key.longBreakMinutes, longBreakMinutes)
         }
     }
-    var longBreakEvery = 4 {
+    var shortBreaksBeforeLongBreak = 2 {
         didSet {
-            let validated = clamped(longBreakEvery, 2...12)
-            guard validated == longBreakEvery else { longBreakEvery = validated; return }
-            persist(Key.longBreakEvery, longBreakEvery)
+            let validated = clamped(shortBreaksBeforeLongBreak, 1...12)
+            guard validated == shortBreaksBeforeLongBreak else { shortBreaksBeforeLongBreak = validated; return }
+            persist(Key.shortBreaksBeforeLongBreak, shortBreaksBeforeLongBreak)
         }
     }
     var automaticallyStartBreaks = true { didSet { persist(Key.automaticallyStartBreaks, automaticallyStartBreaks) } }
-    var automaticallyStartNextFocus = false { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
+    var automaticallyStartNextFocus = true { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
     var waitForNaturalBreak = true { didSet { persist(Key.waitForNaturalBreak, waitForNaturalBreak) } }
     var idleBeforeBreak: TimeInterval = 5 {
         didSet {
@@ -114,22 +114,22 @@ final class SettingsStore {
     func duration(for mode: SessionMode) -> TimeInterval {
         switch mode {
         case .focus: TimeInterval(focusMinutes * 60)
-        case .shortBreak: TimeInterval(shortBreakMinutes * 60)
+        case .shortBreak: TimeInterval(shortBreakSeconds)
         case .longBreak: TimeInterval(longBreakMinutes * 60)
         }
     }
 
-    func resetFocusCycle() {
+    func resetBreakCycle() {
         focusCycleCount = 0
     }
 
     func resetToDefaults() {
         focusMinutes = 25
-        shortBreakMinutes = 5
-        longBreakMinutes = 15
-        longBreakEvery = 4
+        shortBreakSeconds = 30
+        longBreakMinutes = 10
+        shortBreaksBeforeLongBreak = 2
         automaticallyStartBreaks = true
-        automaticallyStartNextFocus = false
+        automaticallyStartNextFocus = true
         waitForNaturalBreak = true
         idleBeforeBreak = 5
         breakEntryGracePeriod = 3
@@ -144,9 +144,9 @@ final class SettingsStore {
 
     private func load() {
         focusMinutes = defaults.integer(forKey: Key.focusMinutes)
-        shortBreakMinutes = defaults.integer(forKey: Key.shortBreakMinutes)
+        shortBreakSeconds = defaults.integer(forKey: Key.shortBreakSeconds)
         longBreakMinutes = defaults.integer(forKey: Key.longBreakMinutes)
-        longBreakEvery = defaults.integer(forKey: Key.longBreakEvery)
+        shortBreaksBeforeLongBreak = defaults.integer(forKey: Key.shortBreaksBeforeLongBreak)
         automaticallyStartBreaks = defaults.bool(forKey: Key.automaticallyStartBreaks)
         automaticallyStartNextFocus = defaults.bool(forKey: Key.automaticallyStartNextFocus)
         waitForNaturalBreak = defaults.bool(forKey: Key.waitForNaturalBreak)
@@ -178,11 +178,11 @@ final class SettingsStore {
 
     private static let defaultValues: [String: Any] = [
         Key.focusMinutes: 25,
-        Key.shortBreakMinutes: 5,
-        Key.longBreakMinutes: 15,
-        Key.longBreakEvery: 4,
+        Key.shortBreakSeconds: 30,
+        Key.longBreakMinutes: 10,
+        Key.shortBreaksBeforeLongBreak: 2,
         Key.automaticallyStartBreaks: true,
-        Key.automaticallyStartNextFocus: false,
+        Key.automaticallyStartNextFocus: true,
         Key.waitForNaturalBreak: true,
         Key.idleBeforeBreak: 5.0,
         Key.breakEntryGracePeriod: 3.0,

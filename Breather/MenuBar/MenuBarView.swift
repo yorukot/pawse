@@ -168,7 +168,6 @@ struct MenuBarView: View {
         Text(DurationFormatter.timer(duration))
             .font(.system(size: 34, weight: .medium, design: .rounded))
             .monospacedDigit()
-            .contentTransition(.numericText())
             .accessibilityLabel("\(DurationFormatter.timer(duration)) remaining")
     }
 }

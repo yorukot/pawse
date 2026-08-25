@@ -126,10 +126,11 @@ final class ControllerHarness {
         defaults.removePersistentDomain(forName: suiteName)
         let settings = SettingsStore(defaults: defaults)
         settings.focusMinutes = 1
-        settings.shortBreakMinutes = 1
+        settings.shortBreakSeconds = 60
         settings.longBreakMinutes = 1
         settings.idleBeforeBreak = 5
         settings.breakEntryGracePeriod = 3
+        settings.automaticallyStartNextFocus = false
         configure(settings)
 
         let clock = FakeSessionClock()

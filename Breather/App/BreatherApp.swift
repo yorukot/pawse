@@ -30,6 +30,6 @@ struct BreatherApp: App {
             )
                 .modelContainer(model.modelContainer)
         }
-        .defaultSize(width: 760, height: 560)
+        .defaultSize(width: 920, height: 650)
     }
 }

@@ -16,9 +16,9 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertEqual(harness.settings.focusCycleCount, 0)
     }
 
-    func testShortBreakBeforeThresholdAndLongBreakAtThreshold() {
+    func testTwoShortBreaksAreScheduledBeforeLongBreak() {
         let first = ControllerHarness { settings in
-            settings.longBreakEvery = 2
+            settings.shortBreaksBeforeLongBreak = 2
         }
         first.completeFocus()
         guard case .breakPending(let shortPending) = first.controller.state else {
@@ -27,21 +27,58 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertEqual(shortPending.mode, .shortBreak)
 
         let second = ControllerHarness { settings in
-            settings.longBreakEvery = 2
-            settings.focusCycleCount = 1
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
         }
         second.completeFocus()
         guard case .breakPending(let longPending) = second.controller.state else {
             return XCTFail("Expected pending break")
         }
         XCTAssertEqual(longPending.mode, .longBreak)
-        XCTAssertEqual(longPending.cyclePosition, 2)
+        XCTAssertEqual(longPending.cyclePosition, 3)
+    }
+
+    func testCustomShortBreakCountChangesLongBreakSchedule() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 4
+            settings.focusCycleCount = 4
+        }
+
+        harness.completeFocus()
+
+        guard case .breakPending(let pending) = harness.controller.state else {
+            return XCTFail("Expected pending Long Break")
+        }
+        XCTAssertEqual(pending.mode, .longBreak)
+        XCTAssertEqual(pending.cyclePosition, 5)
+    }
+
+    func testAutomaticCycleRunsTwoShortBreaksThenLongBreak() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.waitForNaturalBreak = false
+            settings.automaticallyStartNextFocus = true
+        }
+
+        harness.completeFocus()
+        XCTAssertEqual(harness.controller.currentMode, .shortBreak)
+        harness.advance(60)
+        harness.advance(60)
+        XCTAssertEqual(harness.controller.currentMode, .shortBreak)
+        harness.advance(60)
+        harness.advance(60)
+
+        guard case .running(let longBreak) = harness.controller.state else {
+            return XCTFail("Expected Long Break after two Short Breaks")
+        }
+        XCTAssertEqual(longBreak.mode, .longBreak)
+        XCTAssertEqual(harness.recorder.records.map(\.mode), [.focus, .shortBreak, .focus, .shortBreak, .focus])
     }
 
     func testCompletedScheduledLongBreakResetsCycle() {
         let harness = ControllerHarness { settings in
-            settings.longBreakEvery = 2
-            settings.focusCycleCount = 1
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
         }
         harness.completeFocus()
         harness.activity.current = UserActivitySample(secondsSinceLastInput: 5, activityToken: 1)
@@ -56,16 +93,16 @@ final class CycleEmergencySoundTests: XCTestCase {
 
     func testEmergencyExitAndPendingCancellationDoNotResetLongBreakCycle() {
         let pendingHarness = ControllerHarness { settings in
-            settings.longBreakEvery = 2
-            settings.focusCycleCount = 1
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
         }
         pendingHarness.completeFocus()
         pendingHarness.controller.cancelPendingBreak()
-        XCTAssertEqual(pendingHarness.settings.focusCycleCount, 2)
+        XCTAssertEqual(pendingHarness.settings.focusCycleCount, 3)
 
         let activeHarness = ControllerHarness { settings in
-            settings.longBreakEvery = 2
-            settings.focusCycleCount = 1
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
         }
         activeHarness.completeFocus()
         activeHarness.activity.current = UserActivitySample(secondsSinceLastInput: 5, activityToken: 1)
@@ -73,7 +110,7 @@ final class CycleEmergencySoundTests: XCTestCase {
         activeHarness.advance(3)
         activeHarness.controller.requestEmergencyExit()
         activeHarness.controller.confirmEmergencyExit()
-        XCTAssertEqual(activeHarness.settings.focusCycleCount, 2)
+        XCTAssertEqual(activeHarness.settings.focusCycleCount, 3)
         XCTAssertEqual(activeHarness.recorder.records.last?.outcome, .emergencyExit)
     }
 
@@ -92,8 +129,8 @@ final class CycleEmergencySoundTests: XCTestCase {
     func testAutomaticBreakDisabledReturnsIdleWithScheduledModeSelected() {
         let harness = ControllerHarness { settings in
             settings.automaticallyStartBreaks = false
-            settings.longBreakEvery = 2
-            settings.focusCycleCount = 1
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
         }
         harness.completeFocus()
 

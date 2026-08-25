@@ -17,6 +17,15 @@ enum AnalyticsDateRange: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var symbolName: String {
+        switch self {
+        case .today: "calendar"
+        case .last7Days: "calendar.badge.clock"
+        case .last30Days: "calendar.badge.clock"
+        case .allTime: "clock.arrow.circlepath"
+        }
+    }
+
     func startDate(now: Date, calendar: Calendar) -> Date? {
         let today = calendar.startOfDay(for: now)
         switch self {

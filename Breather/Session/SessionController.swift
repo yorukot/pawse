@@ -62,6 +62,18 @@ final class SessionController {
         return min(1, max(0, 1 - remainingTime / planned))
     }
 
+    var countdownFractionRemaining: Double? {
+        let plannedDuration: TimeInterval
+        switch state {
+        case .running(let session): plannedDuration = session.plannedDuration
+        case .paused(let session): plannedDuration = session.plannedDuration
+        case .breakEntering(let entry): plannedDuration = entry.plannedDuration
+        default: return nil
+        }
+        guard plannedDuration > 0 else { return 0 }
+        return min(1, max(0, remainingTime / plannedDuration))
+    }
+
     var currentMode: SessionMode { state.selectedOrCurrentMode }
 
     var isFocusRunningOrPaused: Bool {
@@ -81,6 +93,12 @@ final class SessionController {
     func startSelectedMode() {
         guard case .idle(let mode) = state else { return }
         startSession(mode: mode, origin: .manual, scheduledAt: nil, cyclePosition: nil)
+    }
+
+    func startFocusAtLaunch() {
+        guard case .idle = state else { return }
+        state = .idle(selectedMode: .focus)
+        startSession(mode: .focus, origin: .automatic, scheduledAt: nil, cyclePosition: nil)
     }
 
     func pauseFocus() {
@@ -320,7 +338,7 @@ final class SessionController {
     private func completeFocus(at now: Date) {
         scheduler.cancel()
         settings.focusCycleCount += 1
-        let breakMode: SessionMode = settings.focusCycleCount >= settings.longBreakEvery ? .longBreak : .shortBreak
+        let breakMode: SessionMode = settings.focusCycleCount > settings.shortBreaksBeforeLongBreak ? .longBreak : .shortBreak
         let duration = settings.duration(for: breakMode)
 
         guard settings.automaticallyStartBreaks else {
