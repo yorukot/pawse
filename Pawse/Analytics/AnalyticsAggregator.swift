@@ -37,9 +37,10 @@ enum AnalyticsDateRange: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-struct DailyFocusTime: Equatable, Identifiable, Sendable {
+struct DailySessionTime: Equatable, Identifiable, Sendable {
     let date: Date
-    let duration: TimeInterval
+    let focusDuration: TimeInterval
+    let breakDuration: TimeInterval
     var id: Date { date }
 }
 
@@ -55,7 +56,7 @@ struct AnalyticsMetrics: Equatable, Sendable {
     let interruptedSessions: Int
     let emergencyExits: Int
     let averageBreakDeferral: TimeInterval?
-    let dailyFocusTime: [DailyFocusTime]
+    let dailySessionTime: [DailySessionTime]
     let recentSessions: [SessionRecordSnapshot]
 }
 
@@ -84,14 +85,24 @@ enum AnalyticsAggregator {
             return max(0, record.startedAt.timeIntervalSince(scheduledAt))
         }
 
-        let daily = Dictionary(grouping: focusRecords, by: { calendar.startOfDay(for: $0.startedAt) })
-            .map { day, records in
-                DailyFocusTime(
-                    date: day,
-                    duration: records.reduce(0) { $0 + $1.activeDuration }
-                )
+        let recordsByDay = Dictionary(
+            grouping: filtered,
+            by: { calendar.startOfDay(for: $0.startedAt) }
+        )
+        let daily: [DailySessionTime] = recordsByDay.map { day, dayRecords in
+            let focusDuration = dayRecords.reduce(0) { total, record in
+                record.mode == .focus ? total + record.activeDuration : total
             }
-            .sorted { $0.date < $1.date }
+            let breakDuration = dayRecords.reduce(0) { total, record in
+                record.mode.isBreak ? total + record.activeDuration : total
+            }
+            return DailySessionTime(
+                date: day,
+                focusDuration: focusDuration,
+                breakDuration: breakDuration
+            )
+        }
+        .sorted { $0.date < $1.date }
 
         return AnalyticsMetrics(
             focusedTime: focusRecords.reduce(0) { $0 + $1.activeDuration },
@@ -105,7 +116,7 @@ enum AnalyticsAggregator {
             interruptedSessions: filtered.filter(isInterrupted).count,
             emergencyExits: filtered.filter { $0.mode.isBreak && $0.outcome == .emergencyExit }.count,
             averageBreakDeferral: deferrals.isEmpty ? nil : deferrals.reduce(0, +) / Double(deferrals.count),
-            dailyFocusTime: daily,
+            dailySessionTime: daily,
             recentSessions: filtered.sorted { $0.endedAt > $1.endedAt }
         )
     }

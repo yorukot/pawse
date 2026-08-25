@@ -26,9 +26,13 @@ struct AnalyticsView: View {
                     .accessibilityLabel("Analytics date range")
                 }
                 ToolbarItem {
-                    Button("Clear Analytics Data…", role: .destructive) {
+                    Button(role: .destructive) {
                         confirmsClear = true
+                    } label: {
+                        Label("Clear Analytics Data…", systemImage: "trash")
                     }
+                    .labelStyle(.iconOnly)
+                    .help(Text("Clear Analytics Data…"))
                     .disabled(store.records.isEmpty)
                 }
             }
@@ -71,12 +75,23 @@ struct AnalyticsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollView {
-                VStack(spacing: 16) {
+                LazyVStack(alignment: .leading, spacing: 22) {
                     AnalyticsSummaryView(metrics: metrics)
-                    FocusTimeChart(values: metrics.dailyFocusTime)
+                    FocusTimeChart(values: metrics.dailySessionTime)
                     RecentSessionsTable(records: metrics.recentSessions)
                 }
-                .padding(20)
+                .frame(maxWidth: 1_040)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 22)
+                .frame(maxWidth: .infinity)
+            }
+            .background {
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.045), .clear],
+                    startPoint: .topLeading,
+                    endPoint: .center
+                )
+                .ignoresSafeArea()
             }
         }
     }

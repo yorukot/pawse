@@ -108,11 +108,38 @@ final class AnalyticsTests: XCTestCase {
             makeSnapshot(startedAt: dayOneAfternoon, activeDuration: 120)
         ]
 
-        let daily = AnalyticsAggregator.metrics(records: records, range: .allTime, now: now, calendar: calendar).dailyFocusTime
+        let daily = AnalyticsAggregator.metrics(
+            records: records,
+            range: .allTime,
+            now: now,
+            calendar: calendar
+        ).dailySessionTime
         XCTAssertEqual(daily.count, 2)
         XCTAssertLessThan(daily[0].date, daily[1].date)
-        XCTAssertEqual(daily[0].duration, 180)
-        XCTAssertEqual(daily[1].duration, 180)
+        XCTAssertEqual(daily[0].focusDuration, 180)
+        XCTAssertEqual(daily[1].focusDuration, 180)
+        XCTAssertEqual(daily[0].breakDuration, 0)
+        XCTAssertEqual(daily[1].breakDuration, 0)
+    }
+
+    func testDailySessionTimeIncludesFocusAndBreakDurations() {
+        let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 25, hour: 12)) ?? Date()
+        let records = [
+            makeSnapshot(mode: .focus, startedAt: now, activeDuration: 1_200),
+            makeSnapshot(mode: .shortBreak, startedAt: now, activeDuration: 30),
+            makeSnapshot(mode: .longBreak, startedAt: now, activeDuration: 600)
+        ]
+
+        let daily = AnalyticsAggregator.metrics(
+            records: records,
+            range: .allTime,
+            now: now,
+            calendar: calendar
+        ).dailySessionTime
+
+        XCTAssertEqual(daily.count, 1)
+        XCTAssertEqual(daily[0].focusDuration, 1_200)
+        XCTAssertEqual(daily[0].breakDuration, 630)
     }
 
     func testAverageBreakDeferralUsesScheduledAndActualStart() {

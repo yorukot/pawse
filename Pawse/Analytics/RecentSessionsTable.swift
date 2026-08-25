@@ -5,12 +5,15 @@ struct RecentSessionsTable: View {
     @Environment(\.locale) private var locale
 
     var body: some View {
-        GroupBox("Recent Sessions") {
+        VStack(alignment: .leading, spacing: 12) {
+            AnalyticsSectionHeader(title: "Recent Sessions", systemImage: "clock.arrow.circlepath")
+
             Table(records) {
                 TableColumn("Date") { record in
                     Text(record.startedAt.formatted(
                         Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)
                     ))
+                    .lineLimit(1)
                 }
                 .width(min: 145, ideal: 170)
                 TableColumn("Mode") { record in
@@ -18,6 +21,8 @@ struct RecentSessionsTable: View {
                         Text(record.mode.displayName)
                     } icon: {
                         Image(systemName: record.mode.symbolName)
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(modeColor(record.mode))
                     }
                 }
                 .width(min: 110, ideal: 135)
@@ -32,11 +37,41 @@ struct RecentSessionsTable: View {
                 }
                 .width(80)
                 TableColumn("Outcome") { record in
-                    Text(outcomeName(record.outcome))
+                    HStack(spacing: 7) {
+                        Circle()
+                            .fill(outcomeColor(record.outcome))
+                            .frame(width: 7, height: 7)
+                            .accessibilityHidden(true)
+                        Text(outcomeName(record.outcome))
+                    }
                 }
                 .width(min: 100, ideal: 120)
             }
-            .frame(minHeight: 210)
+            .tableStyle(.inset(alternatesRowBackgrounds: true))
+            .frame(minHeight: 230, idealHeight: 270, maxHeight: 310)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            }
+        }
+    }
+
+    private func modeColor(_ mode: SessionMode) -> Color {
+        switch mode {
+        case .focus: Color.accentColor
+        case .shortBreak: PawseTheme.Colors.lake
+        case .longBreak: PawseTheme.Colors.mountain
+        }
+    }
+
+    private func outcomeColor(_ outcome: SessionOutcome) -> Color {
+        switch outcome {
+        case .completed: .green
+        case .skipped: PawseTheme.Colors.pumpkin
+        case .stopped: .secondary
+        case .switchedMode: Color.accentColor
+        case .emergencyExit: .red
         }
     }
 
