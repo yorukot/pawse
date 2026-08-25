@@ -12,17 +12,17 @@ Pawse should feel like a considerate macOS companion: calm while the user is foc
 
 ## Brand Assets
 
-`PawseLogo` and `PawseHUDMascot` use the same head-only sleeping puppy master. `PawseBanner` is a calm mountain-and-lake background with no baked-in character; the UI places the separate logo and typography over it.
+`PawseLogo` and `PawseHUDMascot` use the same head-only sleeping white-shepherd master. `PawseBanner` is a calm mountain-and-lake background with no baked-in character; the UI places the separate logo and typography over it.
 
 - Show the logo at no less than 36 pt; 44 pt is the standard reminder size.
 - Preserve its aspect ratio and transparent background. Do not crop, recolor, stretch, rotate, or place text over it.
-- A cream circle is the preferred small-format backing when the surrounding material is variable.
+- A cream circle is the preferred small-format backing when the surrounding material is variable. The App Icon uses the same mark over a restrained pale-aqua roundel and warm ivory tile.
 - Use the banner only where a wide illustrative surface is appropriate, such as the Timers introduction. Use a 12 pt continuous corner radius. Never place a second mascot, text, or logo directly inside the banner bitmap.
 - Keep the menu-bar mark monochrome and template-compatible. It is a dog head only: use the dedicated simplified side-profile template asset when the dog style is selected; never add a body or tail, and never shrink the full-color illustration into the status item. Keep either center mark legible inside the progress ring.
 
-The dog is one fixed animated character across every full-color surface: a rounded cream-white puppy or gentle wolf-pup head, one upright triangular ear, one relaxed ear, a short canine muzzle, a prominent navy oval nose, closed curved eyes, a small content smile, deep-navy outlines, pumpkin-orange inner-ear accents, and one orange `Z`. The full-color mark is head-only. It never includes paws, a torso, realistic fur, whiskers, or scenery. Keep the shapes broad and smooth enough to read at 24 pt.
+The dog is one fixed illustrated character across every full-color surface: a mature but approachable cream-white shepherd head in right-facing profile, one tall triangular ear, one relaxed side ear, a slightly raised long muzzle, a prominent navy nose, one closed curved eye, a small peaceful smile, deep-navy outlines, pumpkin-orange inner-ear accents, and restrained cream fur shading. The full-color mark is head-only. It never includes paws, a torso, realistic fur strands, whiskers, scenery, text, or sleep symbols. Keep the silhouette broad and the internal detail sparse enough to read at small sizes.
 
-Treat the brand mark like a frame from a simple 2D animation, not a pet portrait: bold silhouette, cel-like flat shapes, minimal internal detail, friendly asymmetry, and no hair-by-hair rendering. Do not change the ear arrangement, muzzle, nose, line weight, or rendering technique between the Logo, HUD mascot, and App Icon.
+Treat the brand mark like a polished frame from a simple 2D animation, not a pet portrait or children's sticker: bold silhouette, cel-like flat shapes, minimal internal detail, relaxed asymmetry, and no hair-by-hair rendering. Preserve the right-facing orientation, gently elevated muzzle, ear arrangement, expression, nose, line weight, and rendering technique between the Logo, HUD mascot, and App Icon.
 
 The silhouette must read as a dog before decoration is added. Never use a feline muzzle, tiny cat nose, whiskers, curled tail, resting paws, or a circular sleeping-body pose. At menu-bar size, continue using the dedicated monochrome side-profile asset rather than shrinking the full-color character.
 

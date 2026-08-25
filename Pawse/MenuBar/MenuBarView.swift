@@ -18,6 +18,7 @@ struct MenuBarView: View {
         static let actionSpacing: CGFloat = 8
         static let controlHeight: CGFloat = 34
         static let controlCornerRadius: CGFloat = 8
+        static let bannerHeight: CGFloat = 44
 
         static var contentWidth: CGFloat {
             panelWidth - outerPadding * 2
@@ -59,6 +60,7 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
+            miniBrandBanner
             stateContent
             upNextContent
             Divider()
@@ -67,14 +69,47 @@ struct MenuBarView: View {
         .padding(Layout.outerPadding)
         .frame(width: Layout.panelWidth)
         .animation(.easeInOut(duration: 0.16), value: pendingConfirmation)
+        .onAppear {
+            controller.setMenuBarExtraPresented(true)
+        }
         .onChange(of: controller.isFocusRunningOrPaused) { _, isFocusActive in
             if !isFocusActive {
                 pendingConfirmation = nil
             }
         }
         .onDisappear {
+            controller.setMenuBarExtraPresented(false)
             pendingConfirmation = nil
         }
+    }
+
+    private var miniBrandBanner: some View {
+        ZStack(alignment: .leading) {
+            Image("PawseMiniBanner")
+                .resizable()
+                .scaledToFill()
+                .frame(width: Layout.contentWidth, height: Layout.bannerHeight)
+                .clipped()
+
+            HStack(spacing: 8) {
+                Image("PawseLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+
+                Text(verbatim: "Pawse")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(PawseTheme.Colors.ink)
+            }
+            .padding(.horizontal, 10)
+        }
+        .frame(width: Layout.contentWidth, height: Layout.bannerHeight)
+        .clipShape(RoundedRectangle(
+            cornerRadius: Layout.controlCornerRadius,
+            style: .continuous
+        ))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Pawse")
     }
 
     @ViewBuilder
@@ -405,7 +440,7 @@ struct MenuBarView: View {
                 openWindow(id: "pawse")
                 NSApp.activate(ignoringOtherApps: true)
             } label: {
-                Label("Open Pawse…", systemImage: "macwindow")
+                Label("Open Pawse", systemImage: "macwindow")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)

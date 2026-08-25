@@ -3361,30 +3361,30 @@
         }
       }
     },
-    "Open Pawse…": {
+    "Open Pawse": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir Pawse…"
+            "value": "Abrir Pawse"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pawseを開く…"
+            "value": "Pawseを開く"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "開啟 Pawse…"
+            "value": "開啟 Pawse"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "打开 Pawse…"
+            "value": "打开 Pawse"
           }
         }
       }

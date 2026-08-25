@@ -47,7 +47,7 @@ private struct OpenPawseCommand: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Button("Open Pawse…") {
+        Button("Open Pawse") {
             openWindow(id: "pawse")
             NSApp.activate(ignoringOtherApps: true)
         }
