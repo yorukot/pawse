@@ -12,11 +12,15 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
 
     init(
         settings: SettingsStore,
+        backgroundProvider: BreakBackgroundProviding,
         reminderCoordinator: BreakReminderCoordinator = BreakReminderCoordinator(),
         presentationController: PresentationOptionsController = PresentationOptionsController()
     ) {
         self.reminderCoordinator = reminderCoordinator
-        overlayCoordinator = OverlayCoordinator(settings: settings)
+        overlayCoordinator = OverlayCoordinator(
+            settings: settings,
+            backgroundProvider: backgroundProvider
+        )
         self.presentationController = presentationController
     }
 
@@ -27,8 +31,11 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
         }
     }
 
-    func showReminder(for mode: SessionMode) {
-        reminderCoordinator.show(for: mode)
+    func showReminder(for pendingBreak: PendingBreak) {
+        reminderCoordinator.show(
+            for: pendingBreak.mode,
+            scheduledAt: pendingBreak.scheduledAt
+        )
     }
 
     func hideReminder() {
@@ -44,9 +51,9 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
         presentationController.applyForCommittedBreak()
     }
 
-    func cleanup() {
+    func cleanup(animated: Bool) {
         reminderCoordinator.hide()
-        overlayCoordinator.cleanup()
+        overlayCoordinator.cleanup(animated: animated)
         presentationController.restore()
     }
 }

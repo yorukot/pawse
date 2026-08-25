@@ -64,6 +64,13 @@ struct BreakEntry: Equatable, Sendable {
     let plannedDuration: TimeInterval
 }
 
+struct UpcomingBreakSummary: Equatable, Sendable {
+    let nextMode: SessionMode
+    let nextDuration: TimeInterval
+    let focusSessionsUntilLongBreak: Int
+    let longBreakDuration: TimeInterval
+}
+
 enum SessionState: Equatable, Sendable {
     case idle(selectedMode: SessionMode)
     case running(RunningSession)

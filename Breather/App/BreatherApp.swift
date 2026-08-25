@@ -1,3 +1,4 @@
+import AppKit
 import SwiftData
 import SwiftUI
 
@@ -14,22 +15,35 @@ struct BreatherApp: App {
         }
         .menuBarExtraStyle(.window)
 
-        Settings {
-            SettingsView(
+        Window("Breather", id: "breather") {
+            BreatherWindowView(
                 settings: model.settings,
                 soundService: model.soundService,
                 launchAtLoginService: model.launchAtLoginService,
-                analyticsStore: model.analyticsStore
+                analyticsStore: model.analyticsStore,
+                breakBackgroundService: model.breakBackgroundService,
+                analyticsPersistenceNotice: model.analyticsPersistenceNotice
             )
-        }
-
-        Window("Analytics", id: "analytics") {
-            AnalyticsView(
-                store: model.analyticsStore,
-                persistenceNotice: model.analyticsPersistenceNotice
-            )
-                .modelContainer(model.modelContainer)
+            .modelContainer(model.modelContainer)
         }
         .defaultSize(width: 920, height: 650)
+        .windowResizability(.contentMinSize)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                OpenBreatherCommand()
+            }
+        }
+    }
+}
+
+private struct OpenBreatherCommand: View {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Button("Open Breather…") {
+            openWindow(id: "breather")
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        .keyboardShortcut(",", modifiers: .command)
     }
 }

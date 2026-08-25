@@ -1,6 +1,8 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
-private enum SettingsSection: String, CaseIterable, Identifiable {
+enum BreatherWindowSection: String, CaseIterable, Identifiable {
+    case analytics
     case timers
     case cycle
     case breaks
@@ -13,6 +15,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
+        case .analytics: "Analytics"
         case .timers: "Timers"
         case .cycle: "Cycle"
         case .breaks: "Break Behavior"
@@ -25,45 +28,42 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
 
     var symbolName: String {
         switch self {
+        case .analytics: "chart.bar"
         case .timers: "timer"
         case .cycle: "repeat"
         case .breaks: "hand.raised"
         case .sounds: "speaker.wave.2"
-        case .appearance: "paintbrush"
+        case .appearance: "photo"
         case .general: "gearshape"
         case .privacy: "lock.shield"
         }
     }
 }
 
-struct SettingsView: View {
+struct BreatherWindowView: View {
     @Bindable var settings: SettingsStore
     @Bindable var soundService: SoundService
     @Bindable var launchAtLoginService: LaunchAtLoginService
     @Bindable var analyticsStore: AnalyticsStore
+    @Bindable var breakBackgroundService: BreakBackgroundService
+    let analyticsPersistenceNotice: String?
 
+    @AppStorage("breatherWindowSection") private var selectedSection = BreatherWindowSection.timers
     @State private var confirmsCycleReset = false
     @State private var confirmsSettingsReset = false
     @State private var confirmsAnalyticsClear = false
-    @State private var selectedSection: SettingsSection? = .timers
+    @State private var isChoosingBreakImage = false
 
     var body: some View {
-        NavigationSplitView {
-            List(SettingsSection.allCases, selection: $selectedSection) { section in
-                Label(section.title, systemImage: section.symbolName)
-                    .tag(section)
+        Group {
+            if #available(macOS 15.0, *) {
+                modernSidebar
+            } else {
+                legacySidebar
             }
-            .listStyle(.sidebar)
-            .navigationTitle("Breather")
-            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
-        } detail: {
-            let section = selectedSection ?? .timers
-            settingsContent(for: section)
-                .navigationTitle(section.title)
         }
-        .navigationSplitViewStyle(.balanced)
         .formStyle(.grouped)
-        .frame(minWidth: 760, idealWidth: 820, minHeight: 520, idealHeight: 560)
+        .frame(minWidth: 760, minHeight: 520)
         .confirmationDialog(
             "Reset Break Cycle?",
             isPresented: $confirmsCycleReset,
@@ -82,6 +82,7 @@ struct SettingsView: View {
         ) {
             Button("Reset Settings", role: .destructive) {
                 settings.resetToDefaults()
+                breakBackgroundService.resetCache()
                 soundService.validateSelections()
                 launchAtLoginService.setEnabled(false)
             }
@@ -99,11 +100,82 @@ struct SettingsView: View {
         } message: {
             Text("Settings and the Focus cycle will not change.")
         }
+        .fileImporter(
+            isPresented: $isChoosingBreakImage,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                breakBackgroundService.selectCustomImage(at: url)
+            }
+        }
+    }
+
+    @available(macOS 15.0, *)
+    private var modernSidebar: some View {
+        TabView(selection: $selectedSection) {
+            Tab("Analytics", systemImage: "chart.bar", value: .analytics) {
+                sectionContent(.analytics)
+            }
+            Tab("Timers", systemImage: "timer", value: .timers) {
+                sectionContent(.timers)
+            }
+            Tab("Cycle", systemImage: "repeat", value: .cycle) {
+                sectionContent(.cycle)
+            }
+            Tab("Break Behavior", systemImage: "hand.raised", value: .breaks) {
+                sectionContent(.breaks)
+            }
+            Tab("Sounds", systemImage: "speaker.wave.2", value: .sounds) {
+                sectionContent(.sounds)
+            }
+            Tab("Appearance", systemImage: "photo", value: .appearance) {
+                sectionContent(.appearance)
+            }
+            Tab("General", systemImage: "gearshape", value: .general) {
+                sectionContent(.general)
+            }
+            Tab("Privacy", systemImage: "lock.shield", value: .privacy) {
+                sectionContent(.privacy)
+            }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+    }
+
+    private var legacySidebar: some View {
+        NavigationSplitView {
+            List(BreatherWindowSection.allCases, selection: $selectedSection) { section in
+                Label(section.title, systemImage: section.symbolName)
+                    .tag(section)
+            }
+            .listStyle(.sidebar)
+            .navigationTitle("Breather")
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+        } detail: {
+            sectionContent(selectedSection)
+        }
+        .navigationSplitViewStyle(.balanced)
     }
 
     @ViewBuilder
-    private func settingsContent(for section: SettingsSection) -> some View {
+    private func sectionContent(_ section: BreatherWindowSection) -> some View {
+        if section == .analytics {
+            AnalyticsView(
+                store: analyticsStore,
+                persistenceNotice: analyticsPersistenceNotice
+            )
+        } else {
+            settingsContent(for: section)
+                .frame(maxWidth: 680, maxHeight: .infinity, alignment: .top)
+                .frame(maxWidth: .infinity)
+                .navigationTitle(section.title)
+        }
+    }
+
+    @ViewBuilder
+    private func settingsContent(for section: BreatherWindowSection) -> some View {
         switch section {
+        case .analytics: EmptyView()
         case .timers: timerSettings
         case .cycle: cycleSettings
         case .breaks: breakSettings
@@ -143,7 +215,7 @@ struct SettingsView: View {
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
                 LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
-                Text("With the current setting, Breather schedules \(settings.shortBreaksBeforeLongBreak) Short Breaks before each Long Break.")
+                Text("Breather schedules \(settings.shortBreaksBeforeLongBreak) Short Breaks before each Long Break.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Button("Reset Break Cycle…", role: .destructive) {
@@ -171,7 +243,7 @@ struct SettingsView: View {
                     in: 1...10,
                     step: 1
                 )
-                Text("Activity during the grace period returns Breather to Break Pending.")
+                Text("Activity during the grace period returns Breather to Break Pending and requires a fresh idle interval.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -183,18 +255,9 @@ struct SettingsView: View {
             Section("Sounds") {
                 Toggle("Enable Sounds", isOn: $settings.enableSounds)
                 Group {
-                    soundPicker(
-                        title: "Session Start Sound",
-                        selection: $settings.sessionStartSound
-                    )
-                    soundPicker(
-                        title: "Break Ready Sound",
-                        selection: $settings.breakReadySound
-                    )
-                    soundPicker(
-                        title: "Break Complete Sound",
-                        selection: $settings.breakCompleteSound
-                    )
+                    soundPicker(title: "Session Start Sound", selection: $settings.sessionStartSound)
+                    soundPicker(title: "Break Ready Sound", selection: $settings.breakReadySound)
+                    soundPicker(title: "Break Complete Sound", selection: $settings.breakCompleteSound)
                     LabeledContent("Volume") {
                         Slider(value: $settings.soundVolume, in: 0...1)
                             .frame(width: 220)
@@ -211,11 +274,58 @@ struct SettingsView: View {
 
     private var appearanceSettings: some View {
         Form {
-            Section("Appearance") {
-                Toggle("Show Countdown During Break", isOn: $settings.showCountdownDuringBreak)
-                Toggle("Show Session Progress in Menu Bar", isOn: $settings.showSessionProgressInMenuBar)
+            Section("Break Background") {
+                Picker(
+                    "Background",
+                    selection: Binding(
+                        get: { settings.breakBackgroundMode },
+                        set: { mode in
+                            switch mode {
+                            case .systemWallpaper:
+                                breakBackgroundService.useSystemWallpaper()
+                            case .customImage:
+                                if settings.customBreakImageBookmark == nil {
+                                    isChoosingBreakImage = true
+                                } else {
+                                    settings.breakBackgroundMode = .customImage
+                                    breakBackgroundService.resetCache()
+                                }
+                            }
+                        }
+                    )
+                ) {
+                    ForEach(BreakBackgroundMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                LabeledContent("Custom Image") {
+                    HStack {
+                        if let name = settings.customBreakImageName {
+                            Text(name)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        Button(settings.customBreakImageName == nil ? "Choose…" : "Change…") {
+                            isChoosingBreakImage = true
+                        }
+                        if settings.customBreakImageName != nil {
+                            Button("Remove", role: .destructive) {
+                                breakBackgroundService.removeCustomImage()
+                            }
+                        }
+                    }
+                }
+                if let errorMessage = breakBackgroundService.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
-            Text("Breather follows the system Reduce Motion and accessibility settings.")
+            Section("Display") {
+                Toggle("Show Countdown During Break", isOn: $settings.showCountdownDuringBreak)
+                Toggle("Show Progress in Menu Bar Ring", isOn: $settings.showSessionProgressInMenuBar)
+            }
+            Text("Images fill each display and receive a dark scrim for legibility. Breather follows Reduce Motion automatically.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

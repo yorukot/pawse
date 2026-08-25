@@ -21,6 +21,9 @@ final class SettingsStore {
         static let soundVolume = "soundVolume"
         static let showCountdownDuringBreak = "showCountdownDuringBreak"
         static let showSessionProgressInMenuBar = "showSessionProgressInMenuBar"
+        static let breakBackgroundMode = "breakBackgroundMode"
+        static let customBreakImageBookmark = "customBreakImageBookmark"
+        static let customBreakImageName = "customBreakImageName"
         static let focusCycleCount = "focusCycleCount"
     }
 
@@ -58,7 +61,7 @@ final class SettingsStore {
     var automaticallyStartBreaks = true { didSet { persist(Key.automaticallyStartBreaks, automaticallyStartBreaks) } }
     var automaticallyStartNextFocus = true { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
     var waitForNaturalBreak = true { didSet { persist(Key.waitForNaturalBreak, waitForNaturalBreak) } }
-    var idleBeforeBreak: TimeInterval = 5 {
+    var idleBeforeBreak: TimeInterval = 3 {
         didSet {
             let validated = allowedIdleDelay(idleBeforeBreak)
             guard validated == idleBeforeBreak else {
@@ -94,6 +97,15 @@ final class SettingsStore {
     }
     var showCountdownDuringBreak = true { didSet { persist(Key.showCountdownDuringBreak, showCountdownDuringBreak) } }
     var showSessionProgressInMenuBar = true { didSet { persist(Key.showSessionProgressInMenuBar, showSessionProgressInMenuBar) } }
+    var breakBackgroundMode: BreakBackgroundMode = .systemWallpaper {
+        didSet { persist(Key.breakBackgroundMode, breakBackgroundMode.rawValue) }
+    }
+    private(set) var customBreakImageBookmark: Data? = nil {
+        didSet { persistOptional(Key.customBreakImageBookmark, customBreakImageBookmark) }
+    }
+    private(set) var customBreakImageName: String? = nil {
+        didSet { persistOptional(Key.customBreakImageName, customBreakImageName) }
+    }
     var focusCycleCount = 0 {
         didSet {
             guard focusCycleCount >= 0 else {
@@ -123,6 +135,18 @@ final class SettingsStore {
         focusCycleCount = 0
     }
 
+    func setCustomBreakImage(bookmark: Data, fileName: String) {
+        customBreakImageBookmark = bookmark
+        customBreakImageName = fileName
+        breakBackgroundMode = .customImage
+    }
+
+    func clearCustomBreakImage() {
+        customBreakImageBookmark = nil
+        customBreakImageName = nil
+        breakBackgroundMode = .systemWallpaper
+    }
+
     func resetToDefaults() {
         focusMinutes = 25
         shortBreakSeconds = 30
@@ -131,7 +155,7 @@ final class SettingsStore {
         automaticallyStartBreaks = true
         automaticallyStartNextFocus = true
         waitForNaturalBreak = true
-        idleBeforeBreak = 5
+        idleBeforeBreak = 3
         breakEntryGracePeriod = 3
         enableSounds = true
         sessionStartSound = "None"
@@ -140,6 +164,7 @@ final class SettingsStore {
         soundVolume = 0.7
         showCountdownDuringBreak = true
         showSessionProgressInMenuBar = true
+        clearCustomBreakImage()
     }
 
     private func load() {
@@ -159,6 +184,11 @@ final class SettingsStore {
         soundVolume = defaults.double(forKey: Key.soundVolume)
         showCountdownDuringBreak = defaults.bool(forKey: Key.showCountdownDuringBreak)
         showSessionProgressInMenuBar = defaults.bool(forKey: Key.showSessionProgressInMenuBar)
+        breakBackgroundMode = BreakBackgroundMode(
+            rawValue: defaults.string(forKey: Key.breakBackgroundMode) ?? ""
+        ) ?? .systemWallpaper
+        customBreakImageBookmark = defaults.data(forKey: Key.customBreakImageBookmark)
+        customBreakImageName = defaults.string(forKey: Key.customBreakImageName)
         focusCycleCount = defaults.integer(forKey: Key.focusCycleCount)
     }
 
@@ -167,13 +197,22 @@ final class SettingsStore {
         defaults.set(value, forKey: key)
     }
 
+    private func persistOptional(_ key: String, _ value: Any?) {
+        guard !isLoading else { return }
+        if let value {
+            defaults.set(value, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     private func clamped(_ value: Int, _ range: ClosedRange<Int>) -> Int {
         min(range.upperBound, max(range.lowerBound, value))
     }
 
     private func allowedIdleDelay(_ value: TimeInterval) -> TimeInterval {
         let choices: [TimeInterval] = [2, 3, 5, 10, 15, 30]
-        return choices.min(by: { abs($0 - value) < abs($1 - value) }) ?? 5
+        return choices.min(by: { abs($0 - value) < abs($1 - value) }) ?? 3
     }
 
     private static let defaultValues: [String: Any] = [
@@ -184,7 +223,7 @@ final class SettingsStore {
         Key.automaticallyStartBreaks: true,
         Key.automaticallyStartNextFocus: true,
         Key.waitForNaturalBreak: true,
-        Key.idleBeforeBreak: 5.0,
+        Key.idleBeforeBreak: 3.0,
         Key.breakEntryGracePeriod: 3.0,
         Key.enableSounds: true,
         Key.sessionStartSound: "None",
@@ -193,6 +232,7 @@ final class SettingsStore {
         Key.soundVolume: 0.7,
         Key.showCountdownDuringBreak: true,
         Key.showSessionProgressInMenuBar: true,
+        Key.breakBackgroundMode: BreakBackgroundMode.systemWallpaper.rawValue,
         Key.focusCycleCount: 0
     ]
 }

@@ -11,16 +11,16 @@ final class BreakReminderCoordinator: NSObject {
     var isVisible: Bool { panel?.isVisible == true }
     var isKeyWindow: Bool { panel?.isKeyWindow == true }
 
-    func show(for mode: SessionMode) {
+    func show(for mode: SessionMode, scheduledAt: Date = .now) {
         if let panel {
-            panel.contentView = hostingView(for: mode)
+            panel.contentView = hostingView(for: mode, scheduledAt: scheduledAt)
             reposition(panel)
             panel.orderFrontRegardless()
             return
         }
 
         let panel = BreakReminderPanel()
-        panel.contentView = hostingView(for: mode)
+        panel.contentView = hostingView(for: mode, scheduledAt: scheduledAt)
         self.panel = panel
         reposition(panel)
         startMonitoringScreens()
@@ -34,9 +34,9 @@ final class BreakReminderCoordinator: NSObject {
         stopMonitoringScreens()
     }
 
-    private func hostingView(for mode: SessionMode) -> NSHostingView<BreakReminderView> {
+    private func hostingView(for mode: SessionMode, scheduledAt: Date) -> NSHostingView<BreakReminderView> {
         NSHostingView(
-            rootView: BreakReminderView(mode: mode) { [weak self] in
+            rootView: BreakReminderView(mode: mode, scheduledAt: scheduledAt) { [weak self] in
                 self?.onStartBreak?()
             }
         )

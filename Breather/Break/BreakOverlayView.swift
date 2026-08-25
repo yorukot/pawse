@@ -1,15 +1,15 @@
+import AppKit
 import SwiftUI
 
 struct BreakOverlayView: View {
     let mode: SessionMode
     let controller: SessionController
     let settings: SettingsStore
+    let backgroundImage: NSImage?
 
     var body: some View {
         ZStack {
-            Color(nsColor: .windowBackgroundColor)
-                .overlay(Color.black.opacity(0.9))
-                .ignoresSafeArea()
+            breakBackground
 
             VStack(spacing: 22) {
                 Label(mode.displayName, systemImage: mode.symbolName)
@@ -51,5 +51,21 @@ struct BreakOverlayView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var breakBackground: some View {
+        if let backgroundImage {
+            Image(nsImage: backgroundImage)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .overlay(Color.black.opacity(0.58))
+                .ignoresSafeArea()
+        } else {
+            Color.black
+                .ignoresSafeArea()
+        }
     }
 }

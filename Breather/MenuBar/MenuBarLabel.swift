@@ -5,17 +5,11 @@ struct MenuBarLabel: View {
 
     var body: some View {
         let controller = model.controller
-        HStack(spacing: 4) {
-            CountdownRingIcon(
-                symbolName: controller.currentMode.symbolName,
-                fractionRemaining: controller.countdownFractionRemaining
-            )
-            if model.settings.showSessionProgressInMenuBar,
-               case .running = controller.state {
-                Text(DurationFormatter.timer(controller.remainingTime))
-                    .monospacedDigit()
-            }
-        }
+        CountdownRingIcon(
+            fractionRemaining: model.settings.showSessionProgressInMenuBar
+                ? controller.countdownFractionRemaining
+                : nil
+        )
         .accessibilityLabel(accessibilityText)
     }
 
@@ -24,33 +18,33 @@ struct MenuBarLabel: View {
         if case .running = controller.state {
             return "Breather, \(controller.currentMode.displayName), \(DurationFormatter.timer(controller.remainingTime)) remaining"
         }
+        if case .paused = controller.state {
+            return "Breather, Focus paused, \(DurationFormatter.timer(controller.remainingTime)) remaining"
+        }
+        if case .breakPending = controller.state {
+            return "Breather, \(controller.currentMode.displayName) ready"
+        }
         return "Breather, \(controller.currentMode.displayName)"
     }
 }
 
 private struct CountdownRingIcon: View {
-    let symbolName: String
     let fractionRemaining: Double?
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(.primary.opacity(0.22), lineWidth: 1.5)
+                .stroke(.primary.opacity(0.22), lineWidth: 2)
 
-            if let fractionRemaining {
-                Circle()
-                    .trim(from: 0, to: fractionRemaining)
-                    .stroke(
-                        .primary,
-                        style: StrokeStyle(lineWidth: 1.7, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-            }
-
-            Image(systemName: symbolName)
-                .font(.system(size: 8, weight: .semibold))
+            Circle()
+                .trim(from: 0, to: fractionRemaining ?? 1)
+                .stroke(
+                    .primary,
+                    style: StrokeStyle(lineWidth: 2.2, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
         }
-        .frame(width: 18, height: 18)
+        .frame(width: 17, height: 17)
         .accessibilityHidden(true)
     }
 }

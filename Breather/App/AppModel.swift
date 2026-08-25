@@ -10,6 +10,7 @@ final class AppModel {
     let analyticsStore: AnalyticsStore
     let modelContainer: ModelContainer
     let breakEnvironment: BreakEnvironmentCoordinator
+    let breakBackgroundService: BreakBackgroundService
     let soundService: SoundService
     let launchAtLoginService: LaunchAtLoginService
     let analyticsPersistenceNotice: String?
@@ -38,12 +39,17 @@ final class AppModel {
             }
         }
         let analyticsStore = AnalyticsStore(modelContainer: container)
-        let breakEnvironment = BreakEnvironmentCoordinator(settings: settings)
+        let breakBackgroundService = BreakBackgroundService(settings: settings)
+        let breakEnvironment = BreakEnvironmentCoordinator(
+            settings: settings,
+            backgroundProvider: breakBackgroundService
+        )
         let soundService = SoundService(settings: settings)
         self.settings = settings
         self.analyticsStore = analyticsStore
         modelContainer = container
         self.breakEnvironment = breakEnvironment
+        self.breakBackgroundService = breakBackgroundService
         self.soundService = soundService
         launchAtLoginService = LaunchAtLoginService()
         analyticsPersistenceNotice = persistenceNotice

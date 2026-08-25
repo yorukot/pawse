@@ -1,5 +1,6 @@
 import AppKit
 import CoreGraphics
+import QuartzCore
 import SwiftUI
 
 @MainActor
@@ -7,16 +8,20 @@ final class OverlayCoordinator {
     var onSynchronizationFailure: (@MainActor () -> Void)?
 
     private let settings: SettingsStore
+    private let backgroundProvider: BreakBackgroundProviding
     private let screenChangeMonitor: ScreenChangeMonitor
     private weak var controller: SessionController?
     private var panels: [CGDirectDisplayID: BreakPanel] = [:]
+    private var fadingPanels: [ObjectIdentifier: BreakPanel] = [:]
     private var activeMode: SessionMode?
 
     init(
         settings: SettingsStore,
+        backgroundProvider: BreakBackgroundProviding? = nil,
         screenChangeMonitor: ScreenChangeMonitor = ScreenChangeMonitor()
     ) {
         self.settings = settings
+        self.backgroundProvider = backgroundProvider ?? BreakBackgroundService(settings: settings)
         self.screenChangeMonitor = screenChangeMonitor
         screenChangeMonitor.onChange = { [weak self] in
             self?.handleScreenChange()
@@ -31,34 +36,60 @@ final class OverlayCoordinator {
 
     func show(for mode: SessionMode) throws {
         guard controller != nil else { throw BreakEnvironmentError.overlayCreationFailed }
+        closeFadingPanels()
         activeMode = mode
+        backgroundProvider.resetCache()
         do {
             try synchronizePanels()
             screenChangeMonitor.start()
             panels.values.forEach { $0.orderFrontRegardless() }
+            fadeInPanelsIfNeeded()
         } catch {
-            cleanup()
+            cleanup(animated: false)
             throw error
         }
     }
 
-    func cleanup() {
+    func cleanup(animated: Bool = true) {
         screenChangeMonitor.stop()
-        for panel in panels.values {
-            panel.orderOut(nil)
-            panel.contentView = nil
-            panel.close()
-        }
+        let panelsToClose = Array(panels.values)
         panels.removeAll()
         activeMode = nil
+        backgroundProvider.resetCache()
+
+        guard animated, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else {
+            closeFadingPanels()
+            panelsToClose.forEach(Self.close)
+            return
+        }
+
+        for panel in panelsToClose {
+            fadingPanels[ObjectIdentifier(panel)] = panel
+            panel.ignoresMouseEvents = true
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.6
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                panel.animator().alphaValue = 0
+            }
+        }
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(650))
+            guard let self else { return }
+            for panel in panelsToClose {
+                let identifier = ObjectIdentifier(panel)
+                guard self.fadingPanels.removeValue(forKey: identifier) != nil else { continue }
+                Self.close(panel)
+            }
+        }
     }
 
     private func handleScreenChange() {
         do {
             try synchronizePanels()
             panels.values.forEach { $0.orderFrontRegardless() }
+            fadeInPanelsIfNeeded()
         } catch {
-            cleanup()
+            cleanup(animated: false)
             onSynchronizationFailure?()
         }
     }
@@ -96,9 +127,11 @@ final class OverlayCoordinator {
                     rootView: BreakOverlayView(
                         mode: mode,
                         controller: controller,
-                        settings: settings
+                        settings: settings,
+                        backgroundImage: backgroundProvider.image(for: screen)
                     )
                 )
+                panel.alphaValue = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? 1 : 0
                 panel.setFrame(screen.frame, display: true)
                 panels[displayID] = panel
             }
@@ -112,5 +145,28 @@ final class OverlayCoordinator {
     private static func displayID(for screen: NSScreen) -> CGDirectDisplayID? {
         let key = NSDeviceDescriptionKey("NSScreenNumber")
         return (screen.deviceDescription[key] as? NSNumber)?.uint32Value
+    }
+
+    private func fadeInPanelsIfNeeded() {
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { return }
+        for panel in panels.values where panel.alphaValue < 1 {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.6
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                panel.animator().alphaValue = 1
+            }
+        }
+    }
+
+    private static func close(_ panel: BreakPanel) {
+        panel.orderOut(nil)
+        panel.contentView = nil
+        panel.close()
+    }
+
+    private func closeFadingPanels() {
+        let panelsToClose = Array(fadingPanels.values)
+        fadingPanels.removeAll()
+        panelsToClose.forEach(Self.close)
     }
 }

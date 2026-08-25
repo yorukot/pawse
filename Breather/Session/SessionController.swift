@@ -76,6 +76,20 @@ final class SessionController {
 
     var currentMode: SessionMode { state.selectedOrCurrentMode }
 
+    var upcomingBreakSummary: UpcomingBreakSummary {
+        let focusSessionsUntilLongBreak = max(
+            0,
+            settings.shortBreaksBeforeLongBreak + 1 - settings.focusCycleCount
+        )
+        let nextMode: SessionMode = focusSessionsUntilLongBreak <= 1 ? .longBreak : .shortBreak
+        return UpcomingBreakSummary(
+            nextMode: nextMode,
+            nextDuration: settings.duration(for: nextMode),
+            focusSessionsUntilLongBreak: focusSessionsUntilLongBreak,
+            longBreakDuration: settings.duration(for: .longBreak)
+        )
+    }
+
     var isFocusRunningOrPaused: Bool {
         switch state {
         case .running(let session): session.mode == .focus
@@ -192,7 +206,7 @@ final class SessionController {
 
     func cancelPendingBreak() {
         guard case .breakPending = state else { return }
-        cleanupBreakEnvironment()
+        cleanupBreakEnvironment(animated: false)
         state = .idle(selectedMode: .focus)
         refreshNow()
     }
@@ -213,7 +227,7 @@ final class SessionController {
         let now = clock.now
         isEmergencyExitConfirmationPresented = false
         finalize(session, outcome: .emergencyExit, endedAt: now, activeDuration: session.activeDuration(at: now))
-        cleanupBreakEnvironment()
+        cleanupBreakEnvironment(animated: false)
         state = .idle(selectedMode: .focus)
         nowSnapshot = now
     }
@@ -241,9 +255,9 @@ final class SessionController {
         }
     }
 
-    func cleanupBreakEnvironment() {
+    func cleanupBreakEnvironment(animated: Bool = true) {
         scheduler.cancel()
-        breakEnvironment.cleanup()
+        breakEnvironment.cleanup(animated: animated)
         soundPlayer.stopAll()
         entryActivityBaseline = nil
         isEmergencyExitConfirmationPresented = false
@@ -259,12 +273,12 @@ final class SessionController {
                 endedAt: now,
                 activeDuration: session.activeDuration(at: now)
             )
-            cleanupBreakEnvironment()
+            cleanupBreakEnvironment(animated: false)
             lastError = "Breather could not keep every display covered. The break was canceled for safety."
             state = .idle(selectedMode: .focus)
             nowSnapshot = now
         case .breakEntering:
-            cleanupBreakEnvironment()
+            cleanupBreakEnvironment(animated: false)
             lastError = "Breather could not keep every display covered. The break was canceled for safety."
             state = .idle(selectedMode: .focus)
             refreshNow()
@@ -284,7 +298,7 @@ final class SessionController {
         default:
             break
         }
-        cleanupBreakEnvironment()
+        cleanupBreakEnvironment(animated: false)
         state = .idle(selectedMode: .focus)
         nowSnapshot = now
     }
@@ -359,7 +373,7 @@ final class SessionController {
             )
             state = .breakPending(pending)
             nowSnapshot = now
-            breakEnvironment.showReminder(for: breakMode)
+            breakEnvironment.showReminder(for: pending)
             playSound(.breakReady(breakMode))
             schedule(every: 0.25)
         } else {
@@ -423,7 +437,7 @@ final class SessionController {
             plannedDuration: entry.plannedDuration
         )
         state = .breakPending(pending)
-        breakEnvironment.showReminder(for: pending.mode)
+        breakEnvironment.showReminder(for: pending)
         refreshNow()
         schedule(every: 0.25)
     }
@@ -454,7 +468,7 @@ final class SessionController {
     }
 
     private func handleOverlayFailure() {
-        cleanupBreakEnvironment()
+        cleanupBreakEnvironment(animated: false)
         lastError = "Breather could not cover every display. The break was canceled for safety."
         state = .idle(selectedMode: .focus)
         refreshNow()

@@ -3,7 +3,6 @@ import SwiftUI
 
 struct MenuBarView: View {
     let model: AppModel
-    @Environment(\.openSettings) private var openSettings
     @Environment(\.openWindow) private var openWindow
 
     private var controller: SessionController { model.controller }
@@ -13,6 +12,8 @@ struct MenuBarView: View {
 
         VStack(alignment: .leading, spacing: 12) {
             stateContent
+            Divider()
+            upNextContent
             Divider()
             commonActions
         }
@@ -151,17 +152,32 @@ struct MenuBarView: View {
 
     private var commonActions: some View {
         Group {
-            Button("Analytics…") {
-                openWindow(id: "analytics")
-                NSApp.activate(ignoringOtherApps: true)
-            }
-            Button("Settings…") {
-                openSettings()
+            Button("Open Breather…") {
+                openWindow(id: "breather")
                 NSApp.activate(ignoringOtherApps: true)
             }
             Divider()
             Button("Quit Breather") { NSApp.terminate(nil) }
         }
+    }
+
+    private var upNextContent: some View {
+        let summary = controller.upcomingBreakSummary
+        return VStack(alignment: .leading, spacing: 6) {
+            Label("Up Next", systemImage: "forward.end")
+                .font(.subheadline.weight(.semibold))
+            Text("Next: \(summary.nextMode.displayName) · \(DurationFormatter.concise(summary.nextDuration))")
+            if summary.focusSessionsUntilLongBreak == 0 {
+                Text("Long Break is ready · \(DurationFormatter.concise(summary.longBreakDuration))")
+            } else {
+                Text(
+                    "Long Break in \(summary.focusSessionsUntilLongBreak) Focus \(summary.focusSessionsUntilLongBreak == 1 ? "session" : "sessions") · \(DurationFormatter.concise(summary.longBreakDuration))"
+                )
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .accessibilityElement(children: .combine)
     }
 
     private func timerText(_ duration: TimeInterval) -> some View {
