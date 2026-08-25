@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Download Pawse for macOS</title>
+  <meta name="description" content="Download Pawse 0.1.0 for macOS 14 or later, or make an optional donation to support its open-source development.">
+  <meta name="author" content="Pawse contributors">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#FFF5E3">
+  <link rel="canonical" href="https://yorukot.github.io/pawse/download.html">
+  <link rel="icon" type="image/png" href="Pawse/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pawse">
+  <meta property="og:title" content="Download Pawse for macOS">
+  <meta property="og:description" content="Pawse is free and open source. Download it now or support its continued development.">
+  <meta property="og:url" content="https://yorukot.github.io/pawse/download.html">
+  <meta property="og:image" content="https://yorukot.github.io/pawse/docs/assets/pawse-hero.png">
+  <meta property="og:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Download Pawse for macOS">
+  <meta name="twitter:description" content="Download Pawse free or support its open-source development.">
+  <meta name="twitter:image" content="https://yorukot.github.io/pawse/docs/assets/pawse-hero.png">
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #0d2b6d;
+      --cream: #fff5e3;
+      --pumpkin: #ff7a17;
+      --mountain: #9cc9d9;
+      --page: #fffaf2;
+      --surface: #ffffff;
+      --text: #142a55;
+      --muted: #5b6a80;
+      --line: #d8e1e3;
+      --shadow: rgba(13, 43, 109, 0.13);
+      --content: 920px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--page);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: inherit; text-underline-offset: 0.2em; }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--pumpkin);
+      outline-offset: 4px;
+    }
+
+    .shell {
+      width: min(calc(100% - 40px), var(--content));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .navigation {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .back-link {
+      color: var(--muted);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding-block: 70px;
+    }
+
+    .download-panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 24px 70px var(--shadow);
+    }
+
+    .panel-content {
+      padding: 58px 58px 48px;
+      text-align: center;
+    }
+
+    .app-logo {
+      width: 92px;
+      height: 92px;
+      margin: 0 auto 18px;
+      object-fit: contain;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(40px, 7vw, 58px);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .intro {
+      max-width: 620px;
+      margin: 0 auto 38px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      text-align: left;
+    }
+
+    .choice {
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--page);
+      text-decoration: none;
+    }
+
+    .choice:hover {
+      border-color: var(--mountain);
+    }
+
+    .choice-title {
+      margin-bottom: 8px;
+      font-size: 26px;
+      font-weight: 760;
+      letter-spacing: -0.025em;
+    }
+
+    .choice-copy {
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .choice-action {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .details {
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .landscape {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      object-position: center bottom;
+      border-top: 1px solid var(--line);
+      background: var(--cream);
+    }
+
+    .site-footer {
+      padding-block: 26px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 18px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #10151c;
+        --surface: #181f29;
+        --text: #fff5e3;
+        --muted: #b8c5d4;
+        --line: #344152;
+        --shadow: rgba(0, 0, 0, 0.32);
+      }
+
+      .choice { background: #121923; }
+    }
+
+    @media (max-width: 650px) {
+      .shell { width: min(calc(100% - 24px), var(--content)); }
+      main { padding-block: 32px; }
+      .panel-content { padding: 38px 20px 34px; }
+      .choices { grid-template-columns: 1fr; }
+      .choice { min-height: 175px; }
+      .landscape { height: 105px; }
+      .footer-content { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <nav class="navigation shell" aria-label="Download navigation">
+      <a class="brand" href="index.html" aria-label="Pawse home">
+        <img src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" alt="">
+        <span>Pawse</span>
+      </a>
+      <a class="back-link" href="index.html">Back to Pawse</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="download-panel shell" aria-labelledby="download-title">
+      <div class="panel-content">
+        <img class="app-logo" src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" alt="Pawse sleeping white shepherd logo">
+        <h1 id="download-title">Get Pawse</h1>
+        <p class="intro">Pawse is free and open source. Choose either option — the app is exactly the same.</p>
+
+        <div class="choices">
+          <a class="choice" href="https://ko-fi.com/yorukot" target="_blank" rel="noopener noreferrer">
+            <span class="choice-title">Donate</span>
+            <span class="choice-copy">Support continued development, testing, and future releases through Ko-fi.</span>
+            <span class="choice-action">Donate on Ko-fi</span>
+          </a>
+
+          <a class="choice" href="https://github.com/yorukot/pawse/releases/download/v0.1.0/Pawse-0.1.0.dmg">
+            <span class="choice-title">Download now</span>
+            <span class="choice-copy">Download Pawse 0.1.0 directly. No donation, account, or email required.</span>
+            <span class="choice-action">Download DMG</span>
+          </a>
+        </div>
+
+        <p class="details">Requires macOS 14 or later. Version 0.1.0 is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing Open.</p>
+      </div>
+
+      <img class="landscape" src="Pawse/Resources/Assets.xcassets/PawseBanner.imageset/PawseBanner.png" alt="" width="1400" height="560">
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content shell">
+      <span>© 2026 Pawse contributors · MIT License</span>
+      <div class="footer-links">
+        <a href="https://github.com/yorukot/pawse">GitHub</a>
+        <a href="https://github.com/yorukot/pawse/releases/tag/v0.1.0">Release notes</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

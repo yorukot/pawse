@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yorukot.github.io/pawse/sitemap.xml

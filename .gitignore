@@ -37,3 +37,7 @@ dist/
 *~
 .idea/
 .vscode/
+
+# Local browser validation artifacts
+.playwright-cli/
+output/playwright/
