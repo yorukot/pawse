@@ -22,6 +22,27 @@ struct SettingsView: View {
                 }
             }
             .tabItem { Label("Cycle", systemImage: "repeat") }
+
+            Form {
+                Section("Break Behavior") {
+                    Toggle("Wait for Natural Break", isOn: $settings.waitForNaturalBreak)
+                    Text("When a Focus session ends, wait until you stop using the keyboard and mouse before starting the break.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Picker("Idle Before Break", selection: $settings.idleBeforeBreak) {
+                        ForEach([2.0, 3.0, 5.0, 10.0, 15.0, 30.0], id: \.self) { seconds in
+                            Text("\(Int(seconds)) seconds").tag(seconds)
+                        }
+                    }
+                    Stepper(
+                        "Break Entry Grace Period: \(Int(settings.breakEntryGracePeriod)) seconds",
+                        value: $settings.breakEntryGracePeriod,
+                        in: 1...10,
+                        step: 1
+                    )
+                }
+            }
+            .tabItem { Label("Breaks", systemImage: "hand.raised") }
         }
         .formStyle(.grouped)
         .frame(width: 580, height: 420)

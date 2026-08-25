@@ -7,20 +7,27 @@ final class AppModel {
     let settings: SettingsStore
     let controller: SessionController
     let analyticsRecorder: InMemorySessionRecorder
+    let breakEnvironment: BreakEnvironmentCoordinator
 
     init(defaults: UserDefaults = .standard) {
         let settings = SettingsStore(defaults: defaults)
         let analyticsRecorder = InMemorySessionRecorder()
+        let breakEnvironment = BreakEnvironmentCoordinator()
         self.settings = settings
         self.analyticsRecorder = analyticsRecorder
-        controller = SessionController(
+        self.breakEnvironment = breakEnvironment
+        let controller = SessionController(
             settings: settings,
             clock: SystemSessionClock(),
             scheduler: TaskRepeatingScheduler(),
-            activityMonitor: DormantUserActivityMonitor(),
+            activityMonitor: SystemUserActivityMonitor(),
             soundPlayer: NoOpSoundPlayer(),
             analyticsRecorder: analyticsRecorder,
-            breakEnvironment: NoOpBreakEnvironment()
+            breakEnvironment: breakEnvironment
         )
+        self.controller = controller
+        breakEnvironment.onStartBreak = { [weak controller] in
+            controller?.startPendingBreakNow()
+        }
     }
 }
