@@ -52,11 +52,20 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             // the image data itself is readable. The bookmark only needs the
             // name metadata, and a non-scoped bookmark is a safe fallback for
             // locations that do not vend security-scoped URLs.
-            let bookmark = (try? url.bookmarkData(
+            let bookmark: Data
+            if let scopedBookmark = try? url.bookmarkData(
                 options: .withSecurityScope,
                 includingResourceValuesForKeys: [.nameKey],
                 relativeTo: nil
-            )) ?? url.bookmarkData(options: [], includingResourceValuesForKeys: [.nameKey], relativeTo: nil)
+            ) {
+                bookmark = scopedBookmark
+            } else {
+                bookmark = try url.bookmarkData(
+                    options: [],
+                    includingResourceValuesForKeys: [.nameKey],
+                    relativeTo: nil
+                )
+            }
             settings.setCustomBreakImage(bookmark: bookmark, fileName: url.lastPathComponent)
             customImageCache = image
             wallpaperCache.removeAll()
