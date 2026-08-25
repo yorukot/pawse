@@ -48,11 +48,15 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             guard let image = Self.loadImage(at: url) else {
                 throw BreakBackgroundError.invalidImage
             }
-            let bookmark = try url.bookmarkData(
+            // Some file providers cannot provide contentTypeKey even though
+            // the image data itself is readable. The bookmark only needs the
+            // name metadata, and a non-scoped bookmark is a safe fallback for
+            // locations that do not vend security-scoped URLs.
+            let bookmark = (try? url.bookmarkData(
                 options: .withSecurityScope,
-                includingResourceValuesForKeys: [.nameKey, .contentTypeKey],
+                includingResourceValuesForKeys: [.nameKey],
                 relativeTo: nil
-            )
+            )) ?? url.bookmarkData(options: [], includingResourceValuesForKeys: [.nameKey], relativeTo: nil)
             settings.setCustomBreakImage(bookmark: bookmark, fileName: url.lastPathComponent)
             customImageCache = image
             wallpaperCache.removeAll()
@@ -125,7 +129,7 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             if isStale {
                 let refreshedBookmark = try url.bookmarkData(
                     options: .withSecurityScope,
-                    includingResourceValuesForKeys: [.nameKey, .contentTypeKey],
+                    includingResourceValuesForKeys: [.nameKey],
                     relativeTo: nil
                 )
                 settings.setCustomBreakImage(bookmark: refreshedBookmark, fileName: url.lastPathComponent)
