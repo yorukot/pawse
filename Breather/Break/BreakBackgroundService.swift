@@ -1,12 +1,14 @@
 import AppKit
 import CoreGraphics
 import Foundation
+import ImageIO
 import Observation
 import UniformTypeIdentifiers
 
 enum BreakBackgroundMode: String, CaseIterable, Identifiable, Codable, Sendable {
     case systemWallpaper
     case customImage
+    case solidColor
 
     var id: Self { self }
 
@@ -14,6 +16,7 @@ enum BreakBackgroundMode: String, CaseIterable, Identifiable, Codable, Sendable 
         switch self {
         case .systemWallpaper: "Desktop Wallpaper"
         case .customImage: "Custom Image"
+        case .solidColor: "Solid Color"
         }
     }
 }
@@ -48,29 +51,34 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             guard let image = Self.loadImage(at: url) else {
                 throw BreakBackgroundError.invalidImage
             }
-            // Some file providers cannot provide contentTypeKey even though
-            // the image data itself is readable. The bookmark only needs the
-            // name metadata, and a non-scoped bookmark is a safe fallback for
-            // locations that do not vend security-scoped URLs.
-            let bookmark: Data
-            if let scopedBookmark = try? url.bookmarkData(
-                options: .withSecurityScope,
-                includingResourceValuesForKeys: [.nameKey],
-                relativeTo: nil
-            ) {
-                bookmark = scopedBookmark
-            } else {
-                bookmark = try url.bookmarkData(
-                    options: [],
-                    includingResourceValuesForKeys: [.nameKey],
-                    relativeTo: nil
-                )
-            }
+            let bookmark = try Self.readOnlyBookmark(for: url)
             settings.setCustomBreakImage(bookmark: bookmark, fileName: url.lastPathComponent)
             customImageCache = image
             wallpaperCache.removeAll()
         } catch {
-            errorMessage = "Breather could not use that image. Choose a readable image file."
+            errorMessage = "Breather could not use or remember access to that image. Choose it again."
+        }
+    }
+
+    func selectWallpaperFolder(at url: URL) {
+        errorMessage = nil
+        let hasAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if hasAccess { url.stopAccessingSecurityScopedResource() }
+        }
+
+        do {
+            guard Self.isDirectory(url) else {
+                throw BreakBackgroundError.invalidFolder
+            }
+            let bookmark = try Self.readOnlyBookmark(for: url)
+            settings.setSystemWallpaperFolder(
+                bookmark: bookmark,
+                folderName: url.lastPathComponent
+            )
+            resetCache()
+        } catch {
+            errorMessage = "Breather could not remember access to that folder. Choose it again."
         }
     }
 
@@ -80,8 +88,20 @@ final class BreakBackgroundService: BreakBackgroundProviding {
         resetCache()
     }
 
+    func useSolidColor() {
+        settings.breakBackgroundMode = .solidColor
+        errorMessage = nil
+        resetCache()
+    }
+
     func removeCustomImage() {
         settings.clearCustomBreakImage()
+        errorMessage = nil
+        resetCache()
+    }
+
+    func removeWallpaperFolder() {
+        settings.clearSystemWallpaperFolder()
         errorMessage = nil
         resetCache()
     }
@@ -93,6 +113,8 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             return wallpaperImage(for: screen)
         case .customImage:
             return customImage()
+        case .solidColor:
+            return nil
         }
     }
 
@@ -104,11 +126,58 @@ final class BreakBackgroundService: BreakBackgroundProviding {
     private func wallpaperImage(for screen: NSScreen) -> NSImage? {
         guard let displayID = Self.displayID(for: screen) else { return nil }
         if let cached = wallpaperCache[displayID] { return cached }
-        guard let url = NSWorkspace.shared.desktopImageURL(for: screen),
-            let image = Self.loadImage(at: url) else {
-            errorMessage = "The desktop wallpaper could not be loaded. Breaks will use a dark background."
+
+        guard let url = NSWorkspace.shared.desktopImageURL(for: screen) else {
+            errorMessage = "macOS did not provide a desktop wallpaper. Breaks will use a dark background."
             return nil
         }
+
+        if let image = Self.loadImage(at: url) {
+            wallpaperCache[displayID] = image
+            return image
+        }
+
+        guard let bookmark = settings.systemWallpaperFolderBookmark else {
+            errorMessage = Self.wallpaperFailureMessage(for: url, hasFolderAccess: false)
+            return nil
+        }
+
+        let resolvedFolder: ResolvedBookmark
+        do {
+            resolvedFolder = try Self.resolveScopedBookmark(bookmark)
+        } catch {
+            errorMessage = "Wallpaper folder access is no longer available. Choose the folder again in Appearance."
+            return nil
+        }
+
+        let hasAccess = resolvedFolder.url.startAccessingSecurityScopedResource()
+        defer {
+            if hasAccess { resolvedFolder.url.stopAccessingSecurityScopedResource() }
+        }
+
+        guard Self.isDescendant(url, of: resolvedFolder.url) else {
+            errorMessage = "The current wallpaper is outside the authorized folder. Change Wallpaper Folder in Appearance."
+            return nil
+        }
+
+        guard let image = Self.loadImage(at: url) else {
+            errorMessage = Self.wallpaperFailureMessage(for: url, hasFolderAccess: true)
+            return nil
+        }
+
+        if resolvedFolder.isStale {
+            do {
+                let refreshedBookmark = try Self.readOnlyBookmark(for: resolvedFolder.url)
+                settings.setSystemWallpaperFolder(
+                    bookmark: refreshedBookmark,
+                    folderName: resolvedFolder.url.lastPathComponent
+                )
+            } catch {
+                errorMessage = "Wallpaper folder access could not be refreshed. Choose the folder again in Appearance."
+                return nil
+            }
+        }
+
         wallpaperCache[displayID] = image
         return image
     }
@@ -120,11 +189,46 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             return nil
         }
 
+        let resolved: ResolvedBookmark
+        do {
+            resolved = try Self.resolveScopedBookmark(bookmark)
+        } catch {
+            return migrateLegacyCustomImage(bookmark)
+        }
+
+        let hasAccess = resolved.url.startAccessingSecurityScopedResource()
+        defer {
+            if hasAccess { resolved.url.stopAccessingSecurityScopedResource() }
+        }
+
+        guard let image = Self.loadImage(at: resolved.url) else {
+            errorMessage = "The selected break image is no longer available. Choose it again in Appearance."
+            return nil
+        }
+
+        if resolved.isStale {
+            do {
+                let refreshedBookmark = try Self.readOnlyBookmark(for: resolved.url)
+                settings.setCustomBreakImage(
+                    bookmark: refreshedBookmark,
+                    fileName: resolved.url.lastPathComponent
+                )
+            } catch {
+                errorMessage = "Access to the selected break image could not be refreshed. Choose it again in Appearance."
+                return nil
+            }
+        }
+
+        customImageCache = image
+        return image
+    }
+
+    private func migrateLegacyCustomImage(_ bookmark: Data) -> NSImage? {
         var isStale = false
         do {
             let url = try URL(
                 resolvingBookmarkData: bookmark,
-                options: .withSecurityScope,
+                options: [],
                 relativeTo: nil,
                 bookmarkDataIsStale: &isStale
             )
@@ -132,17 +236,15 @@ final class BreakBackgroundService: BreakBackgroundProviding {
             defer {
                 if hasAccess { url.stopAccessingSecurityScopedResource() }
             }
+
             guard let image = Self.loadImage(at: url) else {
                 throw BreakBackgroundError.invalidImage
             }
-            if isStale {
-                let refreshedBookmark = try url.bookmarkData(
-                    options: .withSecurityScope,
-                    includingResourceValuesForKeys: [.nameKey],
-                    relativeTo: nil
-                )
-                settings.setCustomBreakImage(bookmark: refreshedBookmark, fileName: url.lastPathComponent)
-            }
+            let migratedBookmark = try Self.readOnlyBookmark(for: url)
+            settings.setCustomBreakImage(
+                bookmark: migratedBookmark,
+                fileName: url.lastPathComponent
+            )
             customImageCache = image
             return image
         } catch {
@@ -154,6 +256,25 @@ final class BreakBackgroundService: BreakBackgroundProviding {
     private static func displayID(for screen: NSScreen) -> CGDirectDisplayID? {
         let key = NSDeviceDescriptionKey("NSScreenNumber")
         return (screen.deviceDescription[key] as? NSNumber)?.uint32Value
+    }
+
+    private static func readOnlyBookmark(for url: URL) throws -> Data {
+        try url.bookmarkData(
+            options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
+            includingResourceValuesForKeys: [.nameKey],
+            relativeTo: nil
+        )
+    }
+
+    private static func resolveScopedBookmark(_ bookmark: Data) throws -> ResolvedBookmark {
+        var isStale = false
+        let url = try URL(
+            resolvingBookmarkData: bookmark,
+            options: .withSecurityScope,
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        )
+        return ResolvedBookmark(url: url, isStale: isStale)
     }
 
     private static func loadImage(at url: URL) -> NSImage? {
@@ -180,19 +301,40 @@ final class BreakBackgroundService: BreakBackgroundProviding {
         }
 
         for candidateURL in candidateURLs {
-            if let image = NSImage(contentsOf: candidateURL), image.isValid {
-                return image
+            guard let data = try? Data(contentsOf: candidateURL) else { continue }
+
+            // Decode into an in-memory CGImage while any security scope is
+            // active. An NSImage initialized from a file URL may read lazily
+            // after the scope has already been released.
+            if let source = CGImageSourceCreateWithData(data as CFData, nil),
+               let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) {
+                return NSImage(
+                    cgImage: cgImage,
+                    size: NSSize(width: cgImage.width, height: cgImage.height)
+                )
             }
 
-            // NSImage(contentsOf:) handles most formats, while the data path
-            // is useful for a few image representations on older macOS builds.
-            if let data = try? Data(contentsOf: candidateURL),
-               let image = NSImage(data: data),
-               image.isValid {
+            if let image = NSImage(data: data), image.isValid {
                 return image
             }
         }
         return nil
+    }
+
+    private static func isDescendant(_ candidate: URL, of folder: URL) -> Bool {
+        let candidateComponents = candidate.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        let folderComponents = folder.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        return candidateComponents.starts(with: folderComponents)
+    }
+
+    private static func wallpaperFailureMessage(for url: URL, hasFolderAccess: Bool) -> String {
+        if ["mov", "mp4", "m4v"].contains(url.pathExtension.lowercased()) {
+            return "Video-only desktop wallpapers are not supported. Breaks will use a dark background."
+        }
+        if hasFolderAccess {
+            return "The desktop wallpaper could not be loaded as an image. Breaks will use a dark background."
+        }
+        return "Breather needs access to the folder containing this wallpaper. Choose Wallpaper Folder in Appearance."
     }
 
     private static func isDirectory(_ url: URL) -> Bool {
@@ -214,4 +356,10 @@ final class BreakBackgroundService: BreakBackgroundProviding {
 
 private enum BreakBackgroundError: Error {
     case invalidImage
+    case invalidFolder
+}
+
+private struct ResolvedBookmark {
+    let url: URL
+    let isStale: Bool
 }

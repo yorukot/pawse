@@ -105,7 +105,7 @@ The deterministic XCTest suite uses fake clocks, activity samples, sounds, overl
 
 ## Break backgrounds
 
-Break overlays use the current wallpaper for each display by default. Appearance settings can instead store a read-only, security-scoped bookmark to an image selected with the native file picker. The image is loaded locally, fills each display, and receives a dark scrim so the break content remains legible. If a wallpaper or selected image becomes unreadable, Breather falls back to a near-black background and keeps Emergency Exit available.
+Break overlays use the current wallpaper for each display by default. If that wallpaper is outside the app sandbox, Appearance settings can store a read-only, security-scoped bookmark to its containing folder after the user explicitly grants access. Appearance can instead use a user-selected custom image or a permission-free Solid Color background. Images are decoded locally, fill each display, and receive a dark scrim so the break content remains legible. If a wallpaper or selected image becomes unreadable, Breather falls back to a near-black background and keeps Emergency Exit available.
 
 ## Privacy
 
@@ -135,6 +135,7 @@ Breather’s source code and project-owned visual assets are available under the
 
 - macOS controls how third-party panels participate in Spaces and full-screen application Spaces. Breather uses only documented `NSPanel` levels and collection behaviors and cannot guarantee behavior beyond those public APIs.
 - Available system sounds vary by macOS installation; unavailable sounds are omitted and missing playback fails safely.
-- Wallpaper URLs and custom-image bookmarks can become unavailable after a wallpaper is removed or a file is moved; the break safely falls back to a dark background until a new image is chosen.
+- Wallpaper-folder and custom-image bookmarks can become unavailable after a folder or file is moved; the break safely falls back to a dark background until access is granted again.
+- Video-only dynamic wallpapers are not rendered by the break overlay; choose Solid Color or a still image when macOS exposes the current wallpaper only as a video.
 - Launch at Login may require approval in System Settings and is most reliable for a properly signed app installed in Applications.
 - Breather is a self-discipline utility, not a security boundary. A user can still forcibly terminate it with macOS tools such as Activity Monitor.

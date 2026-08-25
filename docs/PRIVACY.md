@@ -6,7 +6,8 @@ Breather is designed to work entirely on the user’s Mac.
 
 - Timer, cycle, sound, appearance, and launch preferences in UserDefaults
 - Finalized session history in SwiftData
-- A security-scoped bookmark when the user explicitly selects a custom break image
+- A read-only security-scoped bookmark when the user explicitly selects a custom break image
+- A read-only security-scoped bookmark when the user explicitly grants access to a wallpaper folder
 
 Session records contain the session mode, origin, outcome, start and end times, planned duration, active duration, and optional scheduled-break time and cycle position.
 
@@ -22,7 +23,7 @@ Breather does not collect or persist:
 - Window titles
 - Websites or URLs
 - Screen captures or screen contents
-- File contents, except a user-selected break image loaded locally for display
+- File contents, except a user-selected break image or a wallpaper inside an explicitly authorized folder loaded locally for display
 - Location, accounts, or device fingerprints
 
 Natural-break detection does not require Accessibility or Input Monitoring permission.
@@ -33,7 +34,7 @@ Breather contains no telemetry, advertising, crash-reporting, or remote-analytic
 
 ## User Control
 
-Analytics can be cleared from Breather’s Privacy settings without resetting preferences or interrupting the current session. A custom break image can be removed at any time. Uninstalling the app and deleting its sandbox container removes its local data.
+Analytics can be cleared from Breather’s Privacy settings without resetting preferences or interrupting the current session. A custom break image or wallpaper-folder authorization can be removed at any time. Selecting Solid Color retains those authorizations for later use; resetting settings clears them. Uninstalling the app and deleting its sandbox container removes its local data.
 
 ## Contributor Requirements
 

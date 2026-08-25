@@ -13,4 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Natural stopping-point detection with Break Pending and Break Entering states.
 - Branded Break Soon HUD and multi-display break overlays.
 - Local SwiftData analytics, native settings, sounds, and configurable backgrounds.
+- Solid Color break backgrounds and explicit wallpaper-folder authorization.
 - Sleeping-cat application identity and native macOS design guidelines.
+
+### Fixed
+
+- Persist custom break images with read-only security-scoped bookmarks and migrate readable legacy bookmarks.

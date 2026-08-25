@@ -28,6 +28,8 @@ final class ExperienceTests: XCTestCase {
         XCTAssertTrue(settings.automaticallyStartNextFocus)
         XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
+        XCTAssertNil(settings.customBreakImageBookmark)
+        XCTAssertNil(settings.systemWallpaperFolderBookmark)
     }
 
     func testLegacyMinuteDurationsMigrateToSeconds() {
@@ -80,15 +82,43 @@ final class ExperienceTests: XCTestCase {
 
         var settings = SettingsStore(defaults: defaults)
         settings.setCustomBreakImage(bookmark: Data([1, 2, 3]), fileName: "Rest.jpg")
+        settings.setSystemWallpaperFolder(bookmark: Data([4, 5, 6]), folderName: "Wallpapers")
 
         settings = SettingsStore(defaults: defaults)
         XCTAssertEqual(settings.breakBackgroundMode, .customImage)
         XCTAssertEqual(settings.customBreakImageName, "Rest.jpg")
         XCTAssertEqual(settings.customBreakImageBookmark, Data([1, 2, 3]))
+        XCTAssertEqual(settings.systemWallpaperFolderName, "Wallpapers")
+        XCTAssertEqual(settings.systemWallpaperFolderBookmark, Data([4, 5, 6]))
 
         settings.resetToDefaults()
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
         XCTAssertNil(settings.customBreakImageName)
+        XCTAssertNil(settings.customBreakImageBookmark)
+        XCTAssertNil(settings.systemWallpaperFolderName)
+        XCTAssertNil(settings.systemWallpaperFolderBookmark)
+    }
+
+    func testSolidColorPreservesSavedBackgroundAccessUntilExplicitReset() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.setCustomBreakImage(bookmark: Data([1, 2, 3]), fileName: "Rest.jpg")
+        settings.setSystemWallpaperFolder(bookmark: Data([4, 5, 6]), folderName: "Wallpapers")
+        settings.breakBackgroundMode = .solidColor
+
+        XCTAssertEqual(settings.breakBackgroundMode, .solidColor)
+        XCTAssertEqual(settings.customBreakImageBookmark, Data([1, 2, 3]))
+        XCTAssertEqual(settings.systemWallpaperFolderBookmark, Data([4, 5, 6]))
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertEqual(settings.breakBackgroundMode, .solidColor)
+        XCTAssertEqual(settings.customBreakImageName, "Rest.jpg")
+        XCTAssertEqual(settings.systemWallpaperFolderName, "Wallpapers")
+
+        settings.clearCustomBreakImage()
+        XCTAssertEqual(settings.breakBackgroundMode, .solidColor)
         XCTAssertNil(settings.customBreakImageBookmark)
     }
 

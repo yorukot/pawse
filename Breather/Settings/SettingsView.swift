@@ -53,6 +53,7 @@ struct BreatherWindowView: View {
     @State private var confirmsSettingsReset = false
     @State private var confirmsAnalyticsClear = false
     @State private var isChoosingBreakImage = false
+    @State private var isChoosingWallpaperFolder = false
 
     var body: some View {
         Group {
@@ -107,6 +108,15 @@ struct BreatherWindowView: View {
         ) { result in
             if case .success(let urls) = result, let url = urls.first {
                 breakBackgroundService.selectCustomImage(at: url)
+            }
+        }
+        .fileImporter(
+            isPresented: $isChoosingWallpaperFolder,
+            allowedContentTypes: [.folder],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                breakBackgroundService.selectWallpaperFolder(at: url)
             }
         }
     }
@@ -308,12 +318,31 @@ struct BreatherWindowView: View {
                                     settings.breakBackgroundMode = .customImage
                                     breakBackgroundService.resetCache()
                                 }
+                            case .solidColor:
+                                breakBackgroundService.useSolidColor()
                             }
                         }
                     )
                 ) {
                     ForEach(BreakBackgroundMode.allCases) { mode in
                         Text(mode.displayName).tag(mode)
+                    }
+                }
+                LabeledContent("Wallpaper Folder") {
+                    HStack {
+                        if let name = settings.systemWallpaperFolderName {
+                            Text(name)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        Button(settings.systemWallpaperFolderName == nil ? "Choose…" : "Change…") {
+                            isChoosingWallpaperFolder = true
+                        }
+                        if settings.systemWallpaperFolderName != nil {
+                            Button("Remove", role: .destructive) {
+                                breakBackgroundService.removeWallpaperFolder()
+                            }
+                        }
                     }
                 }
                 LabeledContent("Custom Image") {
@@ -354,7 +383,9 @@ struct BreatherWindowView: View {
                 Toggle("Show Countdown During Break", isOn: $settings.showCountdownDuringBreak)
                 Toggle("Show Progress in Menu Bar Ring", isOn: $settings.showSessionProgressInMenuBar)
             }
-            Text("Images fill each display and receive a dark scrim for legibility. Breather follows Reduce Motion automatically.")
+            Text(
+                "Wallpaper folder access is only needed when the current wallpaper is outside Breather's sandbox. Images fill each display and receive a dark scrim for legibility. Solid Color uses a plain dark background."
+            )
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -389,6 +420,7 @@ struct BreatherWindowView: View {
             Section("Local and Private") {
                 Text("Breather stores settings and session history locally on this Mac.")
                 Text("Breather does not collect telemetry or send analytics to a server.")
+                Text("Custom images and authorized wallpaper folders use read-only bookmarks. Images are loaded locally and never uploaded.")
             }
             Section("Natural Break") {
                 Text("Breather checks how long the Mac has been idle so it can start breaks at a natural stopping point.")

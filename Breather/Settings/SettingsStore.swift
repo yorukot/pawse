@@ -27,6 +27,8 @@ final class SettingsStore {
         static let breakBackgroundMode = "breakBackgroundMode"
         static let customBreakImageBookmark = "customBreakImageBookmark"
         static let customBreakImageName = "customBreakImageName"
+        static let systemWallpaperFolderBookmark = "systemWallpaperFolderBookmark"
+        static let systemWallpaperFolderName = "systemWallpaperFolderName"
         static let focusCycleCount = "focusCycleCount"
     }
 
@@ -117,6 +119,12 @@ final class SettingsStore {
     private(set) var customBreakImageName: String? = nil {
         didSet { persistOptional(Key.customBreakImageName, customBreakImageName) }
     }
+    private(set) var systemWallpaperFolderBookmark: Data? = nil {
+        didSet { persistOptional(Key.systemWallpaperFolderBookmark, systemWallpaperFolderBookmark) }
+    }
+    private(set) var systemWallpaperFolderName: String? = nil {
+        didSet { persistOptional(Key.systemWallpaperFolderName, systemWallpaperFolderName) }
+    }
     var focusCycleCount = 0 {
         didSet {
             guard focusCycleCount >= 0 else {
@@ -156,7 +164,19 @@ final class SettingsStore {
     func clearCustomBreakImage() {
         customBreakImageBookmark = nil
         customBreakImageName = nil
-        breakBackgroundMode = .systemWallpaper
+        if breakBackgroundMode == .customImage {
+            breakBackgroundMode = .systemWallpaper
+        }
+    }
+
+    func setSystemWallpaperFolder(bookmark: Data, folderName: String) {
+        systemWallpaperFolderBookmark = bookmark
+        systemWallpaperFolderName = folderName
+    }
+
+    func clearSystemWallpaperFolder() {
+        systemWallpaperFolderBookmark = nil
+        systemWallpaperFolderName = nil
     }
 
     func resetToDefaults() {
@@ -178,6 +198,8 @@ final class SettingsStore {
         showSessionProgressInMenuBar = true
         menuBarIconStyle = .sleepingCat
         clearCustomBreakImage()
+        clearSystemWallpaperFolder()
+        breakBackgroundMode = .systemWallpaper
     }
 
     private func load() {
@@ -205,6 +227,8 @@ final class SettingsStore {
         ) ?? .systemWallpaper
         customBreakImageBookmark = defaults.data(forKey: Key.customBreakImageBookmark)
         customBreakImageName = defaults.string(forKey: Key.customBreakImageName)
+        systemWallpaperFolderBookmark = defaults.data(forKey: Key.systemWallpaperFolderBookmark)
+        systemWallpaperFolderName = defaults.string(forKey: Key.systemWallpaperFolderName)
         focusCycleCount = defaults.integer(forKey: Key.focusCycleCount)
     }
 
