@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AnalyticsView: View {
     @Bindable var store: AnalyticsStore
+    let persistenceNotice: String?
     @State private var selectedRange: AnalyticsDateRange = .last7Days
     @State private var confirmsClear = false
 
@@ -47,8 +48,8 @@ struct AnalyticsView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            if let errorMessage = store.errorMessage {
-                Text(errorMessage)
+            if let message = store.errorMessage ?? persistenceNotice {
+                Text(message)
                     .font(.caption)
                     .foregroundStyle(.red)
                     .padding(8)

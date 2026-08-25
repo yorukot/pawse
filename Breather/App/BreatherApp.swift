@@ -24,7 +24,10 @@ struct BreatherApp: App {
         }
 
         Window("Analytics", id: "analytics") {
-            AnalyticsView(store: model.analyticsStore)
+            AnalyticsView(
+                store: model.analyticsStore,
+                persistenceNotice: model.analyticsPersistenceNotice
+            )
                 .modelContainer(model.modelContainer)
         }
         .defaultSize(width: 760, height: 560)

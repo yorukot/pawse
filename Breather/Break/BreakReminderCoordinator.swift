@@ -8,6 +8,9 @@ final class BreakReminderCoordinator: NSObject {
     private var panel: BreakReminderPanel?
     private var isMonitoringScreens = false
 
+    var isVisible: Bool { panel?.isVisible == true }
+    var isKeyWindow: Bool { panel?.isKeyWindow == true }
+
     func show(for mode: SessionMode) {
         if let panel {
             panel.contentView = hostingView(for: mode)

@@ -59,8 +59,9 @@ enum AnalyticsAggregator {
     ) -> AnalyticsMetrics {
         let startDate = range.startDate(now: now, calendar: calendar)
         let filtered = records.filter { record in
+            guard record.startedAt <= now else { return false }
             guard let startDate else { return true }
-            return record.startedAt >= startDate && record.startedAt <= now
+            return record.startedAt >= startDate
         }
         let focusRecords = filtered.filter { $0.mode == .focus }
         let shortBreakRecords = filtered.filter { $0.mode == .shortBreak }
