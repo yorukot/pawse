@@ -6,6 +6,8 @@ import SwiftUI
 struct PawseApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = AppModel()
+    @AppStorage(PawseWindowSection.storageKey)
+    private var selectedSection = PawseWindowSection.timers
 
     var body: some Scene {
         MenuBarExtra {
@@ -19,6 +21,7 @@ struct PawseApp: App {
 
         Window("Pawse", id: "pawse") {
             PawseWindowView(
+                selectedSection: $selectedSection,
                 settings: model.settings,
                 soundService: model.soundService,
                 launchAtLoginService: model.launchAtLoginService,
@@ -35,10 +38,27 @@ struct PawseApp: App {
         .defaultSize(width: 920, height: 650)
         .windowResizability(.contentMinSize)
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                OpenAboutPawseCommand(selectedSection: $selectedSection)
+                    .environment(\.locale, model.languageStore.locale)
+            }
             CommandGroup(replacing: .appSettings) {
                 OpenPawseCommand()
                     .environment(\.locale, model.languageStore.locale)
             }
+        }
+    }
+}
+
+private struct OpenAboutPawseCommand: View {
+    @Binding var selectedSection: PawseWindowSection
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Button("About Pawse") {
+            selectedSection = .about
+            openWindow(id: "pawse")
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 }

@@ -6,7 +6,7 @@
   <p><strong>A macOS focus timer that waits for a natural stopping point before starting your break.</strong></p>
 
   <p>
-    <a href="https://ko-fi.com/yorukot"><strong>Support Pawse</strong></a>
+    <a href="https://yorukot.me/donate"><strong>Support Pawse</strong></a>
     · <a href="https://pawse.yorukot.me/download/">Download for macOS</a>
     · <a href="https://pawse.yorukot.me/">Website</a>
     · <a href="CONTRIBUTING.md">Contribute</a>

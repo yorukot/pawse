@@ -2,6 +2,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum PawseWindowSection: String, CaseIterable, Identifiable {
+    static let storageKey = "pawseWindowSection"
+
     case analytics
     case timers
     case cycle
@@ -10,6 +12,7 @@ enum PawseWindowSection: String, CaseIterable, Identifiable {
     case appearance
     case general
     case privacy
+    case about
 
     var id: Self { self }
 
@@ -23,6 +26,7 @@ enum PawseWindowSection: String, CaseIterable, Identifiable {
         case .appearance: "Appearance"
         case .general: "General"
         case .privacy: "Privacy"
+        case .about: "About"
         }
     }
 
@@ -36,11 +40,13 @@ enum PawseWindowSection: String, CaseIterable, Identifiable {
         case .appearance: "photo"
         case .general: "gearshape"
         case .privacy: "lock.shield"
+        case .about: "info.circle"
         }
     }
 }
 
 struct PawseWindowView: View {
+    @Binding var selectedSection: PawseWindowSection
     @Bindable var settings: SettingsStore
     @Bindable var soundService: SoundService
     @Bindable var launchAtLoginService: LaunchAtLoginService
@@ -53,7 +59,6 @@ struct PawseWindowView: View {
 
     @Environment(\.locale) private var locale
 
-    @AppStorage("pawseWindowSection") private var selectedSection = PawseWindowSection.timers
     @State private var confirmsCycleReset = false
     @State private var confirmsSettingsReset = false
     @State private var confirmsAnalyticsClear = false
@@ -152,6 +157,27 @@ struct PawseWindowView: View {
                     .tag(section)
                 }
                 .listStyle(.sidebar)
+
+                Divider()
+                    .padding(.horizontal, 12)
+
+                Link(destination: PawseLinks.donate) {
+                    HStack(spacing: 8) {
+                        Label("Donate", systemImage: "heart")
+
+                        Spacer(minLength: 0)
+
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
             .navigationSplitViewColumnWidth(
                 min: PawseTheme.Metrics.sidebarMinimumWidth,
@@ -214,6 +240,7 @@ struct PawseWindowView: View {
         case .appearance: appearanceSettings
         case .general: generalSettings
         case .privacy: privacySettings
+        case .about: AboutView()
         }
     }
 

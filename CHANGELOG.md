@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Added a localized About page with live version and build information, author and project links, and matching sidebar and macOS App menu entry points.
+- Added a standalone Donate action to the Pawse sidebar.
+
+### Changed
+
+- Routed donation links in Pawse, the product website, README, and GitHub Sponsors through `https://yorukot.me/donate`.
+
 ## [0.1.1] - 2026-08-25
 
 ### Changed
