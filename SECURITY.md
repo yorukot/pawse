@@ -6,7 +6,7 @@ Security fixes are applied to the latest public release and the current `main` b
 
 ## Reporting a Vulnerability
 
-Please report suspected vulnerabilities privately to `hi@yorukot.me` with the subject `Breather security report`.
+Please report suspected vulnerabilities privately to `hi@yorukot.me` with the subject `Pawse security report`.
 
 Include, when possible:
 
@@ -22,6 +22,6 @@ You should receive an acknowledgment within seven days. After validation, the ma
 
 ## Security Scope
 
-Breather is a self-discipline utility, not a security boundary. A user can intentionally terminate it through macOS system tools. Reports about bypassing a break by force-quitting the app are therefore out of scope.
+Pawse is a self-discipline utility, not a security boundary. A user can intentionally terminate it through macOS system tools. Reports about bypassing a break by force-quitting the app are therefore out of scope.
 
 Privacy regressions, unsafe presentation-option cleanup, unintended file access, and ways the app could leave overlays or system UI in a broken state are in scope.

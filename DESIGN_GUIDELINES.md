@@ -1,6 +1,6 @@
-# Breather Design Guidelines
+# Pawse Design Guidelines
 
-Breather should feel like a considerate macOS companion: calm while the user is focused, clear when rest is ready, and never punitive. The sleeping white spitz represents permission to pause rather than an alarm demanding attention.
+Pawse should feel like a considerate macOS companion: calm while the user is focused, clear when rest is ready, and never punitive. The sleeping white spitz represents permission to pause rather than an alarm demanding attention.
 
 ## Principles
 
@@ -12,7 +12,7 @@ Breather should feel like a considerate macOS companion: calm while the user is 
 
 ## Brand Assets
 
-`BreatherLogo` is the sleeping dog head resting on its paws. `BreatherHUDMascot` is a wider crop of the same pose. `BreatherBanner` is a calm mountain-and-lake background with no baked-in character; the UI places the separate logo and typography over it.
+`PawseLogo` and `PawseHUDMascot` use the same head-only sleeping puppy master. `PawseBanner` is a calm mountain-and-lake background with no baked-in character; the UI places the separate logo and typography over it.
 
 - Show the logo at no less than 36 pt; 44 pt is the standard reminder size.
 - Preserve its aspect ratio and transparent background. Do not crop, recolor, stretch, rotate, or place text over it.
@@ -20,9 +20,11 @@ Breather should feel like a considerate macOS companion: calm while the user is 
 - Use the banner only where a wide illustrative surface is appropriate, such as the Timers introduction. Use a 12 pt continuous corner radius. Never place a second mascot, text, or logo directly inside the banner bitmap.
 - Keep the menu-bar mark monochrome and template-compatible. It is a dog head only: use the dedicated simplified side-profile template asset when the dog style is selected; never add a body or tail, and never shrink the full-color illustration into the status item. Keep either center mark legible inside the progress ring.
 
-The dog is one fixed character across every surface: white fluffy spitz coat, two triangular upright ears, a visibly forward-projecting canine muzzle, prominent black rounded-triangle nose, closed curved eyes, deep-navy outlines, sparse cream fur marks, and pumpkin-orange inner-ear accents. The full-color mark shows only the head and two resting paws. Do not change the breed, ear shape, muzzle length, nose color, line weight, or rendering technique between assets. Use flat comic shapes only—never realistic fur, gradients, glow, or 3D shading.
+The dog is one fixed animated character across every full-color surface: a rounded cream-white puppy or gentle wolf-pup head, one upright triangular ear, one relaxed ear, a short canine muzzle, a prominent navy oval nose, closed curved eyes, a small content smile, deep-navy outlines, pumpkin-orange inner-ear accents, and one orange `Z`. The full-color mark is head-only. It never includes paws, a torso, realistic fur, whiskers, or scenery. Keep the shapes broad and smooth enough to read at 24 pt.
 
-The silhouette must read as a dog before decoration is added. Never use a flat round feline muzzle, orange or pink nose, whiskers, curled tail, or a circular sleeping-body pose. At menu-bar size, prefer the long-muzzled side profile over facial details.
+Treat the brand mark like a frame from a simple 2D animation, not a pet portrait: bold silhouette, cel-like flat shapes, minimal internal detail, friendly asymmetry, and no hair-by-hair rendering. Do not change the ear arrangement, muzzle, nose, line weight, or rendering technique between the Logo, HUD mascot, and App Icon.
+
+The silhouette must read as a dog before decoration is added. Never use a feline muzzle, tiny cat nose, whiskers, curled tail, resting paws, or a circular sleeping-body pose. At menu-bar size, continue using the dedicated monochrome side-profile asset rather than shrinking the full-color character.
 
 ## Color
 
@@ -67,7 +69,7 @@ The HUD is one large pointer target with one purpose: start the scheduled break.
 
 ### Waiting (0–15 seconds)
 
-- 58 × 38 pt horizontal sleeping-dog mascot.
+- 44 × 44 pt head-only sleeping-dog mascot.
 - “Break soon” or “Long break soon,” plus “Click to start.”
 - A native play symbol on the trailing edge.
 - A thin neutral border and a pumpkin progress bar.

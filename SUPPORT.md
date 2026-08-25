@@ -1,6 +1,6 @@
 # Support
 
-Breather is maintained as an open-source project.
+Pawse is maintained as an open-source project.
 
 - Use a **Bug Report** issue for reproducible incorrect behavior.
 - Use a **Feature Request** issue for a proposed improvement.
@@ -14,4 +14,4 @@ make clean
 make build
 ```
 
-When reporting a problem, include the Breather version or commit, macOS version, expected behavior, actual behavior, and concise reproduction steps. Remove private information from logs and screenshots.
+When reporting a problem, include the Pawse version or commit, macOS version, expected behavior, actual behavior, and concise reproduction steps. Remove private information from logs and screenshots.

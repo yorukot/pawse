@@ -1,16 +1,16 @@
 name: Bug report
-description: Report reproducible incorrect behavior in Breather.
+description: Report reproducible incorrect behavior in Pawse.
 title: "[Bug]: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve Breather. For security vulnerabilities, stop here and follow SECURITY.md instead.
+        Thanks for helping improve Pawse. For security vulnerabilities, stop here and follow SECURITY.md instead.
 
   - type: input
     id: version
     attributes:
-      label: Breather version
+      label: Pawse version
       description: Enter the release version or Git commit.
       placeholder: 1.0 (build 1) or d506a6f
     validations:

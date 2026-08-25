@@ -1,5 +1,5 @@
-PROJECT := Breather.xcodeproj
-SCHEME := Breather
+PROJECT := Pawse.xcodeproj
+SCHEME := Pawse
 DESTINATION := platform=macOS
 DERIVED_DATA ?= .build/DerivedData
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -destination '$(DESTINATION)' -derivedDataPath '$(DERIVED_DATA)'

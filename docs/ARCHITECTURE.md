@@ -1,6 +1,6 @@
 # Architecture
 
-Breather is a native SwiftUI menu-bar application with AppKit integration where macOS window behavior requires it. It targets macOS 14 and uses Swift 6 strict concurrency.
+Pawse is a native SwiftUI menu-bar application with AppKit integration where macOS window behavior requires it. It targets macOS 14 and uses Swift 6 strict concurrency.
 
 ## Design Goals
 
@@ -14,10 +14,10 @@ Breather is a native SwiftUI menu-bar application with AppKit integration where 
 
 ## Application Composition
 
-`BreatherApp` creates the menu-bar scene and unified Breather window. `AppModel` owns the long-lived services and wires their callbacks once during launch. `AppDelegate` applies accessory-app behavior and invokes termination cleanup.
+`PawseApp` creates the menu-bar scene and unified Pawse window. `AppModel` owns the long-lived services and wires their callbacks once during launch. `AppDelegate` applies accessory-app behavior and invokes termination cleanup.
 
 ```text
-BreatherApp
+PawseApp
 └── AppModel
     ├── SettingsStore
     ├── SessionController
@@ -85,7 +85,7 @@ No networking or remote telemetry layer exists.
 ## Source Layout
 
 ```text
-Breather/
+Pawse/
 ├── App/         App lifecycle, composition, and design tokens
 ├── Analytics/   SwiftData records, aggregation, chart, and table UI
 ├── Break/       Reminder, overlays, activity monitoring, and cleanup
@@ -95,7 +95,7 @@ Breather/
 ├── Settings/    Persisted settings and unified window UI
 └── Sound/       Native system-sound selection and playback
 
-BreatherTests/   Deterministic unit and AppKit infrastructure tests
+PawseTests/   Deterministic unit and AppKit infrastructure tests
 ```
 
 ## Testing Strategy

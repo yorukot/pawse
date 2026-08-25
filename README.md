@@ -1,142 +1,219 @@
-# Breather
+<div align="center">
+  <img src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" width="128" alt="Pawse sleeping dog logo">
+  <h1>Pawse</h1>
+  <p><strong>Focus deeply. Rest naturally.</strong></p>
+  <p>A native macOS focus timer that waits for a natural stopping point before starting your break.</p>
 
-Breather is a native macOS focus timer that waits for a natural stopping point before making you take a break.
+  <p>
+    <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-111111?logo=apple&logoColor=white">
+    <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white">
+    <img alt="SwiftUI and AppKit" src="https://img.shields.io/badge/UI-SwiftUI%20%2B%20AppKit-0A84FF">
+    <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-34C759"></a>
+  </p>
 
-It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather shows a compact **Break soon** HUD and waits until the Mac has been idle for two seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
+  <p>
+    <a href="#install-and-run">Install</a> ·
+    <a href="#features">Features</a> ·
+    <a href="#how-natural-breaks-work">Natural Breaks</a> ·
+    <a href="#privacy">Privacy</a> ·
+    <a href="CONTRIBUTING.md">Contributing</a>
+  </p>
+</div>
 
-Breather is open-source software released under the [MIT License](LICENSE). It has no third-party runtime dependencies, telemetry, or network service.
+<p align="center">
+  <img src="Pawse/Resources/Assets.xcassets/PawseBanner.imageset/PawseBanner.png" width="900" alt="Pawse mountain and lake banner">
+</p>
 
-## Project documentation
+Pawse lives quietly in the menu bar and guides you through Focus, Short Break, and Long Break sessions. Unlike a conventional Pomodoro timer, it does not immediately cover your screen when Focus reaches zero. It shows a compact **Break soon** reminder, then waits for a click or a brief period without keyboard and pointer activity.
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Design guidelines](DESIGN_GUIDELINES.md)
-- [Privacy](docs/PRIVACY.md)
-- [Contributing](CONTRIBUTING.md)
-- [Governance](GOVERNANCE.md)
-- [Security policy](SECURITY.md)
-- [Release process](docs/RELEASING.md)
-- [Changelog](CHANGELOG.md)
+Pawse is free and open source. Settings and session history remain on your Mac, there is no account, and the app makes no analytics or telemetry network requests.
 
-## Requirements
+## Why Pawse
 
-- macOS 14 or later
-- Xcode 26 or another Xcode release capable of building Swift 6 code for macOS 14
-- No third-party dependencies
+- **Breaks at a natural moment.** Finish the thought, sentence, or action already in progress before stepping away.
+- **Native from top to bottom.** SwiftUI, AppKit, SwiftData, Swift Charts, SF Symbols, native controls, and macOS materials—no WebView or cross-platform shell.
+- **Private by design.** Pawse checks only aggregate system idle time. It never records keys, pointer coordinates, app names, window titles, URLs, or screen contents.
+- **Safe to leave.** Every display includes an Emergency Exit, and one idempotent cleanup path restores overlays, sounds, Dock, menu bar, and prior presentation options.
+- **Open and dependency-light.** The full source, tests, design guidance, architecture, governance, and release process are included under the MIT License.
 
-## Features
+## Default rhythm
 
-- Native SwiftUI menu bar app with no normal Dock icon
-- Unified comic-style sleeping-dog-head app icon, HUD mascot, dog-head menu-bar mark, and mountain-lake banner
-- A documented native design system for calm branding, materials, motion, and accessibility in [`DESIGN_GUIDELINES.md`](DESIGN_GUIDELINES.md)
-- Focus, Short Break, and Long Break modes with absolute-deadline timers
-- Pause/resume for Focus with paused time excluded from analytics
-- Confirmation-gated switching from an active Focus session
-- Automatic two-Short-Break cycle with a configurable number of Short Breaks before each Long Break
-- Automatic Focus at launch, with optional automatic breaks and next Focus sessions
-- Paired **Skip Focus** and repeatable **Skip Next Break** actions with confirmation, per-Focus analytics, and cycle-aware behavior
-- Mode icon with a surrounding menu-bar progress ring that drains from full to empty, with no countdown text
-- Cycle-aware **Up Next** details for the next Break and the number of Focus sessions before the Long Break
-- Privacy-preserving natural-break detection using aggregate Core Graphics idle state
-- Non-activating, top-center native-material **Break soon** HUD with the sleeping-dog mascot and a 15-second attention indicator that becomes a warm brand pulse without forcing the break
-- Grace-period retreat when keyboard or pointer activity resumes during break entry
-- Full-screen native panels on every connected display, synchronized after display changes, with wallpaper or a user-selected image
-- Public AppKit fade transitions that automatically become immediate when Reduce Motion is enabled
-- In-overlay Emergency Exit confirmation on every display
-- Exact restoration of the app’s previous macOS presentation options
-- Native system sounds, runtime availability filtering, volume, and previews
-- Native sliders with discrete, readable values for timer, cycle, idle, grace-period, and volume settings
-- One native macOS sidebar window for Analytics, timers, cycle, break behavior, sounds, appearance, general settings, and privacy
-- Local SwiftData session history in the same window, with a Swift Charts daily Focus chart, recent-session Table, toolbar date ranges, and clear-history controls
-- Accessibility labels, monospaced countdowns, keyboard-accessible native controls, and no decorative continuous animation
+| Session | Default | What happens next |
+| --- | ---: | --- |
+| Focus | 25 minutes | Pawse offers a scheduled break at a natural stopping point. |
+| Short Break | 30 seconds | Focus starts again automatically. |
+| Long Break | 10 minutes | The cycle resets, then Focus starts again automatically. |
 
-## Natural stopping-point behavior
+A Long Break is scheduled after **2 completed Short Break cycles** by default. Durations, cycle length, automatic transitions, idle delay, and grace period are configurable in the native settings window.
 
-With **Automatically Start Breaks** and **Wait for Natural Break** enabled, a completed Focus follows this flow:
+## How natural breaks work
 
 ```text
 Focus completes
-→ Break Pending and “Break soon” HUD
-→ HUD click or configured idle threshold
-→ Break Entering grace period
-→ activity resumes: return to Break Pending
-→ no activity: commit the full-screen Break
+       ↓
+Break Pending — “Break soon” appears while you finish naturally
+       ↓ click, or 2 seconds idle by default
+Break Entering — a short grace period begins
+       ├─ input resumes → return to Break Pending
+       └─ no input      → commit the full-screen Break
 ```
 
-Pending time is neither Focus time nor Break time. A canceled entry attempt creates no Break record and the next attempt starts with the full configured duration. Ordinary input does not dismiss a committed Break.
+Pending time is neither Focus time nor Break time. If activity resumes during entry, Pawse removes the overlay and waits for a completely new idle interval. The next attempt starts with the full configured break duration. Once a Break is committed, ordinary input does not dismiss it; countdown completion or a confirmed Emergency Exit ends it.
 
-The HUD attention bar reaches full after 15 seconds and then changes to a warm pumpkin border and gentle sleeping-dog pulse. It never becomes an alarm or a forced timeout: continued keyboard or pointer activity can defer a scheduled break indefinitely. A click or the configured idle threshold can start Break Entry before the bar finishes. Reduce Motion keeps the ready treatment static.
+The reminder’s 15-second attention indicator fills **before** the Break begins. After it fills, the HUD becomes warmer and more noticeable, but it never forces a Break while you remain active. Reduce Motion replaces animated attention treatments with a calm static state.
 
-Manual Short and Long Breaks start immediately because selecting one is already an explicit request to rest.
+Manual Short and Long Breaks begin immediately because selecting one is already an explicit request to rest.
 
-## Build
+## Features
 
-```bash
-xcodebuild -list -project Breather.xcodeproj
+### Focus and cycle
 
-xcodebuild \
-  -project Breather.xcodeproj \
-  -scheme Breather \
-  -destination 'platform=macOS' \
-  build
-```
+- Absolute-deadline timers without counter drift
+- Focus pause/resume with paused time excluded from analytics
+- Confirmation before switching or interrupting an active Focus
+- Configurable Short/Long Break cycle and automatic next Focus
+- Cycle-aware estimates for the next Short Break and Long Break
+- Skip Focus and Skip Next Break actions with deterministic analytics and cycle behavior
 
-Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts Focus in the menu bar and does not open a normal window.
+### Break experience
 
-Use **Open Breather…** from the menu-bar popover, or press Command-comma, to open the unified Analytics and Settings window.
+- Non-activating, top-center **Break soon** HUD with the sleeping-dog mascot
+- Privacy-preserving natural-stop detection without Accessibility or Input Monitoring permission
+- Grace-period retreat when keyboard or pointer activity immediately resumes
+- Full-screen native panels across connected displays, synchronized as displays change
+- Current wallpaper, a user-selected image, or a solid-color break background
+- Fade transitions that automatically respect Reduce Motion
+- Persistent, keyboard-accessible Emergency Exit confirmation on every display
 
-For command-line development, the repository also provides these shortcuts:
+### Native macOS experience
+
+- Menu-bar-only operation with a sleeping-dog icon and progress ring—no countdown text in the menu bar
+- One native sidebar window for Analytics and all settings
+- Native sliders, pickers, toggles, tables, charts, materials, and accessibility behavior
+- Filtered macOS system sounds with preview and volume controls
+- Default sound profile: `Submarine` for session start and break completion, no Break Ready sound, 70% volume
+- Launch at Login through the public `SMAppService` API
+- English, Spanish, Japanese, Simplified Chinese, and Traditional Chinese interfaces
+
+### Local analytics
+
+- SwiftData history stored only on this Mac
+- Focused time with pauses excluded
+- Completed and interrupted Focus, Short Break, and Long Break totals
+- Emergency Exit counts and automatic-break deferral timing
+- Today, Last 7 Days, Last 30 Days, and All Time ranges
+- Swift Charts Focus-by-day visualization and a native recent-session table
+- Clear Analytics without resetting settings, cycle progress, or an active session
+
+## Install and run
+
+Pawse currently ships as a source-built macOS app. A signed and notarized public download has not been published yet.
+
+### Requirements
+
+- macOS 14 or later
+- Xcode with Swift 6 support and the macOS 14 SDK or later
+- Git
+
+Pawse has no third-party runtime or package dependencies.
+
+### Xcode
+
+1. Clone or download this repository.
+2. Open `Pawse.xcodeproj`.
+3. Select the **Pawse** scheme and **My Mac** destination.
+4. Press **Run**.
+
+Pawse appears in the menu bar and does not show a normal Dock icon. Use **Open Pawse…** from the menu-bar popover, or press Command-comma, to open the unified Analytics and Settings window.
+
+### Command line
 
 ```bash
 make build
-make test
-make release
+open .build/DerivedData/Build/Products/Debug/Pawse.app
 ```
 
-## Test
+Equivalent direct command:
 
 ```bash
 xcodebuild \
-  -project Breather.xcodeproj \
-  -scheme Breather \
+  -project Pawse.xcodeproj \
+  -scheme Pawse \
   -destination 'platform=macOS' \
-  test
+  -derivedDataPath .build/DerivedData \
+  build
 ```
 
-The deterministic XCTest suite uses fake clocks, activity samples, sounds, overlays, schedulers, and an in-memory SwiftData configuration. It covers session timing, pause accounting, mode switching, cycle semantics, natural-break retries, Emergency Exit, centralized cleanup, sound transitions, analytics persistence, aggregation, and date ranges.
+## Testing
 
-## Break backgrounds
+Run the complete deterministic XCTest suite:
 
-Break overlays use the current wallpaper for each display by default. If that wallpaper is outside the app sandbox, Appearance settings can store a read-only, security-scoped bookmark to its containing folder after the user explicitly grants access. Appearance can instead use a user-selected custom image or a permission-free Solid Color background. Images are decoded locally, fill each display, and receive a dark scrim so the break content remains legible. If a wallpaper or selected image becomes unreadable, Breather falls back to a near-black background and keeps Emergency Exit available.
+```bash
+make test
+```
+
+Run tests and repository whitespace checks together:
+
+```bash
+make verify
+```
+
+The suite uses fake clocks, schedulers, activity samples, sounds, overlays, and an in-memory SwiftData configuration. It covers timing, pause accounting, mode switching, cycle semantics, natural-break retries, sound transitions, Emergency Exit, cleanup idempotency, analytics persistence, aggregation, localization, assets, and menu-bar rendering.
+
+## Architecture
+
+| Area | Responsibility |
+| --- | --- |
+| `SessionController` | Session state machine, deadlines, pause/resume, cycle transitions, sounds, and analytics finalization |
+| `SettingsStore` | Centralized validated preferences backed by `UserDefaults` |
+| `UserActivityMonitor` | Aggregate Core Graphics idle and input counters while a Break is pending or entering |
+| `BreakReminderCoordinator` | Non-activating Break Soon panel lifecycle and display placement |
+| `OverlayCoordinator` | One full-screen native panel per connected display |
+| `BreakEnvironmentCoordinator` | Centralized and idempotent Break setup/cleanup |
+| `SoundService` | Runtime-filtered `NSSound` playback and previews |
+| `AnalyticsStore` / `AnalyticsAggregator` | Local SwiftData persistence and date-range metrics |
+
+See [Architecture](docs/ARCHITECTURE.md) for the state model, dependency boundaries, cleanup contract, and persistence design. UI changes should also follow the project’s [Design Guidelines](DESIGN_GUIDELINES.md).
 
 ## Privacy
 
-Breather stores settings and session history locally on this Mac.
+Pawse stores settings and session history locally on this Mac.
 
 It does not collect telemetry, send analytics to a server, inspect application contents, record keyboard input, or make network requests.
 
-Breather only checks aggregate system idle time and aggregate input counters to detect natural stopping points. It never retains individual input events, keys, keyboard shortcuts, pointer coordinates, application names, window titles, URLs, screen contents, files, location, account data, or device fingerprints. Natural-break detection does not require Accessibility or Input Monitoring permission.
+Pawse checks aggregate system idle time and aggregate input counters only while a scheduled Break is pending or entering. It never retains individual input events, keys, keyboard shortcuts, pointer coordinates, application names, window titles, URLs, screen contents, files, location, account data, or device fingerprints.
 
-## Analytics
+Natural-break detection does not require Accessibility or Input Monitoring permission. Wallpaper and custom-image access is granted explicitly by the user through standard macOS file access and stored as security-scoped bookmarks.
 
-Each completed or interrupted actual session produces one finalized local record. Focus records store active time with pauses excluded. Automatically scheduled breaks preserve both `scheduledAt` and actual `startedAt`, allowing Break Deferral to be calculated without storing activity events.
-
-Analytics supports Today, Last 7 Days, Last 30 Days, and All Time using the current local calendar and time zone. Clearing Analytics deletes finalized history only; it does not change settings, the Focus cycle, or a session currently in progress.
+Read the full [Privacy documentation](docs/PRIVACY.md).
 
 ## Contributing
 
-Bug reports, focused feature proposals, documentation improvements, and tested code contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Community participation follows the [Code of Conduct](CODE_OF_CONDUCT.md), and vulnerabilities must be reported privately according to [SECURITY.md](SECURITY.md).
+Bug reports, focused feature proposals, documentation improvements, translations, and tested code contributions are welcome.
 
-GitHub Actions builds and tests every proposed change on macOS. The same verification can be run locally with `make verify`.
+Before opening a pull request, read [CONTRIBUTING.md](CONTRIBUTING.md) and run `make verify`. Community participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Please report vulnerabilities privately according to the [Security Policy](SECURITY.md).
+
+### Project documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Design Guidelines](DESIGN_GUIDELINES.md)
+- [Privacy](docs/PRIVACY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Governance](GOVERNANCE.md)
+- [Security Policy](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Release Process](docs/RELEASING.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
-Breather’s source code and project-owned visual assets are available under the [MIT License](LICENSE), unless a file explicitly states otherwise.
+Pawse source code and project-owned visual assets are available under the [MIT License](LICENSE), unless a file explicitly states otherwise.
 
 ## Known limitations
 
-- macOS controls how third-party panels participate in Spaces and full-screen application Spaces. Breather uses only documented `NSPanel` levels and collection behaviors and cannot guarantee behavior beyond those public APIs.
-- Available system sounds vary by macOS installation; unavailable sounds are omitted and missing playback fails safely.
-- Wallpaper-folder and custom-image bookmarks can become unavailable after a folder or file is moved; the break safely falls back to a dark background until access is granted again.
-- Video-only dynamic wallpapers are not rendered by the break overlay; choose Solid Color or a still image when macOS exposes the current wallpaper only as a video.
-- Launch at Login may require approval in System Settings and is most reliable for a properly signed app installed in Applications.
-- Breather is a self-discipline utility, not a security boundary. A user can still forcibly terminate it with macOS tools such as Activity Monitor.
+- macOS controls how third-party panels participate in Spaces and full-screen application Spaces. Pawse uses only documented panel levels and collection behaviors.
+- Available system sounds vary by macOS installation; unavailable options are omitted and missing playback fails safely.
+- Wallpaper and custom-image bookmarks can become unavailable after a file or folder is moved. Pawse safely falls back to a dark background.
+- Video-only dynamic wallpapers are not rendered by the Break overlay; use a still image or Solid Color when needed.
+- Launch at Login may require approval in System Settings and is most reliable for a signed app installed in Applications.
+- Pawse is a self-discipline utility, not a security boundary. It can still be forcibly terminated with macOS tools such as Activity Monitor.

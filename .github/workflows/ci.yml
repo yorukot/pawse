@@ -27,4 +27,4 @@ jobs:
         run: xcodebuild -version
 
       - name: Build and test
-        run: make test DERIVED_DATA="$RUNNER_TEMP/BreatherDerivedData"
+        run: make test DERIVED_DATA="$RUNNER_TEMP/PawseDerivedData"

@@ -1,6 +1,6 @@
 # Privacy
 
-Breather is designed to work entirely on the user’s Mac.
+Pawse is designed to work entirely on the user’s Mac.
 
 ## Data Stored Locally
 
@@ -13,9 +13,9 @@ Session records contain the session mode, origin, outcome, start and end times, 
 
 ## Natural-Break Activity
 
-During Break Pending and Break Entering, Breather checks aggregate macOS idle duration and an aggregate input activity counter using public Core Graphics APIs. These values are used in memory to decide when to begin or cancel break entry.
+During Break Pending and Break Entering, Pawse checks aggregate macOS idle duration and an aggregate input activity counter using public Core Graphics APIs. These values are used in memory to decide when to begin or cancel break entry.
 
-Breather does not collect or persist:
+Pawse does not collect or persist:
 
 - Keys, keyboard shortcuts, or typed text
 - Pointer coordinates or individual mouse events
@@ -30,11 +30,11 @@ Natural-break detection does not require Accessibility or Input Monitoring permi
 
 ## Network Activity
 
-Breather contains no telemetry, advertising, crash-reporting, or remote-analytics SDK. It does not send session history or settings to a server. The application has no networking feature.
+Pawse contains no telemetry, advertising, crash-reporting, or remote-analytics SDK. It does not send session history or settings to a server. The application has no networking feature.
 
 ## User Control
 
-Analytics can be cleared from Breather’s Privacy settings without resetting preferences or interrupting the current session. A custom break image or wallpaper-folder authorization can be removed at any time. Selecting Solid Color retains those authorizations for later use; resetting settings clears them. Uninstalling the app and deleting its sandbox container removes its local data.
+Analytics can be cleared from Pawse’s Privacy settings without resetting preferences or interrupting the current session. A custom break image or wallpaper-folder authorization can be removed at any time. Selecting Solid Color retains those authorizations for later use; resetting settings clears them. Uninstalling the app and deleting its sandbox container removes its local data.
 
 ## Contributor Requirements
 

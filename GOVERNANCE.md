@@ -1,6 +1,6 @@
 # Governance
 
-Breather is currently a maintainer-led open-source project.
+Pawse is currently a maintainer-led open-source project.
 
 ## Decision Making
 

@@ -1,6 +1,6 @@
 # Code of Conduct
 
-Breather adopts the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+Pawse adopts the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
 ## Our Standard
 
@@ -18,7 +18,7 @@ Harassment, personal attacks, trolling, discriminatory language, sexualized beha
 
 ## Scope
 
-This standard applies in repository issues, pull requests, discussions, reviews, commit messages, and other official project spaces. It also applies when someone represents Breather in public.
+This standard applies in repository issues, pull requests, discussions, reviews, commit messages, and other official project spaces. It also applies when someone represents Pawse in public.
 
 ## Reporting and Enforcement
 

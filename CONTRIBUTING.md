@@ -1,6 +1,6 @@
-# Contributing to Breather
+# Contributing to Pawse
 
-Thank you for helping improve Breather. Contributions that preserve its native macOS behavior, privacy guarantees, and safe break cleanup are welcome.
+Thank you for helping improve Pawse. Contributions that preserve its native macOS behavior, privacy guarantees, and safe break cleanup are welcome.
 
 ## Before You Start
 
@@ -17,7 +17,7 @@ Participation in this project is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUC
 - Xcode with Swift 6 and the macOS 14 SDK or later
 - Git
 
-Breather has no third-party runtime dependencies. Clone the repository and open `Breather.xcodeproj`, or use the commands below.
+Pawse has no third-party runtime dependencies. Clone the repository and open `Pawse.xcodeproj`, or use the commands below.
 
 ```bash
 make build
