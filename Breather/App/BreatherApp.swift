@@ -14,7 +14,11 @@ struct BreatherApp: App {
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView(settings: model.settings)
+            SettingsView(
+                settings: model.settings,
+                soundService: model.soundService,
+                launchAtLoginService: model.launchAtLoginService
+            )
         }
 
         Window("Analytics", id: "analytics") {

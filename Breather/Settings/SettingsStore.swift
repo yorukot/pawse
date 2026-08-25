@@ -27,23 +27,82 @@ final class SettingsStore {
     private let defaults: UserDefaults
     private var isLoading = true
 
-    var focusMinutes = 25 { didSet { persist(Key.focusMinutes, clamped(focusMinutes, 1...180)) } }
-    var shortBreakMinutes = 5 { didSet { persist(Key.shortBreakMinutes, clamped(shortBreakMinutes, 1...60)) } }
-    var longBreakMinutes = 15 { didSet { persist(Key.longBreakMinutes, clamped(longBreakMinutes, 1...120)) } }
-    var longBreakEvery = 4 { didSet { persist(Key.longBreakEvery, clamped(longBreakEvery, 2...12)) } }
+    var focusMinutes = 25 {
+        didSet {
+            let validated = clamped(focusMinutes, 1...180)
+            guard validated == focusMinutes else { focusMinutes = validated; return }
+            persist(Key.focusMinutes, focusMinutes)
+        }
+    }
+    var shortBreakMinutes = 5 {
+        didSet {
+            let validated = clamped(shortBreakMinutes, 1...60)
+            guard validated == shortBreakMinutes else { shortBreakMinutes = validated; return }
+            persist(Key.shortBreakMinutes, shortBreakMinutes)
+        }
+    }
+    var longBreakMinutes = 15 {
+        didSet {
+            let validated = clamped(longBreakMinutes, 1...120)
+            guard validated == longBreakMinutes else { longBreakMinutes = validated; return }
+            persist(Key.longBreakMinutes, longBreakMinutes)
+        }
+    }
+    var longBreakEvery = 4 {
+        didSet {
+            let validated = clamped(longBreakEvery, 2...12)
+            guard validated == longBreakEvery else { longBreakEvery = validated; return }
+            persist(Key.longBreakEvery, longBreakEvery)
+        }
+    }
     var automaticallyStartBreaks = true { didSet { persist(Key.automaticallyStartBreaks, automaticallyStartBreaks) } }
     var automaticallyStartNextFocus = false { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
     var waitForNaturalBreak = true { didSet { persist(Key.waitForNaturalBreak, waitForNaturalBreak) } }
-    var idleBeforeBreak: TimeInterval = 5 { didSet { persist(Key.idleBeforeBreak, allowedIdleDelay(idleBeforeBreak)) } }
-    var breakEntryGracePeriod: TimeInterval = 3 { didSet { persist(Key.breakEntryGracePeriod, min(10, max(1, breakEntryGracePeriod))) } }
+    var idleBeforeBreak: TimeInterval = 5 {
+        didSet {
+            let validated = allowedIdleDelay(idleBeforeBreak)
+            guard validated == idleBeforeBreak else {
+                idleBeforeBreak = validated
+                return
+            }
+            persist(Key.idleBeforeBreak, idleBeforeBreak)
+        }
+    }
+    var breakEntryGracePeriod: TimeInterval = 3 {
+        didSet {
+            let validated = min(10, max(1, breakEntryGracePeriod))
+            guard validated == breakEntryGracePeriod else {
+                breakEntryGracePeriod = validated
+                return
+            }
+            persist(Key.breakEntryGracePeriod, breakEntryGracePeriod)
+        }
+    }
     var enableSounds = true { didSet { persist(Key.enableSounds, enableSounds) } }
     var sessionStartSound = "None" { didSet { persist(Key.sessionStartSound, sessionStartSound) } }
     var breakReadySound = "Glass" { didSet { persist(Key.breakReadySound, breakReadySound) } }
     var breakCompleteSound = "Glass" { didSet { persist(Key.breakCompleteSound, breakCompleteSound) } }
-    var soundVolume = 0.7 { didSet { persist(Key.soundVolume, min(1, max(0, soundVolume))) } }
+    var soundVolume = 0.7 {
+        didSet {
+            let validated = min(1, max(0, soundVolume))
+            guard validated == soundVolume else {
+                soundVolume = validated
+                return
+            }
+            persist(Key.soundVolume, soundVolume)
+        }
+    }
     var showCountdownDuringBreak = true { didSet { persist(Key.showCountdownDuringBreak, showCountdownDuringBreak) } }
     var showSessionProgressInMenuBar = true { didSet { persist(Key.showSessionProgressInMenuBar, showSessionProgressInMenuBar) } }
-    var focusCycleCount = 0 { didSet { persist(Key.focusCycleCount, max(0, focusCycleCount)) } }
+    var focusCycleCount = 0 {
+        didSet {
+            guard focusCycleCount >= 0 else {
+                focusCycleCount = 0
+                return
+            }
+            persist(Key.focusCycleCount, focusCycleCount)
+        }
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

@@ -8,20 +8,25 @@ final class AppModel {
     let controller: SessionController
     let analyticsRecorder: InMemorySessionRecorder
     let breakEnvironment: BreakEnvironmentCoordinator
+    let soundService: SoundService
+    let launchAtLoginService: LaunchAtLoginService
 
     init(defaults: UserDefaults = .standard) {
         let settings = SettingsStore(defaults: defaults)
         let analyticsRecorder = InMemorySessionRecorder()
         let breakEnvironment = BreakEnvironmentCoordinator(settings: settings)
+        let soundService = SoundService(settings: settings)
         self.settings = settings
         self.analyticsRecorder = analyticsRecorder
         self.breakEnvironment = breakEnvironment
+        self.soundService = soundService
+        launchAtLoginService = LaunchAtLoginService()
         let controller = SessionController(
             settings: settings,
             clock: SystemSessionClock(),
             scheduler: TaskRepeatingScheduler(),
             activityMonitor: SystemUserActivityMonitor(),
-            soundPlayer: NoOpSoundPlayer(),
+            soundPlayer: soundService,
             analyticsRecorder: analyticsRecorder,
             breakEnvironment: breakEnvironment
         )
