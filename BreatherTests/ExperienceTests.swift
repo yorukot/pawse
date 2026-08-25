@@ -14,7 +14,7 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.shortBreakSeconds, 30)
         XCTAssertEqual(settings.longBreakMinutes, 10)
         XCTAssertEqual(settings.shortBreaksBeforeLongBreak, 2)
-        XCTAssertEqual(settings.idleBeforeBreak, 3)
+        XCTAssertEqual(settings.idleBeforeBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)

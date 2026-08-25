@@ -2,7 +2,7 @@
 
 Breather is a native macOS focus timer that waits for a natural stopping point before making you take a break.
 
-It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather shows a compact **Break soon** HUD and waits until the Mac has been idle for three seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
+It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather shows a compact **Break soon** HUD and waits until the Mac has been idle for two seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
 
 ## Requirements
 

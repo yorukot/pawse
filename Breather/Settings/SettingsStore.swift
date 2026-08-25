@@ -61,7 +61,7 @@ final class SettingsStore {
     var automaticallyStartBreaks = true { didSet { persist(Key.automaticallyStartBreaks, automaticallyStartBreaks) } }
     var automaticallyStartNextFocus = true { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
     var waitForNaturalBreak = true { didSet { persist(Key.waitForNaturalBreak, waitForNaturalBreak) } }
-    var idleBeforeBreak: TimeInterval = 3 {
+    var idleBeforeBreak: TimeInterval = 2 {
         didSet {
             let validated = allowedIdleDelay(idleBeforeBreak)
             guard validated == idleBeforeBreak else {
@@ -155,7 +155,7 @@ final class SettingsStore {
         automaticallyStartBreaks = true
         automaticallyStartNextFocus = true
         waitForNaturalBreak = true
-        idleBeforeBreak = 3
+        idleBeforeBreak = 2
         breakEntryGracePeriod = 3
         enableSounds = true
         sessionStartSound = "None"
@@ -223,7 +223,7 @@ final class SettingsStore {
         Key.automaticallyStartBreaks: true,
         Key.automaticallyStartNextFocus: true,
         Key.waitForNaturalBreak: true,
-        Key.idleBeforeBreak: 3.0,
+        Key.idleBeforeBreak: 2.0,
         Key.breakEntryGracePeriod: 3.0,
         Key.enableSounds: true,
         Key.sessionStartSound: "None",
