@@ -20,6 +20,7 @@ Every GitHub Release contains:
 
 - `Pawse-x.y.z.dmg` with a Universal (`arm64` and `x86_64`) macOS application, a branded drag-to-Applications Finder layout, and a custom mounted-volume icon.
 - `Pawse-x.y.z.dmg.sha256` for integrity verification.
+- `Pawse-x.y.z.release.json` with the version, compatibility, file size, download links, checksum, signing, and notarization status consumed by the website.
 - Notes extracted from the matching `CHANGELOG.md` section.
 
 Release builds require Xcode 26.6 and the macOS 26.5 SDK. This keeps Pawse's native controls aligned with the current macOS appearance while the macOS 14 deployment target preserves support for macOS 14 and 15. `make release-toolchain-check` fails early if either version differs.
@@ -96,7 +97,7 @@ git push origin main
 git push origin vX.Y.Z
 ```
 
-Pushing the tag starts `.github/workflows/release.yml`. It repeats metadata validation and the complete test suite, builds the Universal DMG, produces its checksum, and creates the GitHub Release. Never manually replace an artifact under an existing tag; publish a new patch and build number instead.
+Pushing the tag starts `.github/workflows/release.yml`. It repeats metadata validation and the complete test suite, builds the Universal DMG, produces its checksum and website metadata, and creates the GitHub Release. The successful release then redeploys GitHub Pages with that metadata as `release.json`, so version, size, links, checksum, and trust status have one release-owned source. Never manually replace an artifact under an existing tag; publish a new patch and build number instead.
 
 After the workflow succeeds:
 

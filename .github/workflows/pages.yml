@@ -6,6 +6,9 @@ on:
     paths:
       - "website/**"
       - ".github/workflows/pages.yml"
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -19,6 +22,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -29,9 +33,18 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Assemble static site
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p _site
           cp -R website/. _site/
+          metadata_url="$(
+            gh api "repos/$GITHUB_REPOSITORY/releases?per_page=20" \
+              --jq '[.[] | select(.draft == false) | .assets[] | select(.name | endswith(".release.json"))][0].browser_download_url // empty'
+          )"
+          if [[ -n "$metadata_url" ]]; then
+            curl --fail --location --silent --show-error "$metadata_url" --output _site/release.json
+          fi
           touch _site/.nojekyll
 
       - name: Configure GitHub Pages

@@ -3,20 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pawse — A Native macOS Focus Timer</title>
-  <meta name="description" content="Pawse is a private native macOS focus timer that waits for a natural stopping point before starting your break.">
-  <meta name="author" content="Pawse contributors">
+  <title>Pawse — A macOS focus timer that waits</title>
+  <meta name="description" content="Pawse is a private macOS focus timer that waits for a natural stopping point before starting your break.">
+  <meta name="author" content="Yorukot">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#FFF5E3">
+  <meta name="theme-color" content="#0D1219">
   <link rel="canonical" href="https://pawse.yorukot.me/">
   <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
   <link rel="preload" as="image" type="image/webp" href="assets/pawse-menu.webp">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/release.js" defer></script>
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Pawse">
-  <meta property="og:title" content="Pawse — Finish your thought. Then take the break.">
-  <meta property="og:description" content="A private native macOS focus timer that waits for a natural stopping point before starting your break.">
+  <meta property="og:title" content="The timer reaches zero. Pawse waits.">
+  <meta property="og:description" content="A private macOS focus timer that waits for a natural stopping point before starting your break.">
   <meta property="og:url" content="https://pawse.yorukot.me/">
   <meta property="og:image" content="https://pawse.yorukot.me/assets/pawse-hero.webp">
   <meta property="og:image:type" content="image/webp">
@@ -25,8 +27,8 @@
   <meta property="og:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Pawse — Finish your thought. Then take the break.">
-  <meta name="twitter:description" content="A native macOS focus timer that starts breaks at a natural stopping point.">
+  <meta name="twitter:title" content="The timer reaches zero. Pawse waits.">
+  <meta name="twitter:description" content="A macOS focus timer that starts breaks at a natural stopping point.">
   <meta name="twitter:image" content="https://pawse.yorukot.me/assets/pawse-hero.webp">
   <meta name="twitter:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
 
@@ -35,10 +37,9 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Pawse",
-    "description": "A private native macOS focus timer that waits for a natural stopping point before starting your break.",
+    "description": "A private macOS focus timer that waits for a natural stopping point before starting your break.",
     "url": "https://pawse.yorukot.me/",
     "downloadUrl": "https://pawse.yorukot.me/download/",
-    "softwareVersion": "0.1.1",
     "operatingSystem": "macOS 14 or later",
     "applicationCategory": "ProductivityApplication",
     "isAccessibleForFree": true,
@@ -52,614 +53,90 @@
     }
   }
   </script>
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Pawse",
-    "url": "https://pawse.yorukot.me/"
-  }
-  </script>
-
-  <style>
-    :root {
-      color-scheme: light dark;
-      --ink: #0d2b6d;
-      --cream: #fff5e3;
-      --pumpkin: #ff7a17;
-      --lake: #61cfd6;
-      --mountain: #9cc9d9;
-      --page: #fffaf2;
-      --surface: #ffffff;
-      --soft: #f3f0e9;
-      --text: #142a55;
-      --muted: #5b6a80;
-      --line: #d8e1e3;
-      --shadow: rgba(13, 43, 109, 0.13);
-      --content: 1080px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      background: var(--page);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-      font-size: 17px;
-      line-height: 1.55;
-      text-rendering: optimizeLegibility;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-    }
-
-    a { color: inherit; text-underline-offset: 0.2em; }
-
-    a:focus-visible {
-      outline: 3px solid var(--pumpkin);
-      outline-offset: 4px;
-    }
-
-    .shell {
-      width: min(calc(100% - 40px), var(--content));
-      margin-inline: auto;
-    }
-
-    .skip-link {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 20;
-      padding: 9px 13px;
-      border-radius: 8px;
-      background: var(--cream);
-      color: var(--ink);
-      transform: translateY(-160%);
-    }
-
-    .skip-link:focus-visible { transform: translateY(0); }
-
-    .site-header {
-      border-bottom: 1px solid var(--line);
-      background: var(--page);
-    }
-
-    .navigation {
-      min-height: 68px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 20px;
-      font-weight: 750;
-      text-decoration: none;
-    }
-
-    .brand img {
-      width: 38px;
-      height: 38px;
-      object-fit: contain;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 26px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .nav-links a { text-decoration: none; }
-    .nav-links a:hover { color: var(--text); }
-
-    .button {
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 19px;
-      border: 1px solid var(--ink);
-      border-radius: 9px;
-      background: var(--ink);
-      color: #ffffff;
-      font-weight: 700;
-      line-height: 1;
-      text-decoration: none;
-    }
-
-    .button-secondary {
-      background: transparent;
-      color: var(--ink);
-    }
-
-    .button-small {
-      min-height: 36px;
-      padding-inline: 14px;
-      font-size: 14px;
-    }
-
-    .hero {
-      min-height: 720px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
-      gap: 78px;
-      align-items: center;
-      padding-block: 74px;
-    }
-
-    .hero-mark {
-      width: 82px;
-      height: 82px;
-      margin-bottom: 24px;
-      object-fit: contain;
-    }
-
-    h1, h2, h3, p { margin-top: 0; }
-
-    h1 {
-      max-width: 620px;
-      margin-bottom: 20px;
-      font-size: clamp(46px, 6vw, 66px);
-      line-height: 1.02;
-      letter-spacing: -0.045em;
-    }
-
-    .hero-description {
-      max-width: 590px;
-      margin-bottom: 26px;
-      color: var(--muted);
-      font-size: 20px;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 11px;
-    }
-
-    .product-shot {
-      position: relative;
-      max-width: 390px;
-      margin-inline: auto;
-    }
-
-    .product-shot img {
-      width: 100%;
-      aspect-ratio: 640 / 966;
-      object-fit: contain;
-      border-radius: 25px;
-      box-shadow: 0 28px 70px var(--shadow);
-    }
-
-    .rhythm {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border-block: 1px solid var(--line);
-    }
-
-    .rhythm-item {
-      padding: 24px;
-      text-align: center;
-    }
-
-    .rhythm-item + .rhythm-item { border-left: 1px solid var(--line); }
-
-    .rhythm-value {
-      display: block;
-      font-size: 25px;
-      font-weight: 760;
-      letter-spacing: -0.02em;
-    }
-
-    .rhythm-label {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .section { padding-block: 108px; }
-
-    .natural-layout,
-    .native-layout,
-    .privacy-layout {
-      display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: 84px;
-      align-items: start;
-    }
-
-    h2 {
-      margin-bottom: 16px;
-      font-size: clamp(34px, 4.5vw, 50px);
-      line-height: 1.08;
-      letter-spacing: -0.04em;
-    }
-
-    .section-copy {
-      color: var(--muted);
-      font-size: 19px;
-    }
-
-    .flow {
-      margin: 0;
-      padding: 0;
-      border-top: 1px solid var(--line);
-      list-style: none;
-    }
-
-    .flow li {
-      display: grid;
-      grid-template-columns: 112px 1fr;
-      gap: 20px;
-      padding-block: 20px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .flow strong {
-      color: var(--text);
-      font-size: 15px;
-    }
-
-    .flow span { color: var(--muted); }
-
-    .wide-shot {
-      margin: 64px 0 0;
-    }
-
-    .reminder-shots {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 58px 0 0;
-    }
-
-    .reminder-shots img {
-      width: 100%;
-      aspect-ratio: 3 / 1;
-      object-fit: contain;
-      border-radius: 20px;
-      box-shadow: 0 18px 42px var(--shadow);
-    }
-
-    .reminder-shots + .wide-shot { margin-top: 28px; }
-
-    .wide-shot img {
-      width: 100%;
-      aspect-ratio: 3 / 2;
-      object-fit: contain;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: 0 24px 60px var(--shadow);
-    }
-
-    .native-section { background: var(--soft); }
-
-    .native-list {
-      margin: 28px 0 0;
-      padding: 0;
-      border-top: 1px solid var(--line);
-      list-style: none;
-    }
-
-    .native-list li {
-      padding: 14px 0;
-      border-bottom: 1px solid var(--line);
-      font-weight: 650;
-    }
-
-    .native-list li::before {
-      content: "✓";
-      margin-right: 10px;
-      color: var(--pumpkin);
-    }
-
-    .settings-shot { margin: 0; }
-
-    .settings-shot img {
-      width: 100%;
-      aspect-ratio: 1400 / 989;
-      object-fit: contain;
-      border: 1px solid #424b53;
-      border-radius: 16px;
-      box-shadow: 0 22px 55px var(--shadow);
-    }
-
-    .analytics-section { background: var(--page); }
-
-    .analytics-layout {
-      display: grid;
-      grid-template-columns: 0.72fr 1.28fr;
-      gap: 64px;
-      align-items: center;
-    }
-
-    .analytics-shot { margin: 0; }
-
-    .analytics-shot img {
-      width: 100%;
-      aspect-ratio: 1966 / 1418;
-      object-fit: contain;
-      border-radius: 18px;
-      box-shadow: 0 24px 60px var(--shadow);
-    }
-
-    .privacy-section {
-      background: var(--ink);
-      color: var(--cream);
-    }
-
-    .privacy-section h2 { color: var(--cream); }
-    .privacy-section .section-copy { color: #d7e3f1; }
-
-    .privacy-facts {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 30px;
-      margin: 0;
-      padding: 0;
-      border-top: 1px solid rgba(255, 245, 227, 0.24);
-      list-style: none;
-    }
-
-    .privacy-facts li {
-      padding: 16px 0;
-      border-bottom: 1px solid rgba(255, 245, 227, 0.24);
-    }
-
-    .closing {
-      padding-block: 92px;
-      text-align: center;
-    }
-
-    .closing-mark {
-      width: 68px;
-      height: 68px;
-      margin: 0 auto 16px;
-      object-fit: contain;
-    }
-
-    .closing h2 { margin-bottom: 12px; }
-
-    .site-footer {
-      padding-block: 28px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .footer-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-
-    .footer-content a { font-weight: 650; }
-    .footer-heart { color: var(--pumpkin); }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page: #10151c;
-        --surface: #181f29;
-        --soft: #171e27;
-        --text: #fff5e3;
-        --muted: #b8c5d4;
-        --line: #344152;
-        --shadow: rgba(0, 0, 0, 0.32);
-      }
-
-      .button-secondary {
-        color: var(--cream);
-        border-color: #8293ac;
-      }
-
-      .site-header { background: #10151c; }
-    }
-
-    @media (max-width: 840px) {
-      .hero {
-        min-height: auto;
-        grid-template-columns: 1fr;
-        gap: 60px;
-        padding-block: 60px 80px;
-      }
-
-      .hero-copy { text-align: center; }
-      .hero-mark { margin-inline: auto; }
-      h1, .hero-description { margin-inline: auto; }
-      .hero-actions { justify-content: center; }
-
-      .natural-layout,
-      .native-layout,
-      .analytics-layout,
-      .privacy-layout {
-        grid-template-columns: 1fr;
-        gap: 44px;
-      }
-
-      .section { padding-block: 78px; }
-    }
-
-    @media (max-width: 560px) {
-      .shell { width: min(calc(100% - 24px), var(--content)); }
-      .navigation { min-height: 62px; }
-      .nav-links a:not(.button) { display: none; }
-      h1 { font-size: 45px; }
-      .hero-actions { display: grid; }
-      .hero-actions .button { width: 100%; }
-      .product-shot { max-width: 330px; }
-      .rhythm,
-      .reminder-shots,
-      .privacy-facts {
-        grid-template-columns: 1fr;
-      }
-
-      .rhythm-item + .rhythm-item {
-        border-top: 1px solid var(--line);
-        border-left: 0;
-      }
-
-      .flow li {
-        grid-template-columns: 92px 1fr;
-        gap: 14px;
-      }
-
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-    }
-  </style>
 </head>
 
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="site-header">
-    <nav class="navigation shell" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Pawse home">
-        <img src="assets/pawse-logo.webp" alt="">
-        <span>Pawse</span>
-      </a>
-
-      <div class="nav-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="https://github.com/yorukot/pawse">GitHub</a>
-        <a class="button button-small" href="/download/">Download</a>
-      </div>
+  <header class="site-header site-shell">
+    <a class="brand" href="/" aria-label="Pawse home">
+      <img src="assets/pawse-logo.webp" width="64" height="64" alt="">
+      <span>Pawse</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="https://github.com/yorukot/pawse">Source</a>
+      <a href="/download/">Download</a>
     </nav>
   </header>
 
-  <main id="main-content">
-    <section class="hero shell" id="top" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <img class="hero-mark" src="assets/pawse-logo.webp" alt="Pawse sleeping white shepherd logo">
-        <h1 id="hero-title">Finish your thought. Then take the break.</h1>
-        <p class="hero-description">Pawse lives in your menu bar. When Focus ends, it waits for a natural stopping point before the break takes over your screen.</p>
-        <div class="hero-actions">
-          <a class="button" href="/download/">Download Pawse</a>
-          <a class="button button-secondary" href="https://github.com/yorukot/pawse">View source</a>
-        </div>
-      </div>
+  <main class="site-shell" id="main-content">
+    <article>
+      <section class="intro-layout" aria-labelledby="intro-title">
+        <figure class="menu-shot">
+          <img src="assets/pawse-menu.webp" width="640" height="966" alt="Pawse menu bar timer showing an active Focus session and upcoming breaks">
+        </figure>
 
-      <figure class="product-shot">
-        <img src="assets/pawse-menu.webp" width="640" height="966" alt="Pawse menu bar timer showing an active Focus session and upcoming breaks">
+        <header class="intro">
+          <h1 id="intro-title">The timer reaches zero.<br>Pawse waits.</h1>
+          <p>Finish the sentence, save the file, or complete the thought. Pawse starts your break when you naturally pause—not the instant your focus session ends.</p>
+          <p class="intro-links">
+            <a class="download-link" href="/download/">Download Pawse for macOS ↓</a>
+            <a href="https://github.com/yorukot/pawse">View the source</a>
+          </p>
+          <p class="release-line">
+            macOS <span data-release-text="minimumMacOS">14</span> or later ·
+            <span data-release-text="architectureLabel">Apple silicon and Intel</span> ·
+            No account ·
+            <span data-release-text="accessLabel">Early access</span>
+          </p>
+        </header>
+      </section>
+
+      <section class="note note-with-art working-note" aria-labelledby="why-title">
+        <div class="note-copy">
+          <h2 id="why-title">Why I made it.</h2>
+          <p>I tried a number of focus timers, but never found one that felt quite at home on the Mac or handled the end of a session the way I wanted. So I made a small one for myself.</p>
+          <p>Instead of interrupting the moment Focus ends, Pawse shows a quiet reminder and waits. Click it when you are ready, or pause the keyboard and pointer for a moment. If you immediately start working again, Pawse backs out and waits for the next pause.</p>
+        </div>
+        <img class="spot-art working-dog" src="assets/pawse-working-dog.webp" width="600" height="480" alt="A white shepherd quietly working beside a laptop">
+      </section>
+
+      <figure class="wide-figure reminder-pair" aria-label="Pawse reminder before and when a break is ready">
+        <img src="assets/pawse-break-soon.webp" width="672" height="224" alt="Pawse Long break soon reminder waiting quietly">
+        <img src="assets/pawse-break-ready.webp" width="672" height="224" alt="Pawse Long break ready reminder asking for attention">
       </figure>
-    </section>
 
-    <div class="rhythm shell" aria-label="Default session rhythm">
-      <div class="rhythm-item">
-        <span class="rhythm-value">25 min</span>
-        <span class="rhythm-label">Focus</span>
-      </div>
-      <div class="rhythm-item">
-        <span class="rhythm-value">30 sec</span>
-        <span class="rhythm-label">Short break</span>
-      </div>
-      <div class="rhythm-item">
-        <span class="rhythm-value">10 min</span>
-        <span class="rhythm-label">Long break after 2 cycles</span>
-      </div>
-    </div>
-
-    <section class="section shell" id="how-it-works" aria-labelledby="natural-title">
-      <div class="natural-layout">
-        <div>
-          <h2 id="natural-title">Zero does not have to interrupt you.</h2>
-          <p class="section-copy">Save the file. Finish the sentence. Pawse keeps the break ready without demanding your attention.</p>
+      <section class="note note-with-art stretch-note" aria-labelledby="break-title">
+        <div class="note-copy">
+          <h2 id="break-title">When you stop, it steps in.</h2>
+          <p>A break can use your wallpaper or an image you choose. It fills every display, keeps an Emergency Exit available, and cleans up when the break is over.</p>
         </div>
+        <img class="spot-art stretching-dog" src="assets/pawse-stretching-dog.webp" width="680" height="453" alt="A relaxed white shepherd stretching before a break">
+      </section>
 
-        <ol class="flow">
-          <li><strong>Focus ends</strong><span>Your focused time is recorded.</span></li>
-          <li><strong>Break soon</strong><span>A small reminder appears without stealing focus.</span></li>
-          <li><strong>You pause</strong><span>Click it, or briefly stop keyboard and pointer activity.</span></li>
-          <li><strong>Break starts</strong><span>If you resume right away, Pawse waits again.</span></li>
-        </ol>
-      </div>
-
-      <div class="reminder-shots" aria-label="Pawse break reminder states">
-        <img src="assets/pawse-break-soon.webp" width="672" height="224" alt="Pawse Long break soon reminder waiting to be clicked">
-        <img src="assets/pawse-break-ready.webp" width="672" height="224" alt="Pawse Long break ready reminder using orange to ask for attention">
-      </div>
-
-      <figure class="wide-shot">
+      <figure class="wide-figure">
         <img src="assets/pawse-break.webp" width="1800" height="1200" alt="Pawse full-screen Short Break over a mountain lake wallpaper with an Emergency Exit button">
       </figure>
-    </section>
 
-    <section class="section native-section" aria-labelledby="native-title">
-      <div class="native-layout shell">
-        <div>
-          <h2 id="native-title">Small when you work. Calm when you rest.</h2>
-          <p class="section-copy">Pawse uses the parts of macOS that already feel familiar. No browser dashboard or extra service in the cloud.</p>
-          <ul class="native-list">
-            <li>Native menu bar controls</li>
-            <li>Configurable focus and break cycle</li>
-            <li>Wallpaper or custom break image</li>
-            <li>Local session history</li>
-          </ul>
-        </div>
+      <section class="note" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Nothing leaves your Mac.</h2>
+        <p>Settings and session history stay local. Pawse has no account, cloud sync, telemetry, advertising, or networking feature. Natural-break detection reads only aggregate system idle time—not keys, pointer positions, app names, windows, or screen contents.</p>
+      </section>
 
-        <figure class="settings-shot">
-          <img src="assets/pawse-settings.webp" width="1400" height="989" alt="Pawse native macOS settings window showing timer duration sliders">
-        </figure>
-      </div>
-    </section>
+      <figure class="wide-figure">
+        <img src="assets/pawse-analytics.webp" width="1966" height="1418" alt="Pawse Analytics showing local focus and break history">
+      </figure>
 
-    <section class="section analytics-section" aria-labelledby="analytics-title">
-      <div class="analytics-layout shell">
-        <div>
-          <h2 id="analytics-title">See the rhythm you are building.</h2>
-          <p class="section-copy">Review focused time, completion rate, breaks, and interruptions. Your history remains local to this Mac.</p>
-        </div>
-
-        <figure class="analytics-shot">
-          <img src="assets/pawse-analytics.webp" width="1966" height="1418" alt="Pawse Analytics showing 30 days of focus and break time, completion rate, interruption totals, and emergency exits">
-        </figure>
-      </div>
-    </section>
-
-    <section class="section privacy-section" id="privacy" aria-labelledby="privacy-title">
-      <div class="privacy-layout shell">
-        <div>
-          <h2 id="privacy-title">What happens on your Mac stays there.</h2>
-          <p class="section-copy">Pawse only reads aggregate idle time while a break is waiting. Settings and session history stay on your Mac.</p>
-        </div>
-
-        <ul class="privacy-facts" aria-label="Pawse privacy protections">
-          <li>No key recording</li>
-          <li>No pointer tracking</li>
-          <li>No app or website history</li>
-          <li>No screen capture</li>
-          <li>No analytics upload</li>
-          <li>No account required</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="closing shell" aria-labelledby="closing-title">
-      <img class="closing-mark" src="assets/pawse-logo.webp" alt="">
-      <h2 id="closing-title">Ready for your next focus?</h2>
-      <a class="button" href="/download/">Download Pawse</a>
-    </section>
+      <section class="note open-source-note" aria-labelledby="source-title">
+        <h2 id="source-title">Open source.</h2>
+        <p>Pawse is a small independent project, released under the MIT License. The code is public, so you can read it, build it yourself, report a problem, or shape it into something that works better for you.</p>
+        <p><a href="https://github.com/yorukot/pawse">Browse the source on GitHub</a> · <a href="/download/">Download the current release</a></p>
+      </section>
+    </article>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-content shell">
-      <span>Made with <span class="footer-heart" role="img" aria-label="love">♥</span> by <a href="https://github.com/yorukot">Yorukot</a></span>
-    </div>
+  <footer class="site-footer site-shell">
+    Made with <span aria-label="love">♥</span> by <a href="https://github.com/yorukot">Yorukot</a>
   </footer>
 </body>
 </html>

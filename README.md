@@ -6,8 +6,7 @@
   <p><strong>A macOS focus timer that waits for a natural stopping point before starting your break.</strong></p>
 
   <p>
-    <a href="https://yorukot.me/donate"><strong>Support Pawse</strong></a>
-    · <a href="https://pawse.yorukot.me/download/">Download for macOS</a>
+    <a href="https://pawse.yorukot.me/download/"><strong>Download for macOS</strong></a>
     · <a href="https://pawse.yorukot.me/">Website</a>
     · <a href="CONTRIBUTING.md">Contribute</a>
   </p>
@@ -37,23 +36,11 @@ Pawse lives quietly in your menu bar and guides you through Focus, Short Break, 
 
 If activity resumes while the break is appearing, Pawse steps back and waits for a fresh natural stopping point.
 
-## Default rhythm
-
-| Session | Duration |
-| --- | ---: |
-| Focus | 25 minutes |
-| Short Break | 30 seconds |
-| Long Break | 10 minutes after 2 cycles |
-
-Everything is configurable in Pawse.
-
 ## Download
 
-[Get Pawse 0.1.1 for macOS](https://pawse.yorukot.me/download/). You can make an optional donation or download immediately — the app is exactly the same either way.
+[Get the current Pawse release for macOS](https://pawse.yorukot.me/download/). The download page shows compatibility, file size, checksum, current signing status, and the first-launch steps for early-access builds.
 
-Open the disk image and drag Pawse to **Applications**.
-
-Pawse requires macOS 14 or later. Version 0.1.1 is an early-access build and is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing **Open**.
+Pawse requires macOS 14 or later and includes native support for Apple silicon and Intel Macs.
 
 ## Build from source
 
@@ -73,7 +60,7 @@ Read the full [Privacy documentation](docs/PRIVACY.md).
 
 ## Support the Project
 
-Pawse is and will always remain completely free. Every update and feature is available to everyone.
+Pawse is free, open source, and independent. Every download has the same features.
 
 If Pawse helps you, you can support its ongoing development:
 

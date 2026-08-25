@@ -58,6 +58,15 @@ jobs:
             mv "$notes" "$GITHUB_WORKSPACE/dist/release-notes.md"
           fi
 
+      - name: Generate website release metadata
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          ./scripts/release/generate-website-metadata.sh \
+            "$version" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg.sha256" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.release.json"
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -70,6 +79,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg" \
             "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg.sha256" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.release.json" \
             --verify-tag \
             --title "Pawse $version" \
             --notes-file "$GITHUB_WORKSPACE/dist/release-notes.md" \
