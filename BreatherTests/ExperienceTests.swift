@@ -176,43 +176,63 @@ final class ExperienceTests: XCTestCase {
     }
 
     func testBreakReminderCopyUsesSentenceCaseAndNamesLongBreak() {
+        let english = Locale(identifier: "en")
+
         XCTAssertEqual(
-            BreakReminderView.title(
-                for: .shortBreak,
-                phase: .upcoming(deadline: .now, leadTime: 10)
+            LocalizationText.string(
+                BreakReminderView.title(
+                    for: .shortBreak,
+                    phase: .upcoming(deadline: .now, leadTime: 10)
+                ),
+                locale: english
             ),
             "Break soon"
         )
         XCTAssertEqual(
-            BreakReminderView.title(for: .shortBreak, phase: .ready(scheduledAt: .now)),
+            LocalizationText.string(
+                BreakReminderView.title(for: .shortBreak, phase: .ready(scheduledAt: .now)),
+                locale: english
+            ),
             "Break ready"
         )
         XCTAssertEqual(
-            BreakReminderView.title(
-                for: .longBreak,
-                phase: .upcoming(deadline: .now, leadTime: 10)
+            LocalizationText.string(
+                BreakReminderView.title(
+                    for: .longBreak,
+                    phase: .upcoming(deadline: .now, leadTime: 10)
+                ),
+                locale: english
             ),
             "Long break soon"
         )
         XCTAssertEqual(
-            BreakReminderView.title(for: .longBreak, phase: .ready(scheduledAt: .now)),
+            LocalizationText.string(
+                BreakReminderView.title(for: .longBreak, phase: .ready(scheduledAt: .now)),
+                locale: english
+            ),
             "Long break ready"
         )
         XCTAssertEqual(
-            BreakReminderView.accessibilityLabel(
-                for: BreakReminderPresentation(
-                    mode: .shortBreak,
-                    phase: .ready(scheduledAt: .now)
-                )
+            LocalizationText.string(
+                BreakReminderView.accessibilityLabel(
+                    for: BreakReminderPresentation(
+                        mode: .shortBreak,
+                        phase: .ready(scheduledAt: .now)
+                    )
+                ),
+                locale: english
             ),
             "Short break ready. Click to start."
         )
         XCTAssertEqual(
-            BreakReminderView.accessibilityLabel(
-                for: BreakReminderPresentation(
-                    mode: .longBreak,
-                    phase: .upcoming(deadline: .now, leadTime: 10)
-                )
+            LocalizationText.string(
+                BreakReminderView.accessibilityLabel(
+                    for: BreakReminderPresentation(
+                        mode: .longBreak,
+                        phase: .upcoming(deadline: .now, leadTime: 10)
+                    )
+                ),
+                locale: english
             ),
             "Long break soon. Click to finish Focus and start now."
         )

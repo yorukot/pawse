@@ -2,16 +2,23 @@ import SwiftUI
 
 struct RecentSessionsTable: View {
     let records: [SessionRecordSnapshot]
+    @Environment(\.locale) private var locale
 
     var body: some View {
         GroupBox("Recent Sessions") {
             Table(records) {
                 TableColumn("Date") { record in
-                    Text(record.startedAt.formatted(date: .abbreviated, time: .shortened))
+                    Text(record.startedAt.formatted(
+                        Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)
+                    ))
                 }
                 .width(min: 145, ideal: 170)
                 TableColumn("Mode") { record in
-                    Label(record.mode.displayName, systemImage: record.mode.symbolName)
+                    Label {
+                        Text(record.mode.displayName)
+                    } icon: {
+                        Image(systemName: record.mode.symbolName)
+                    }
                 }
                 .width(min: 110, ideal: 135)
                 TableColumn("Planned") { record in
@@ -33,7 +40,7 @@ struct RecentSessionsTable: View {
         }
     }
 
-    private func outcomeName(_ outcome: SessionOutcome) -> String {
+    private func outcomeName(_ outcome: SessionOutcome) -> LocalizedStringResource {
         switch outcome {
         case .completed: "Completed"
         case .stopped: "Stopped"

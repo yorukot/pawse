@@ -80,7 +80,12 @@ struct MenuBarView: View {
                 )
             ) {
                 ForEach(SessionMode.allCases) { mode in
-                    Label(mode.displayName, systemImage: mode.symbolName).tag(mode)
+                    Label {
+                        Text(mode.displayName)
+                    } icon: {
+                        Image(systemName: mode.symbolName)
+                    }
+                    .tag(mode)
                 }
             }
             .pickerStyle(.segmented)
@@ -97,7 +102,9 @@ struct MenuBarView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .keyboardShortcut(.return, modifiers: [])
-            .accessibilityLabel("Start \(selectedMode.displayName)")
+            .accessibilityLabel(
+                Text("Start \(LocalizationText.string(selectedMode.displayName, locale: locale))")
+            )
         }
     }
 
@@ -169,7 +176,9 @@ struct MenuBarView: View {
             switchModeMenu
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(session.mode.displayName) paused")
+        .accessibilityLabel(
+            Text("\(LocalizationText.string(session.mode.displayName, locale: locale)) paused")
+        )
     }
 
     private func pendingContent(_ pending: PendingBreak) -> some View {
@@ -316,10 +325,18 @@ struct MenuBarView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func stateHeader(title: String, symbolName: String, status: String) -> some View {
+    private func stateHeader(
+        title: LocalizedStringResource,
+        symbolName: String,
+        status: LocalizedStringResource
+    ) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: Layout.actionSpacing) {
-            Label(title, systemImage: symbolName)
-                .font(.headline)
+            Label {
+                Text(title)
+            } icon: {
+                Image(systemName: symbolName)
+            }
+            .font(.headline)
 
             Spacer(minLength: Layout.actionSpacing)
 
@@ -338,12 +355,14 @@ struct MenuBarView: View {
                 ProgressView(value: progress)
                     .tint(BreatherTheme.Colors.terracotta)
                     .accessibilityLabel("Session progress")
-                    .accessibilityValue("\(Int(progress * 100)) percent")
+                    .accessibilityValue(
+                        progress.formatted(.percent.precision(.fractionLength(0)).locale(locale))
+                    )
             }
         }
     }
 
-    private func detailRow(title: String, value: String) -> some View {
+    private func detailRow(title: LocalizedStringResource, value: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: Layout.contentSpacing) {
             Text(title)
                 .foregroundStyle(.secondary)
@@ -353,6 +372,7 @@ struct MenuBarView: View {
             Text(value)
                 .fontWeight(.medium)
                 .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.caption)
     }
@@ -361,6 +381,8 @@ struct MenuBarView: View {
         Text(DurationFormatter.timer(duration))
             .font(.system(size: 42, weight: .medium, design: .rounded))
             .monospacedDigit()
-            .accessibilityLabel("\(DurationFormatter.timer(duration)) remaining")
+            .accessibilityLabel(
+                Text("\(DurationFormatter.spoken(duration, locale: locale)) remaining")
+            )
     }
 }

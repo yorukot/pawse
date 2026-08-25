@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 import ServiceManagement
 
@@ -5,7 +6,7 @@ import ServiceManagement
 @Observable
 final class LaunchAtLoginService {
     private(set) var isEnabled = false
-    private(set) var errorMessage: String?
+    private(set) var errorMessage: LocalizedStringResource?
 
     init() {
         refresh()
@@ -22,7 +23,7 @@ final class LaunchAtLoginService {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "Launch at Login could not be changed: \(error.localizedDescription)"
         }
         refresh()
     }

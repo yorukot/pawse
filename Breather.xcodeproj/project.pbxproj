@@ -144,6 +144,10 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
+				ja,
+				"zh-Hans",
+				"zh-Hant",
 				Base,
 			);
 			mainGroup = A30000000000000000000001;
@@ -347,6 +351,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.breather.Breather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 		};
@@ -377,6 +382,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.breather.Breather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};

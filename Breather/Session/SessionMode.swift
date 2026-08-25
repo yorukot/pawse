@@ -7,7 +7,7 @@ enum SessionMode: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: Self { self }
 
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .focus: "Focus"
         case .shortBreak: "Short Break"
@@ -23,7 +23,7 @@ enum SessionMode: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    var breakMessage: String {
+    var breakMessage: LocalizedStringResource {
         switch self {
         case .focus: "Focus on one thing at a time."
         case .shortBreak: "Look away from the screen."

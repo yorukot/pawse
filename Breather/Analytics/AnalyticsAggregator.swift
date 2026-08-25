@@ -8,7 +8,7 @@ enum AnalyticsDateRange: String, CaseIterable, Identifiable, Sendable {
 
     var id: Self { self }
 
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .today: "Today"
         case .last7Days: "Last 7 Days"

@@ -2,7 +2,8 @@ import SwiftUI
 
 struct AnalyticsView: View {
     @Bindable var store: AnalyticsStore
-    let persistenceNotice: String?
+    let persistenceNotice: LocalizedStringResource?
+    @Environment(\.locale) private var locale
     @State private var selectedRange: AnalyticsDateRange = .last7Days
     @State private var confirmsClear = false
 
@@ -33,7 +34,11 @@ struct AnalyticsView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 if let message = store.errorMessage ?? persistenceNotice {
-                    Label(message, systemImage: "exclamationmark.triangle")
+                    Label {
+                        Text(message)
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle")
+                    }
                         .font(.caption)
                         .foregroundStyle(.red)
                         .padding(8)
@@ -57,8 +62,9 @@ struct AnalyticsView: View {
     @ViewBuilder
     private var analyticsContent: some View {
         if metrics.recentSessions.isEmpty {
+            let rangeName = LocalizationText.string(selectedRange.displayName, locale: locale)
             ContentUnavailableView(
-                "No Sessions in \(selectedRange.displayName)",
+                String(localized: "No Sessions in \(rangeName)", locale: locale),
                 systemImage: "chart.bar",
                 description: Text("Completed and interrupted sessions will appear here.")
             )

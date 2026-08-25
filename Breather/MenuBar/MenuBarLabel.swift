@@ -4,6 +4,7 @@ import SwiftUI
 struct MenuBarLabel: View {
     let model: AppModel
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
 
     var body: some View {
         let controller = model.controller
@@ -19,16 +20,18 @@ struct MenuBarLabel: View {
 
     private var accessibilityText: String {
         let controller = model.controller
+        let modeName = LocalizationText.string(controller.currentMode.displayName, locale: locale)
+        let remaining = DurationFormatter.spoken(controller.remainingTime, locale: locale)
         if case .running = controller.state {
-            return "Breather, \(controller.currentMode.displayName), \(DurationFormatter.timer(controller.remainingTime)) remaining"
+            return String(localized: "Breather, \(modeName), \(remaining) remaining", locale: locale)
         }
         if case .paused = controller.state {
-            return "Breather, Focus paused, \(DurationFormatter.timer(controller.remainingTime)) remaining"
+            return String(localized: "Breather, Focus paused, \(remaining) remaining", locale: locale)
         }
         if case .breakPending = controller.state {
-            return "Breather, \(controller.currentMode.displayName) ready"
+            return String(localized: "Breather, \(modeName) ready", locale: locale)
         }
-        return "Breather, \(controller.currentMode.displayName)"
+        return String(localized: "Breather, \(modeName)", locale: locale)
     }
 }
 

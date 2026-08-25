@@ -10,6 +10,7 @@ final class OverlayCoordinator {
     private let settings: SettingsStore
     private let backgroundProvider: BreakBackgroundProviding
     private let screenChangeMonitor: ScreenChangeMonitor
+    private let locale: Locale
     private weak var controller: SessionController?
     private var panels: [CGDirectDisplayID: BreakPanel] = [:]
     private var fadingPanels: [ObjectIdentifier: BreakPanel] = [:]
@@ -18,10 +19,12 @@ final class OverlayCoordinator {
     init(
         settings: SettingsStore,
         backgroundProvider: BreakBackgroundProviding? = nil,
+        locale: Locale = .autoupdatingCurrent,
         screenChangeMonitor: ScreenChangeMonitor = ScreenChangeMonitor()
     ) {
         self.settings = settings
         self.backgroundProvider = backgroundProvider ?? BreakBackgroundService(settings: settings)
+        self.locale = locale
         self.screenChangeMonitor = screenChangeMonitor
         screenChangeMonitor.onChange = { [weak self] in
             self?.handleScreenChange()
@@ -130,6 +133,7 @@ final class OverlayCoordinator {
                         settings: settings,
                         backgroundImage: backgroundProvider.image(for: screen)
                     )
+                    .environment(\.locale, locale)
                 )
                 panel.alphaValue = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? 1 : 0
                 panel.setFrame(screen.frame, display: true)

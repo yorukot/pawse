@@ -13,13 +13,15 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
     init(
         settings: SettingsStore,
         backgroundProvider: BreakBackgroundProviding,
-        reminderCoordinator: BreakReminderCoordinator = BreakReminderCoordinator(),
+        locale: Locale = .autoupdatingCurrent,
+        reminderCoordinator: BreakReminderCoordinator? = nil,
         presentationController: PresentationOptionsController = PresentationOptionsController()
     ) {
-        self.reminderCoordinator = reminderCoordinator
+        self.reminderCoordinator = reminderCoordinator ?? BreakReminderCoordinator(locale: locale)
         overlayCoordinator = OverlayCoordinator(
             settings: settings,
-            backgroundProvider: backgroundProvider
+            backgroundProvider: backgroundProvider,
+            locale: locale
         )
         self.presentationController = presentationController
     }

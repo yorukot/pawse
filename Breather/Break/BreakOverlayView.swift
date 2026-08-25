@@ -6,13 +6,18 @@ struct BreakOverlayView: View {
     let controller: SessionController
     let settings: SettingsStore
     let backgroundImage: NSImage?
+    @Environment(\.locale) private var locale
 
     var body: some View {
         ZStack {
             breakBackground
 
             VStack(spacing: 22) {
-                Label(mode.displayName, systemImage: mode.symbolName)
+                Label {
+                    Text(mode.displayName)
+                } icon: {
+                    Image(systemName: mode.symbolName)
+                }
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(.white)
 
@@ -21,7 +26,9 @@ struct BreakOverlayView: View {
                         .font(.system(size: 76, weight: .medium, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
-                        .accessibilityLabel("\(DurationFormatter.timer(controller.remainingTime)) remaining")
+                        .accessibilityLabel(
+                            Text("\(DurationFormatter.spoken(controller.remainingTime, locale: locale)) remaining")
+                        )
                 }
 
                 Text(mode.breakMessage)

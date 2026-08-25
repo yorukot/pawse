@@ -13,7 +13,7 @@ enum BreatherWindowSection: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .analytics: "Analytics"
         case .timers: "Timers"
@@ -46,7 +46,12 @@ struct BreatherWindowView: View {
     @Bindable var launchAtLoginService: LaunchAtLoginService
     @Bindable var analyticsStore: AnalyticsStore
     @Bindable var breakBackgroundService: BreakBackgroundService
-    let analyticsPersistenceNotice: String?
+    @Bindable var languageStore: AppLanguageStore
+    @Bindable var appRestartService: AppRestartService
+    let sessionController: SessionController
+    let analyticsPersistenceNotice: LocalizedStringResource?
+
+    @Environment(\.locale) private var locale
 
     @AppStorage("breatherWindowSection") private var selectedSection = BreatherWindowSection.timers
     @State private var confirmsCycleReset = false
@@ -54,6 +59,8 @@ struct BreatherWindowView: View {
     @State private var confirmsAnalyticsClear = false
     @State private var isChoosingBreakImage = false
     @State private var isChoosingWallpaperFolder = false
+    @State private var pendingLanguage: AppLanguage?
+    @State private var confirmsLanguageRestart = false
 
     var body: some View {
         sidebarNavigation
@@ -95,6 +102,20 @@ struct BreatherWindowView: View {
             } message: {
                 Text("Settings and the Focus cycle will not change.")
             }
+            .confirmationDialog(
+                "Restart Breather to Change Language?",
+                isPresented: $confirmsLanguageRestart,
+                titleVisibility: .visible
+            ) {
+                Button("Restart Now") {
+                    applyPendingLanguageAndRestart()
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingLanguage = nil
+                }
+            } message: {
+                Text(languageRestartMessage)
+            }
             .fileImporter(
                 isPresented: $isChoosingBreakImage,
                 allowedContentTypes: [.image],
@@ -123,8 +144,12 @@ struct BreatherWindowView: View {
                     .padding(.vertical, 12)
 
                 List(BreatherWindowSection.allCases, selection: $selectedSection) { section in
-                    Label(section.title, systemImage: section.symbolName)
-                        .tag(section)
+                    Label {
+                        Text(section.title)
+                    } icon: {
+                        Image(systemName: section.symbolName)
+                    }
+                    .tag(section)
                 }
                 .listStyle(.sidebar)
             }
@@ -180,7 +205,7 @@ struct BreatherWindowView: View {
             settingsContent(for: section)
                 .frame(maxWidth: 680, maxHeight: .infinity, alignment: .top)
                 .frame(maxWidth: .infinity)
-                .navigationTitle(section.title)
+                .navigationTitle(Text(section.title))
         }
     }
 
@@ -241,9 +266,15 @@ struct BreatherWindowView: View {
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
                 LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
-                Text("Breather schedules \(settings.shortBreaksBeforeLongBreak) Short Breaks before each Long Break.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if settings.shortBreaksBeforeLongBreak == 1 {
+                    Text("Breather schedules one Short Break before each Long Break.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Breather schedules \(settings.shortBreaksBeforeLongBreak) Short Breaks before each Long Break.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Button("Reset Break Cycle…", role: .destructive) {
                     confirmsCycleReset = true
                 }
@@ -262,14 +293,14 @@ struct BreatherWindowView: View {
                     title: "Idle Before Break",
                     value: $settings.idleBeforeBreak,
                     values: [2, 3, 5, 10, 15, 30],
-                    valueText: { "\(Int($0)) sec" }
+                    valueText: { DurationFormatter.concise($0, locale: locale) }
                 )
                 DoubleSliderSetting(
                     title: "Break Entry Grace Period",
                     value: $settings.breakEntryGracePeriod,
                     range: 1...10,
                     step: 1,
-                    valueText: { "\(Int($0)) sec" }
+                    valueText: { DurationFormatter.concise($0, locale: locale) }
                 )
                 Text("Activity during the grace period returns Breather to Break Pending and requires a fresh idle interval.")
                     .font(.caption)
@@ -291,7 +322,9 @@ struct BreatherWindowView: View {
                         value: $settings.soundVolume,
                         range: 0...1,
                         step: 0.05,
-                        valueText: { "\(Int(($0 * 100).rounded()))%" }
+                        valueText: {
+                            $0.formatted(.percent.precision(.fractionLength(0)).locale(locale))
+                        }
                     )
                 }
                 .disabled(!settings.enableSounds)
@@ -337,8 +370,14 @@ struct BreatherWindowView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
-                        Button(settings.systemWallpaperFolderName == nil ? "Choose…" : "Change…") {
-                            isChoosingWallpaperFolder = true
+                        if settings.systemWallpaperFolderName == nil {
+                            Button("Choose…") {
+                                isChoosingWallpaperFolder = true
+                            }
+                        } else {
+                            Button("Change…") {
+                                isChoosingWallpaperFolder = true
+                            }
                         }
                         if settings.systemWallpaperFolderName != nil {
                             Button("Remove", role: .destructive) {
@@ -354,8 +393,14 @@ struct BreatherWindowView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
-                        Button(settings.customBreakImageName == nil ? "Choose…" : "Change…") {
-                            isChoosingBreakImage = true
+                        if settings.customBreakImageName == nil {
+                            Button("Choose…") {
+                                isChoosingBreakImage = true
+                            }
+                        } else {
+                            Button("Change…") {
+                                isChoosingBreakImage = true
+                            }
                         }
                         if settings.customBreakImageName != nil {
                             Button("Remove", role: .destructive) {
@@ -409,12 +454,64 @@ struct BreatherWindowView: View {
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
+                Picker("Language", selection: languageSelection) {
+                    Text("Automatic (macOS Default)")
+                        .tag(AppLanguage.automatic)
+                    ForEach(AppLanguage.allCases.filter { $0 != .automatic }) { language in
+                        Text(verbatim: language.autonym)
+                            .tag(language)
+                    }
+                }
+                .disabled(appRestartService.isRestarting)
+                Text("Changing the language requires restarting Breather.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let errorMessage = appRestartService.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
                 Button("Reset Settings to Defaults…", role: .destructive) {
                     confirmsSettingsReset = true
                 }
             }
         }
         .onAppear { launchAtLoginService.refresh() }
+    }
+
+    private var languageSelection: Binding<AppLanguage> {
+        Binding(
+            get: { pendingLanguage ?? languageStore.selectedLanguage },
+            set: { language in
+                guard language != languageStore.selectedLanguage else {
+                    pendingLanguage = nil
+                    return
+                }
+                pendingLanguage = language
+                confirmsLanguageRestart = true
+            }
+        )
+    }
+
+    private var languageRestartMessage: LocalizedStringResource {
+        switch sessionController.state {
+        case .running(let session) where session.mode.isBreak:
+            "The current break will be recorded as an Emergency Exit. Breather will restart and begin a new Focus."
+        case .running, .paused:
+            "The current Focus will be recorded as interrupted. Breather will restart and begin a new Focus."
+        case .breakPending, .breakEntering:
+            "The pending break will be canceled without creating a session record. Breather will restart and begin a new Focus."
+        case .idle:
+            "Breather will restart and begin a new Focus."
+        }
+    }
+
+    private func applyPendingLanguageAndRestart() {
+        guard let pendingLanguage else { return }
+        languageStore.save(pendingLanguage)
+        self.pendingLanguage = nil
+        sessionController.prepareForTermination()
+        appRestartService.restart()
     }
 
     private var privacySettings: some View {
@@ -437,13 +534,22 @@ struct BreatherWindowView: View {
         }
     }
 
-    private func soundPicker(title: String, selection: Binding<String>) -> some View {
-        LabeledContent(title) {
+    private func soundPicker(
+        title: LocalizedStringResource,
+        selection: Binding<String>
+    ) -> some View {
+        LabeledContent {
             HStack {
-                Picker(title, selection: selection) {
+                Picker(selection: selection) {
                     ForEach(soundService.availableSounds) { sound in
-                        Text(sound.name).tag(sound.name)
+                        if sound.isNone {
+                            Text("None").tag(sound.name)
+                        } else {
+                            Text(verbatim: sound.name).tag(sound.name)
+                        }
                     }
+                } label: {
+                    Text(title)
                 }
                 .labelsHidden()
                 Button("Preview") {
@@ -452,6 +558,8 @@ struct BreatherWindowView: View {
                 }
                 .disabled(selection.wrappedValue == AppSound.none.name)
             }
+        } label: {
+            Text(title)
         }
     }
 
@@ -512,14 +620,14 @@ private struct MenuBarIconStylePreview: View {
 }
 
 private struct IntegerSliderSetting: View {
-    let title: String
+    let title: LocalizedStringResource
     @Binding var value: Int
     let range: ClosedRange<Int>
     var step = 1
     let valueText: (Int) -> String
 
     var body: some View {
-        LabeledContent(title) {
+        LabeledContent {
             SliderValueLayout(value: valueText(value)) {
                 Slider(
                     value: Binding(
@@ -529,27 +637,31 @@ private struct IntegerSliderSetting: View {
                     in: Double(range.lowerBound)...Double(range.upperBound),
                     step: Double(step)
                 )
-                .accessibilityLabel(title)
+                .accessibilityLabel(Text(title))
                 .accessibilityValue(valueText(value))
             }
+        } label: {
+            Text(title)
         }
     }
 }
 
 private struct DoubleSliderSetting: View {
-    let title: String
+    let title: LocalizedStringResource
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
     let valueText: (Double) -> String
 
     var body: some View {
-        LabeledContent(title) {
+        LabeledContent {
             SliderValueLayout(value: valueText(value)) {
                 Slider(value: $value, in: range, step: step)
-                    .accessibilityLabel(title)
+                    .accessibilityLabel(Text(title))
                     .accessibilityValue(valueText(value))
             }
+        } label: {
+            Text(title)
         }
     }
 }
@@ -559,26 +671,33 @@ private enum DurationSliderScale {
     case logarithmic
 }
 
-private enum DurationInputUnit: String, CaseIterable, Identifiable {
-    case seconds = "sec"
-    case minutes = "min"
+private enum DurationInputUnit: CaseIterable, Identifiable {
+    case seconds
+    case minutes
 
     var id: Self { self }
 
-    var accessibilityName: String {
+    var abbreviation: LocalizedStringResource {
+        switch self {
+        case .seconds: "sec"
+        case .minutes: "min"
+        }
+    }
+
+    var accessibilityName: LocalizedStringResource {
         switch self {
         case .seconds: "Seconds"
         case .minutes: "Minutes"
         }
     }
 
-    func displayValue(for seconds: Int) -> String {
+    func displayValue(for seconds: Int, locale: Locale) -> String {
         switch self {
         case .seconds:
             return String(seconds)
         case .minutes:
             return (Double(seconds) / 60).formatted(
-                .number.precision(.fractionLength(0...2))
+                .number.precision(.fractionLength(0...2)).locale(locale)
             )
         }
     }
@@ -592,7 +711,7 @@ private enum DurationInputUnit: String, CaseIterable, Identifiable {
 }
 
 private struct DurationSliderSetting: View {
-    let title: String
+    let title: LocalizedStringResource
     @Binding var value: Int
     let range: ClosedRange<Int>
     let scale: DurationSliderScale
@@ -600,9 +719,10 @@ private struct DurationSliderSetting: View {
     @State private var unit = DurationInputUnit.seconds
     @State private var draftValue: String
     @FocusState private var isInputFocused: Bool
+    @Environment(\.locale) private var locale
 
     init(
-        title: String,
+        title: LocalizedStringResource,
         value: Binding<Int>,
         range: ClosedRange<Int>,
         scale: DurationSliderScale
@@ -650,32 +770,33 @@ private struct DurationSliderSetting: View {
     }
 
     var body: some View {
-        LabeledContent(title) {
+        LabeledContent {
             HStack(spacing: 8) {
                 slider
                     .frame(minWidth: 180, idealWidth: 250)
 
                 TextField("Duration", text: $draftValue)
+                    .labelsHidden()
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
                     .monospacedDigit()
                     .frame(width: 72)
                     .focused($isInputFocused)
                     .onSubmit(commitDraftValue)
-                    .accessibilityLabel("\(title) value")
-                    .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+                    .accessibilityLabel(Text("\(localizedTitle) value"))
+                    .accessibilityValue(DurationFormatter.spoken(TimeInterval(value), locale: locale))
 
                 Picker("Unit", selection: unitSelection) {
                     ForEach(DurationInputUnit.allCases) { inputUnit in
-                        Text(inputUnit.rawValue)
+                        Text(inputUnit.abbreviation)
                             .tag(inputUnit)
                     }
                 }
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(width: 68)
-                .accessibilityLabel("\(title) unit")
-                .accessibilityValue(unit.accessibilityName)
+                .accessibilityLabel(Text("\(localizedTitle) unit"))
+                .accessibilityValue(Text(unit.accessibilityName))
             }
             .onChange(of: value) { _, _ in
                 guard !isInputFocused else { return }
@@ -686,6 +807,10 @@ private struct DurationSliderSetting: View {
                     commitDraftValue()
                 }
             }
+            .onAppear(perform: synchronizeDraftValue)
+        } label: {
+            Text(title)
+                .frame(width: 150, alignment: .leading)
         }
     }
 
@@ -698,18 +823,18 @@ private struct DurationSliderSetting: View {
                 in: Double(range.lowerBound)...Double(range.upperBound),
                 step: Double(SettingsStore.durationStep)
             )
-            .accessibilityLabel(title)
-            .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+            .accessibilityLabel(Text(title))
+            .accessibilityValue(DurationFormatter.spoken(TimeInterval(value), locale: locale))
         case .logarithmic:
             Slider(value: logarithmicSliderPosition, in: 0...1)
-                    .accessibilityLabel(title)
-                    .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(DurationFormatter.spoken(TimeInterval(value), locale: locale))
         }
     }
 
     private func commitDraftValue() {
         let formatter = NumberFormatter()
-        formatter.locale = .current
+        formatter.locale = locale
         formatter.numberStyle = .decimal
 
         guard let input = formatter.number(from: draftValue)?.doubleValue,
@@ -723,7 +848,7 @@ private struct DurationSliderSetting: View {
     }
 
     private func synchronizeDraftValue() {
-        draftValue = unit.displayValue(for: value)
+        draftValue = unit.displayValue(for: value, locale: locale)
     }
 
     private func normalizedSeconds(_ rawValue: Double) -> Int {
@@ -734,10 +859,14 @@ private struct DurationSliderSetting: View {
         let step = Double(SettingsStore.durationStep)
         return Int((clampedValue / step).rounded() * step)
     }
+
+    private var localizedTitle: String {
+        LocalizationText.string(title, locale: locale)
+    }
 }
 
 private struct DiscreteSliderSetting<Value: Equatable>: View {
-    let title: String
+    let title: LocalizedStringResource
     @Binding var value: Value
     let values: [Value]
     let valueText: (Value) -> String
@@ -747,7 +876,7 @@ private struct DiscreteSliderSetting<Value: Equatable>: View {
     }
 
     var body: some View {
-        LabeledContent(title) {
+        LabeledContent {
             SliderValueLayout(value: valueText(values[selectedIndex])) {
                 Slider(
                     value: Binding(
@@ -760,9 +889,11 @@ private struct DiscreteSliderSetting<Value: Equatable>: View {
                     in: 0...Double(values.count - 1),
                     step: 1
                 )
-                .accessibilityLabel(title)
+                .accessibilityLabel(Text(title))
                 .accessibilityValue(valueText(values[selectedIndex]))
             }
+        } label: {
+            Text(title)
         }
     }
 }

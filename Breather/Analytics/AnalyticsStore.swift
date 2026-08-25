@@ -6,7 +6,7 @@ import SwiftData
 @Observable
 final class AnalyticsStore: SessionRecording {
     private(set) var records: [SessionRecordSnapshot] = []
-    private(set) var errorMessage: String?
+    private(set) var errorMessage: LocalizedStringResource?
 
     @ObservationIgnored private let context: ModelContext
 

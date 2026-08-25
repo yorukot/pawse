@@ -13,6 +13,24 @@ final class SessionControllerTests: XCTestCase {
         }
     }
 
+    func testEveryModeSupportsSecondLevelDurations() {
+        let harness = ControllerHarness { settings in
+            settings.focusSeconds = 30
+            settings.shortBreakSeconds = 40
+            settings.longBreakSeconds = 50
+        }
+        let expectedDurations: [SessionMode: TimeInterval] = [
+            .focus: 30,
+            .shortBreak: 40,
+            .longBreak: 50
+        ]
+
+        for mode in SessionMode.allCases {
+            harness.controller.selectMode(mode)
+            XCTAssertEqual(harness.controller.remainingTime, expectedDurations[mode])
+        }
+    }
+
     func testStartingEachModeCreatesOneStableSessionAndOneScheduler() {
         for mode in SessionMode.allCases {
             let harness = ControllerHarness()

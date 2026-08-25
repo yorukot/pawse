@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AnalyticsSummaryView: View {
     let metrics: AnalyticsMetrics
+    @Environment(\.locale) private var locale
 
     var body: some View {
         GroupBox("Summary") {
@@ -9,7 +10,12 @@ struct AnalyticsSummaryView: View {
                 GridRow {
                     metric("Focused Time", duration: metrics.focusedTime)
                     metric("Completed Focus", value: "\(metrics.completedFocusSessions)")
-                    metric("Completion Rate", value: metrics.focusCompletionRate.formatted(.percent.precision(.fractionLength(0))))
+                    metric(
+                        "Completion Rate",
+                        value: metrics.focusCompletionRate.formatted(
+                            .percent.precision(.fractionLength(0)).locale(locale)
+                        )
+                    )
                 }
                 Divider().gridCellColumns(3)
                 GridRow {
@@ -35,11 +41,11 @@ struct AnalyticsSummaryView: View {
         }
     }
 
-    private func metric(_ title: String, duration: TimeInterval) -> some View {
-        metric(title, value: analyticsDuration(duration))
+    private func metric(_ title: LocalizedStringResource, duration: TimeInterval) -> some View {
+        metric(title, value: DurationFormatter.analytics(duration, locale: locale))
     }
 
-    private func metric(_ title: String, value: String) -> some View {
+    private func metric(_ title: LocalizedStringResource, value: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.caption)
@@ -52,13 +58,4 @@ struct AnalyticsSummaryView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func analyticsDuration(_ duration: TimeInterval) -> String {
-        let totalMinutes = max(0, Int(duration / 60))
-        let hours = totalMinutes / 60
-        let minutes = totalMinutes % 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        }
-        return "\(minutes)m"
-    }
 }

@@ -12,7 +12,7 @@ enum BreakBackgroundMode: String, CaseIterable, Identifiable, Codable, Sendable 
 
     var id: Self { self }
 
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .systemWallpaper: "Desktop Wallpaper"
         case .customImage: "Custom Image"
@@ -34,7 +34,7 @@ final class BreakBackgroundService: BreakBackgroundProviding {
     private var wallpaperCache: [CGDirectDisplayID: NSImage] = [:]
     private var customImageCache: NSImage?
 
-    private(set) var errorMessage: String?
+    private(set) var errorMessage: LocalizedStringResource?
 
     init(settings: SettingsStore) {
         self.settings = settings
@@ -327,7 +327,10 @@ final class BreakBackgroundService: BreakBackgroundProviding {
         return candidateComponents.starts(with: folderComponents)
     }
 
-    private static func wallpaperFailureMessage(for url: URL, hasFolderAccess: Bool) -> String {
+    private static func wallpaperFailureMessage(
+        for url: URL,
+        hasFolderAccess: Bool
+    ) -> LocalizedStringResource {
         if ["mov", "mp4", "m4v"].contains(url.pathExtension.lowercased()) {
             return "Video-only desktop wallpapers are not supported. Breaks will use a dark background."
         }

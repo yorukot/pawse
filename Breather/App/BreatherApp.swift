@@ -10,8 +10,10 @@ struct BreatherApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(model: model)
+                .environment(\.locale, model.languageStore.locale)
         } label: {
             MenuBarLabel(model: model)
+                .environment(\.locale, model.languageStore.locale)
         }
         .menuBarExtraStyle(.window)
 
@@ -22,15 +24,20 @@ struct BreatherApp: App {
                 launchAtLoginService: model.launchAtLoginService,
                 analyticsStore: model.analyticsStore,
                 breakBackgroundService: model.breakBackgroundService,
+                languageStore: model.languageStore,
+                appRestartService: model.appRestartService,
+                sessionController: model.controller,
                 analyticsPersistenceNotice: model.analyticsPersistenceNotice
             )
             .modelContainer(model.modelContainer)
+            .environment(\.locale, model.languageStore.locale)
         }
         .defaultSize(width: 920, height: 650)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appSettings) {
                 OpenBreatherCommand()
+                    .environment(\.locale, model.languageStore.locale)
             }
         }
     }

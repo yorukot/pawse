@@ -17,6 +17,10 @@ git diff --check
 ```
 
 5. Manually test the menu-bar item, natural-break flow, Emergency Exit, sound settings, Analytics, and at least one full break. Test display synchronization when multiple displays are available.
+6. Treat localization as a release gate:
+   - Have native speakers review every entry in `Breather/Resources/Localizable.xcstrings` for Spanish, Japanese, Traditional Chinese, and Simplified Chinese. The checked-in translations are AI-generated drafts until that review is complete.
+   - Verify the General → Language restart flow in English, Spanish, Japanese, Traditional Chinese, Simplified Chinese, and Automatic mode, including a change during an active Focus and an active break.
+   - Confirm that the Breather brand name remains unchanged and that no translated text is clipped in the menu bar, settings window, reminder, full-screen break overlay, Analytics, or accessibility labels.
 
 ## Archive
 

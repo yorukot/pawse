@@ -13,16 +13,19 @@ final class AppModel {
     let breakBackgroundService: BreakBackgroundService
     let soundService: SoundService
     let launchAtLoginService: LaunchAtLoginService
-    let analyticsPersistenceNotice: String?
+    let languageStore: AppLanguageStore
+    let appRestartService: AppRestartService
+    let analyticsPersistenceNotice: LocalizedStringResource?
 
     init(
         defaults: UserDefaults = .standard,
         modelContainer providedContainer: ModelContainer? = nil,
         startsFocusOnLaunch: Bool = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
     ) {
+        let languageStore = AppLanguageStore(defaults: defaults)
         let settings = SettingsStore(defaults: defaults)
         let container: ModelContainer
-        var persistenceNotice: String?
+        var persistenceNotice: LocalizedStringResource?
         if let providedContainer {
             container = providedContainer
         } else {
@@ -42,7 +45,8 @@ final class AppModel {
         let breakBackgroundService = BreakBackgroundService(settings: settings)
         let breakEnvironment = BreakEnvironmentCoordinator(
             settings: settings,
-            backgroundProvider: breakBackgroundService
+            backgroundProvider: breakBackgroundService,
+            locale: languageStore.locale
         )
         let soundService = SoundService(settings: settings)
         self.settings = settings
@@ -51,6 +55,8 @@ final class AppModel {
         self.breakEnvironment = breakEnvironment
         self.breakBackgroundService = breakBackgroundService
         self.soundService = soundService
+        self.languageStore = languageStore
+        appRestartService = AppRestartService()
         launchAtLoginService = LaunchAtLoginService()
         analyticsPersistenceNotice = persistenceNotice
         let controller = SessionController(
