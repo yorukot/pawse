@@ -198,10 +198,11 @@ struct BreatherWindowView: View {
                     range: 1...180,
                     valueText: { "\($0) min" }
                 )
-                DiscreteSliderSetting(
+                LogarithmicIntegerSliderSetting(
                     title: "Short Break Duration",
                     value: $settings.shortBreakSeconds,
-                    values: [10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1_800, 3_600],
+                    range: 10...3_600,
+                    step: 10,
                     valueText: { DurationFormatter.concise(TimeInterval($0)) }
                 )
                 IntegerSliderSetting(
@@ -429,9 +430,10 @@ struct BreatherWindowView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Breather")
                         .font(.title2.weight(.semibold))
+                        .foregroundStyle(brandInk)
                     Text("Focus deeply. Rest naturally.")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(brandInk.opacity(0.72))
                 }
             }
             .padding(.leading, 22)
@@ -439,6 +441,10 @@ struct BreatherWindowView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Breather. Focus deeply. Rest naturally.")
+    }
+
+    private var brandInk: Color {
+        Color(red: 0.06, green: 0.10, blue: 0.32)
     }
 }
 
@@ -478,6 +484,42 @@ private struct DoubleSliderSetting: View {
         LabeledContent(title) {
             SliderValueLayout(value: valueText(value)) {
                 Slider(value: $value, in: range, step: step)
+                    .accessibilityLabel(title)
+                    .accessibilityValue(valueText(value))
+            }
+        }
+    }
+}
+
+private struct LogarithmicIntegerSliderSetting: View {
+    let title: String
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let step: Int
+    let valueText: (Int) -> String
+
+    private var sliderPosition: Binding<Double> {
+        let lower = Double(range.lowerBound)
+        let upper = Double(range.upperBound)
+        let logarithmicSpan = log(upper / lower)
+
+        return Binding(
+            get: {
+                let clampedValue = min(upper, max(lower, Double(value)))
+                return log(clampedValue / lower) / logarithmicSpan
+            },
+            set: { position in
+                let rawValue = lower * exp(logarithmicSpan * position)
+                let steppedValue = Int((rawValue / Double(step)).rounded()) * step
+                value = min(range.upperBound, max(range.lowerBound, steppedValue))
+            }
+        )
+    }
+
+    var body: some View {
+        LabeledContent(title) {
+            SliderValueLayout(value: valueText(value)) {
+                Slider(value: sliderPosition, in: 0...1)
                     .accessibilityLabel(title)
                     .accessibilityValue(valueText(value))
             }
