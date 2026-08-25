@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>Pawse — A Native macOS Focus Timer</title>
   <meta name="description" content="Pawse is a private native macOS focus timer that waits for a natural stopping point before starting your break.">
   <meta name="author" content="Pawse contributors">
@@ -11,7 +10,7 @@
   <meta name="theme-color" content="#FFF5E3">
   <link rel="canonical" href="https://pawse.yorukot.me/">
   <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
-  <link rel="preload" as="image" href="assets/pawse-menu.png">
+  <link rel="preload" as="image" type="image/webp" href="assets/pawse-menu.webp">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="en_US">
@@ -19,8 +18,8 @@
   <meta property="og:title" content="Pawse — Finish your thought. Then take the break.">
   <meta property="og:description" content="A private native macOS focus timer that waits for a natural stopping point before starting your break.">
   <meta property="og:url" content="https://pawse.yorukot.me/">
-  <meta property="og:image" content="https://pawse.yorukot.me/assets/pawse-hero.png">
-  <meta property="og:image:type" content="image/png">
+  <meta property="og:image" content="https://pawse.yorukot.me/assets/pawse-hero.webp">
+  <meta property="og:image:type" content="image/webp">
   <meta property="og:image:width" content="2076">
   <meta property="og:image:height" content="758">
   <meta property="og:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
@@ -28,7 +27,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Pawse — Finish your thought. Then take the break.">
   <meta name="twitter:description" content="A native macOS focus timer that starts breaks at a natural stopping point.">
-  <meta name="twitter:image" content="https://pawse.yorukot.me/assets/pawse-hero.png">
+  <meta name="twitter:image" content="https://pawse.yorukot.me/assets/pawse-hero.webp">
   <meta name="twitter:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
 
   <script type="application/ld+json">
@@ -38,12 +37,12 @@
     "name": "Pawse",
     "description": "A private native macOS focus timer that waits for a natural stopping point before starting your break.",
     "url": "https://pawse.yorukot.me/",
-    "downloadUrl": "https://pawse.yorukot.me/download.html",
+    "downloadUrl": "https://pawse.yorukot.me/download/",
     "softwareVersion": "0.1.1",
     "operatingSystem": "macOS 14 or later",
     "applicationCategory": "ProductivityApplication",
     "isAccessibleForFree": true,
-    "image": "https://pawse.yorukot.me/assets/pawse-hero.png",
+    "image": "https://pawse.yorukot.me/assets/pawse-hero.webp",
     "license": "https://github.com/yorukot/pawse/blob/main/LICENSE",
     "sameAs": "https://github.com/yorukot/pawse",
     "offers": {
@@ -531,14 +530,14 @@
   <header class="site-header">
     <nav class="navigation shell" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Pawse home">
-        <img src="assets/pawse-logo.png" alt="">
+        <img src="assets/pawse-logo.webp" alt="">
         <span>Pawse</span>
       </a>
 
       <div class="nav-links">
         <a href="#how-it-works">How it works</a>
         <a href="https://github.com/yorukot/pawse">GitHub</a>
-        <a class="button button-small" href="download.html">Download</a>
+        <a class="button button-small" href="/download/">Download</a>
       </div>
     </nav>
   </header>
@@ -546,17 +545,17 @@
   <main id="main-content">
     <section class="hero shell" id="top" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <img class="hero-mark" src="assets/pawse-logo.png" alt="Pawse sleeping white shepherd logo">
+        <img class="hero-mark" src="assets/pawse-logo.webp" alt="Pawse sleeping white shepherd logo">
         <h1 id="hero-title">Finish your thought. Then take the break.</h1>
         <p class="hero-description">Pawse lives in your menu bar. When Focus ends, it waits for a natural stopping point before the break takes over your screen.</p>
         <div class="hero-actions">
-          <a class="button" href="download.html">Download Pawse</a>
+          <a class="button" href="/download/">Download Pawse</a>
           <a class="button button-secondary" href="https://github.com/yorukot/pawse">View source</a>
         </div>
       </div>
 
       <figure class="product-shot">
-        <img src="assets/pawse-menu.png" width="640" height="966" alt="Pawse menu bar timer showing an active Focus session and upcoming breaks">
+        <img src="assets/pawse-menu.webp" width="640" height="966" alt="Pawse menu bar timer showing an active Focus session and upcoming breaks">
       </figure>
     </section>
 
@@ -591,12 +590,12 @@
       </div>
 
       <div class="reminder-shots" aria-label="Pawse break reminder states">
-        <img src="assets/pawse-break-soon.png" width="672" height="224" alt="Pawse Long break soon reminder waiting to be clicked">
-        <img src="assets/pawse-break-ready.png" width="672" height="224" alt="Pawse Long break ready reminder using orange to ask for attention">
+        <img src="assets/pawse-break-soon.webp" width="672" height="224" alt="Pawse Long break soon reminder waiting to be clicked">
+        <img src="assets/pawse-break-ready.webp" width="672" height="224" alt="Pawse Long break ready reminder using orange to ask for attention">
       </div>
 
       <figure class="wide-shot">
-        <img src="assets/pawse-break.jpg" width="1800" height="1200" alt="Pawse full-screen Short Break over a mountain lake wallpaper with an Emergency Exit button">
+        <img src="assets/pawse-break.webp" width="1800" height="1200" alt="Pawse full-screen Short Break over a mountain lake wallpaper with an Emergency Exit button">
       </figure>
     </section>
 
@@ -614,7 +613,7 @@
         </div>
 
         <figure class="settings-shot">
-          <img src="assets/pawse-settings.png" width="1400" height="989" alt="Pawse native macOS settings window showing timer duration sliders">
+          <img src="assets/pawse-settings.webp" width="1400" height="989" alt="Pawse native macOS settings window showing timer duration sliders">
         </figure>
       </div>
     </section>
@@ -627,7 +626,7 @@
         </div>
 
         <figure class="analytics-shot">
-          <img src="assets/pawse-analytics.png" width="1966" height="1418" alt="Pawse Analytics showing 30 days of focus and break time, completion rate, interruption totals, and emergency exits">
+          <img src="assets/pawse-analytics.webp" width="1966" height="1418" alt="Pawse Analytics showing 30 days of focus and break time, completion rate, interruption totals, and emergency exits">
         </figure>
       </div>
     </section>
@@ -651,9 +650,9 @@
     </section>
 
     <section class="closing shell" aria-labelledby="closing-title">
-      <img class="closing-mark" src="assets/pawse-logo.png" alt="">
+      <img class="closing-mark" src="assets/pawse-logo.webp" alt="">
       <h2 id="closing-title">Ready for your next focus?</h2>
-      <a class="button" href="download.html">Download Pawse</a>
+      <a class="button" href="/download/">Download Pawse</a>
     </section>
   </main>
 
