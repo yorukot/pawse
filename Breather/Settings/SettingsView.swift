@@ -188,15 +188,28 @@ struct BreatherWindowView: View {
 
     private var timerSettings: some View {
         Form {
+            Section {
+                brandBanner
+            }
             Section("Timers") {
-                Stepper("Focus: \(settings.focusMinutes) minutes", value: $settings.focusMinutes, in: 1...180)
-                Stepper(
-                    "Short Break: \(DurationFormatter.concise(TimeInterval(settings.shortBreakSeconds)))",
-                    value: $settings.shortBreakSeconds,
-                    in: 10...3_600,
-                    step: 10
+                IntegerSliderSetting(
+                    title: "Focus Duration",
+                    value: $settings.focusMinutes,
+                    range: 1...180,
+                    valueText: { "\($0) min" }
                 )
-                Stepper("Long Break: \(settings.longBreakMinutes) minutes", value: $settings.longBreakMinutes, in: 1...120)
+                DiscreteSliderSetting(
+                    title: "Short Break Duration",
+                    value: $settings.shortBreakSeconds,
+                    values: [10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1_800, 3_600],
+                    valueText: { DurationFormatter.concise(TimeInterval($0)) }
+                )
+                IntegerSliderSetting(
+                    title: "Long Break Duration",
+                    value: $settings.longBreakMinutes,
+                    range: 1...120,
+                    valueText: { "\($0) min" }
+                )
             }
             Text("Changes apply to the next session and never move an active session’s deadline.")
                 .font(.caption)
@@ -207,10 +220,11 @@ struct BreatherWindowView: View {
     private var cycleSettings: some View {
         Form {
             Section("Focus and Break Cycle") {
-                Stepper(
-                    "Short Breaks Before Long Break: \(settings.shortBreaksBeforeLongBreak)",
+                IntegerSliderSetting(
+                    title: "Short Breaks Before Long Break",
                     value: $settings.shortBreaksBeforeLongBreak,
-                    in: 1...12
+                    range: 1...12,
+                    valueText: { "\($0)" }
                 )
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
@@ -232,16 +246,18 @@ struct BreatherWindowView: View {
                 Text("When a Focus session ends, wait until you stop using the keyboard and mouse before starting the break.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Picker("Idle Before Break", selection: $settings.idleBeforeBreak) {
-                    ForEach([2.0, 3.0, 5.0, 10.0, 15.0, 30.0], id: \.self) { seconds in
-                        Text("\(Int(seconds)) seconds").tag(seconds)
-                    }
-                }
-                Stepper(
-                    "Break Entry Grace Period: \(Int(settings.breakEntryGracePeriod)) seconds",
+                DiscreteSliderSetting(
+                    title: "Idle Before Break",
+                    value: $settings.idleBeforeBreak,
+                    values: [2, 3, 5, 10, 15, 30],
+                    valueText: { "\(Int($0)) sec" }
+                )
+                DoubleSliderSetting(
+                    title: "Break Entry Grace Period",
                     value: $settings.breakEntryGracePeriod,
-                    in: 1...10,
-                    step: 1
+                    range: 1...10,
+                    step: 1,
+                    valueText: { "\(Int($0)) sec" }
                 )
                 Text("Activity during the grace period returns Breather to Break Pending and requires a fresh idle interval.")
                     .font(.caption)
@@ -258,11 +274,13 @@ struct BreatherWindowView: View {
                     soundPicker(title: "Session Start Sound", selection: $settings.sessionStartSound)
                     soundPicker(title: "Break Ready Sound", selection: $settings.breakReadySound)
                     soundPicker(title: "Break Complete Sound", selection: $settings.breakCompleteSound)
-                    LabeledContent("Volume") {
-                        Slider(value: $settings.soundVolume, in: 0...1)
-                            .frame(width: 220)
-                            .accessibilityValue("\(Int(settings.soundVolume * 100)) percent")
-                    }
+                    DoubleSliderSetting(
+                        title: "Volume",
+                        value: $settings.soundVolume,
+                        range: 0...1,
+                        step: 0.05,
+                        valueText: { "\(Int(($0 * 100).rounded()))%" }
+                    )
                 }
                 .disabled(!settings.enableSounds)
             }
@@ -389,6 +407,127 @@ struct BreatherWindowView: View {
                 }
                 .disabled(selection.wrappedValue == AppSound.none.name)
             }
+        }
+    }
+
+    private var brandBanner: some View {
+        ZStack(alignment: .leading) {
+            Image("BreatherBanner")
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 142)
+                .clipped()
+
+            HStack(spacing: 12) {
+                Image("BreatherLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 54, height: 54)
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Breather")
+                        .font(.title2.weight(.semibold))
+                    Text("Focus deeply. Rest naturally.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.leading, 22)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Breather. Focus deeply. Rest naturally.")
+    }
+}
+
+private struct IntegerSliderSetting: View {
+    let title: String
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    var step = 1
+    let valueText: (Int) -> String
+
+    var body: some View {
+        LabeledContent(title) {
+            SliderValueLayout(value: valueText(value)) {
+                Slider(
+                    value: Binding(
+                        get: { Double(value) },
+                        set: { value = Int($0.rounded()) }
+                    ),
+                    in: Double(range.lowerBound)...Double(range.upperBound),
+                    step: Double(step)
+                )
+                .accessibilityLabel(title)
+                .accessibilityValue(valueText(value))
+            }
+        }
+    }
+}
+
+private struct DoubleSliderSetting: View {
+    let title: String
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let valueText: (Double) -> String
+
+    var body: some View {
+        LabeledContent(title) {
+            SliderValueLayout(value: valueText(value)) {
+                Slider(value: $value, in: range, step: step)
+                    .accessibilityLabel(title)
+                    .accessibilityValue(valueText(value))
+            }
+        }
+    }
+}
+
+private struct DiscreteSliderSetting<Value: Equatable>: View {
+    let title: String
+    @Binding var value: Value
+    let values: [Value]
+    let valueText: (Value) -> String
+
+    private var selectedIndex: Int {
+        values.firstIndex(of: value) ?? 0
+    }
+
+    var body: some View {
+        LabeledContent(title) {
+            SliderValueLayout(value: valueText(values[selectedIndex])) {
+                Slider(
+                    value: Binding(
+                        get: { Double(selectedIndex) },
+                        set: { newValue in
+                            let index = min(values.count - 1, max(0, Int(newValue.rounded())))
+                            value = values[index]
+                        }
+                    ),
+                    in: 0...Double(values.count - 1),
+                    step: 1
+                )
+                .accessibilityLabel(title)
+                .accessibilityValue(valueText(values[selectedIndex]))
+            }
+        }
+    }
+}
+
+private struct SliderValueLayout<Content: View>: View {
+    let value: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        HStack(spacing: 12) {
+            content
+                .frame(minWidth: 210, idealWidth: 280)
+            Text(value)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .frame(width: 64, alignment: .trailing)
         }
     }
 }
