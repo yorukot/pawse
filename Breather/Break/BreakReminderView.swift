@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BreakReminderView: View {
     static let attentionInterval: TimeInterval = 15
+    static let pulseInterval: TimeInterval = 1.2
 
     let mode: SessionMode
     let scheduledAt: Date
@@ -12,96 +13,131 @@ struct BreakReminderView: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
             let progress = Self.attentionProgress(scheduledAt: scheduledAt, now: timeline.date)
-            let isUrgent = Self.isUrgent(scheduledAt: scheduledAt, now: timeline.date)
-            let pulseOpacity = urgentPulseOpacity(at: timeline.date, isUrgent: isUrgent)
-            let isLongBreak = mode == .longBreak
+            let isAttentionState = Self.isAttentionState(scheduledAt: scheduledAt, now: timeline.date)
+            let pulse = Self.attentionPulse(at: timeline.date, isAttentionState: isAttentionState)
 
             Button(action: onStart) {
-                VStack(spacing: 10) {
-                    if isUrgent {
-                        HStack {
-                            Label(isLongBreak ? "LONG BREAK READY" : "BREAK READY", systemImage: "exclamationmark.triangle.fill")
-                                .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                .foregroundStyle(.white)
-                                .tracking(0.8)
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 5)
-                                .background(.red.opacity(0.82), in: Capsule())
-                                .scaleEffect(reduceMotion ? 1 : 1 + (pulseOpacity - 0.55) * 0.025)
+                VStack(spacing: 9) {
+                    HStack(spacing: 12) {
+                        logo(pulse: pulse, isAttentionState: isAttentionState)
 
-                            Spacer(minLength: 8)
-
-                            Text(isLongBreak ? "START LONG BREAK  →" : "START BREAK  →")
-                                .font(.system(size: 11, weight: .heavy, design: .rounded))
-                                .foregroundStyle(.orange)
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 5)
-                                .background(.white, in: Capsule())
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(Self.title(for: mode, isAttentionState: isAttentionState))
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Click to start")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
+
+                        Spacer(minLength: 8)
+
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 25, weight: .regular))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(
+                                isAttentionState
+                                    ? BreatherTheme.Colors.terracotta
+                                    : Color.secondary
+                            )
+                            .accessibilityHidden(true)
                     }
-
-                    Text(isUrgent
-                         ? (isLongBreak ? "Take your long break now" : "Take your break now")
-                         : (isLongBreak ? "Long break soon" : "Break soon"))
-                        .font(.system(size: isUrgent ? 21 : 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(isUrgent ? .white : .primary)
-
-                    Text(isUrgent ? "Your break is waiting — click to start" : "Click to start")
-                        .font(.system(size: 13, weight: isUrgent ? .medium : .regular))
-                        .foregroundStyle(isUrgent ? .white.opacity(0.9) : .secondary)
 
                     ProgressView(value: progress)
                         .progressViewStyle(.linear)
-                        .tint(isUrgent ? .white : .accentColor)
-                        .scaleEffect(x: 1, y: isUrgent ? 1.45 : 1, anchor: .center)
-                        .accessibilityLabel("Break reminder attention")
-                        .accessibilityValue(isUrgent ? "Ready" : "\(Int(progress * 100)) percent")
-
+                        .tint(BreatherTheme.Colors.terracotta)
+                        .accessibilityHidden(true)
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 13)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .background(
-                isUrgent
-                    ? AnyShapeStyle(LinearGradient(
-                        colors: [Color(red: 0.31, green: 0.08, blue: 0.06), Color(red: 0.16, green: 0.12, blue: 0.12)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    : AnyShapeStyle(.regularMaterial),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(
-                        isUrgent ? Color.orange.opacity(pulseOpacity) : Color.white.opacity(0.16),
-                        lineWidth: isUrgent ? 3 : 1
-                    )
+            .background {
+                RoundedRectangle(
+                    cornerRadius: BreatherTheme.Metrics.reminderCornerRadius,
+                    style: .continuous
+                )
+                .fill(
+                    isAttentionState
+                        ? BreatherTheme.Colors.terracotta.opacity(0.05 + pulse * 0.05)
+                        : Color.clear
+                )
             }
-            .shadow(color: isUrgent ? .red.opacity(0.42 * pulseOpacity) : .black.opacity(0.2), radius: isUrgent ? 22 : 14)
-            .accessibilityLabel(
-                mode == .longBreak
-                    ? "Long break ready. Click to start."
-                    : "Short break ready. Click to start."
-            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: BreatherTheme.Metrics.reminderCornerRadius,
+                    style: .continuous
+                )
+                .strokeBorder(
+                    isAttentionState
+                        ? BreatherTheme.Colors.terracotta.opacity(0.58 + pulse * 0.34)
+                        : Color.primary.opacity(0.13),
+                    lineWidth: isAttentionState ? 2 : 1
+                )
+            }
+            .accessibilityLabel(Self.accessibilityLabel(
+                for: mode,
+                isAttentionState: isAttentionState
+            ))
+            .accessibilityHint("Starts the break")
         }
     }
 
-    private func urgentPulseOpacity(at date: Date, isUrgent: Bool) -> Double {
-        guard isUrgent else { return 0.16 }
-        guard !reduceMotion else { return 0.9 }
-        let phase = sin(date.timeIntervalSinceReferenceDate * 2 * .pi)
-        return 0.55 + ((phase + 1) / 2) * 0.4
+    private func logo(pulse: Double, isAttentionState: Bool) -> some View {
+        ZStack {
+            Circle()
+                .fill(BreatherTheme.Colors.cream.opacity(0.94))
+
+            Image("BreatherLogo")
+                .resizable()
+                .scaledToFit()
+                .padding(4)
+        }
+        .frame(
+            width: BreatherTheme.Metrics.reminderLogoSize,
+            height: BreatherTheme.Metrics.reminderLogoSize
+        )
+        .scaleEffect(Self.logoScale(
+            pulse: pulse,
+            isAttentionState: isAttentionState,
+            reduceMotion: reduceMotion
+        ))
+        .accessibilityHidden(true)
+    }
+
+    static func title(for mode: SessionMode, isAttentionState: Bool) -> String {
+        switch (mode, isAttentionState) {
+        case (.longBreak, false): "Long break soon"
+        case (.longBreak, true): "Long break ready"
+        case (_, false): "Break soon"
+        case (_, true): "Break ready"
+        }
+    }
+
+    static func accessibilityLabel(for mode: SessionMode, isAttentionState: Bool) -> String {
+        let modeTitle = mode == .longBreak ? "Long break" : "Short break"
+        let stateTitle = isAttentionState ? "ready" : "soon"
+        return "\(modeTitle) \(stateTitle). Click to start."
     }
 
     static func attentionProgress(scheduledAt: Date, now: Date) -> Double {
         min(1, max(0, now.timeIntervalSince(scheduledAt)) / attentionInterval)
     }
 
-    static func isUrgent(scheduledAt: Date, now: Date) -> Bool {
+    static func isAttentionState(scheduledAt: Date, now: Date) -> Bool {
         now.timeIntervalSince(scheduledAt) >= attentionInterval
+    }
+
+    static func attentionPulse(at date: Date, isAttentionState: Bool) -> Double {
+        guard isAttentionState else { return 0 }
+        let phase = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: pulseInterval)
+        return (sin((phase / pulseInterval) * 2 * .pi - (.pi / 2)) + 1) / 2
+    }
+
+    static func logoScale(pulse: Double, isAttentionState: Bool, reduceMotion: Bool) -> Double {
+        guard isAttentionState, !reduceMotion else { return 1 }
+        return 1 + min(1, max(0, pulse)) * 0.06
     }
 }

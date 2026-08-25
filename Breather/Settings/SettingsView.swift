@@ -430,21 +430,20 @@ struct BreatherWindowView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Breather")
                         .font(.title2.weight(.semibold))
-                        .foregroundStyle(brandInk)
+                        .foregroundStyle(BreatherTheme.Colors.ink)
                     Text("Focus deeply. Rest naturally.")
                         .font(.subheadline)
-                        .foregroundStyle(brandInk.opacity(0.72))
+                        .foregroundStyle(BreatherTheme.Colors.ink.opacity(0.72))
                 }
             }
             .padding(.leading, 22)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(
+            cornerRadius: BreatherTheme.Metrics.brandBannerCornerRadius,
+            style: .continuous
+        ))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Breather. Focus deeply. Rest naturally.")
-    }
-
-    private var brandInk: Color {
-        Color(red: 0.06, green: 0.10, blue: 0.32)
     }
 }
 

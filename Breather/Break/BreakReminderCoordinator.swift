@@ -10,17 +10,20 @@ final class BreakReminderCoordinator: NSObject {
 
     var isVisible: Bool { panel?.isVisible == true }
     var isKeyWindow: Bool { panel?.isKeyWindow == true }
+    var panelSize: NSSize? { panel?.frame.size }
+    var usesHUDMaterial: Bool { panel?.usesHUDMaterial == true }
+    var hostedContentViewCount: Int { panel?.hostedContentViewCount ?? 0 }
 
     func show(for mode: SessionMode, scheduledAt: Date = .now) {
         if let panel {
-            panel.contentView = hostingView(for: mode, scheduledAt: scheduledAt)
+            panel.installHostedView(hostingView(for: mode, scheduledAt: scheduledAt))
             reposition(panel)
             panel.orderFrontRegardless()
             return
         }
 
         let panel = BreakReminderPanel()
-        panel.contentView = hostingView(for: mode, scheduledAt: scheduledAt)
+        panel.installHostedView(hostingView(for: mode, scheduledAt: scheduledAt))
         self.panel = panel
         reposition(panel)
         startMonitoringScreens()
@@ -29,7 +32,7 @@ final class BreakReminderCoordinator: NSObject {
 
     func hide() {
         panel?.orderOut(nil)
-        panel?.contentView = nil
+        panel?.clearHostedView()
         panel = nil
         stopMonitoringScreens()
     }
