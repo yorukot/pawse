@@ -6,7 +6,4 @@ final class BreatherBootstrapTests: XCTestCase {
         XCTAssertEqual("Breather", "Breather")
     }
 
-    func testApplicationIsConfiguredToAppearInDock() {
-        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "LSUIElement") as? Bool, false)
-    }
 }

@@ -12,7 +12,7 @@ It lives in the menu bar and starts a Focus session when it opens. The default c
 
 ## Features
 
-- Native SwiftUI menu bar app that also remains available from the Dock
+- Native SwiftUI menu bar app with no normal Dock icon
 - Focus, Short Break, and Long Break modes with absolute-deadline timers
 - Pause/resume for Focus with paused time excluded from analytics
 - Confirmation-gated switching from an active Focus session
@@ -63,7 +63,7 @@ xcodebuild \
   build
 ```
 
-Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts Focus automatically, stays available from the Dock, and provides its timer controls from the menu bar.
+Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts Focus in the menu bar and does not open a normal window.
 
 Use **Open Breather…** from the menu-bar popover, or press Command-comma, to open the unified Analytics and Settings window.
 
