@@ -2,7 +2,7 @@
 
 Breather is a native macOS focus timer that waits for a natural stopping point before making you take a break.
 
-It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather can show a compact **Break soon** HUD and wait until the Mac has been idle for a few seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
+It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather shows a compact **Break soon** HUD and waits until the Mac has been idle for three seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
 
 ## Requirements
 
@@ -18,16 +18,18 @@ It lives in the menu bar and starts a Focus session when it opens. The default c
 - Confirmation-gated switching from an active Focus session
 - Automatic two-Short-Break cycle with a configurable number of Short Breaks before each Long Break
 - Automatic Focus at launch, with optional automatic breaks and next Focus sessions
-- Menu-bar countdown ring that drains around the current mode icon
+- Ring-only menu-bar status item that drains from full to empty, with no countdown text
+- Cycle-aware **Up Next** details for the next Break and the number of Focus sessions before the Long Break
 - Privacy-preserving natural-break detection using aggregate Core Graphics idle state
-- Non-activating, top-center **Break soon** HUD that does not steal keyboard focus
+- Non-activating, top-center **Break soon** HUD with a 15-second attention indicator that becomes a slow urgent pulse without forcing the break
 - Grace-period retreat when keyboard or pointer activity resumes during break entry
-- Full-screen native panels on every connected display, synchronized after display changes
+- Full-screen native panels on every connected display, synchronized after display changes, with wallpaper or a user-selected image
+- Public AppKit fade transitions that automatically become immediate when Reduce Motion is enabled
 - In-overlay Emergency Exit confirmation on every display
 - Exact restoration of the app’s previous macOS presentation options
 - Native system sounds, runtime availability filtering, volume, and previews
-- Persisted native sidebar Settings for timers, cycle, break behavior, sounds, appearance, and launch at login
-- Local SwiftData session history in a native sidebar window, with a Swift Charts daily Focus chart, recent-session Table, date ranges, and clear-history controls
+- One native macOS sidebar window for Analytics, timers, cycle, break behavior, sounds, appearance, general settings, and privacy
+- Local SwiftData session history in the same window, with a Swift Charts daily Focus chart, recent-session Table, toolbar date ranges, and clear-history controls
 - Accessibility labels, monospaced countdowns, keyboard-accessible native controls, and no decorative continuous animation
 
 ## Natural stopping-point behavior
@@ -45,6 +47,8 @@ Focus completes
 
 Pending time is neither Focus time nor Break time. A canceled entry attempt creates no Break record and the next attempt starts with the full configured duration. Ordinary input does not dismiss a committed Break.
 
+The HUD attention bar reaches full after 15 seconds and then uses a slow visual pulse to make the reminder easier to notice. This is intentionally not a forced timeout: continued keyboard or pointer activity can defer a scheduled break indefinitely. A click or the configured idle threshold can start Break Entry before the bar finishes.
+
 Manual Short and Long Breaks start immediately because selecting one is already an explicit request to rest.
 
 ## Build
@@ -61,6 +65,8 @@ xcodebuild \
 
 Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app starts Focus in the menu bar and does not open a normal window.
 
+Use **Open Breather…** from the menu-bar popover, or press Command-comma, to open the unified Analytics and Settings window.
+
 ## Test
 
 ```bash
@@ -72,6 +78,10 @@ xcodebuild \
 ```
 
 The deterministic XCTest suite uses fake clocks, activity samples, sounds, overlays, schedulers, and an in-memory SwiftData configuration. It covers session timing, pause accounting, mode switching, cycle semantics, natural-break retries, Emergency Exit, centralized cleanup, sound transitions, analytics persistence, aggregation, and date ranges.
+
+## Break backgrounds
+
+Break overlays use the current wallpaper for each display by default. Appearance settings can instead store a read-only, security-scoped bookmark to an image selected with the native file picker. The image is loaded locally, fills each display, and receives a dark scrim so the break content remains legible. If a wallpaper or selected image becomes unreadable, Breather falls back to a near-black background and keeps Emergency Exit available.
 
 ## Privacy
 
@@ -91,5 +101,6 @@ Analytics supports Today, Last 7 Days, Last 30 Days, and All Time using the curr
 
 - macOS controls how third-party panels participate in Spaces and full-screen application Spaces. Breather uses only documented `NSPanel` levels and collection behaviors and cannot guarantee behavior beyond those public APIs.
 - Available system sounds vary by macOS installation; unavailable sounds are omitted and missing playback fails safely.
+- Wallpaper URLs and custom-image bookmarks can become unavailable after a wallpaper is removed or a file is moved; the break safely falls back to a dark background until a new image is chosen.
 - Launch at Login may require approval in System Settings and is most reliable for a properly signed app installed in Applications.
 - Breather is a self-discipline utility, not a security boundary. A user can still forcibly terminate it with macOS tools such as Activity Monitor.
