@@ -18,7 +18,7 @@ Breather should feel like a considerate macOS companion: calm while the user is 
 - Preserve its aspect ratio and transparent background. Do not crop, recolor, stretch, rotate, or place text over it.
 - A cream circle is the preferred small-format backing when the surrounding material is variable.
 - Use the banner only where a wide illustrative surface is appropriate, such as the Timers introduction. Use a 12 pt continuous corner radius.
-- Keep the menu-bar mark monochrome and template-compatible. The cat illustration is not a substitute for a legible status-item symbol or progress ring.
+- Keep the menu-bar mark monochrome and template-compatible. Use the dedicated simplified sleeping-cat template asset when the cat style is selected; never shrink the full-color cat illustration into the status item. Keep either center mark legible inside the progress ring.
 
 ## Color
 

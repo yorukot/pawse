@@ -13,7 +13,16 @@ enum DurationFormatter {
     }
 
     static func concise(_ duration: TimeInterval) -> String {
-        let minutes = max(1, Int(duration / 60))
-        return "\(minutes) min"
+        let totalSeconds = max(0, Int(duration.rounded()))
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+
+        if minutes == 0 {
+            return "\(seconds) sec"
+        }
+        if seconds == 0 {
+            return "\(minutes) min"
+        }
+        return "\(minutes) min \(seconds) sec"
     }
 }

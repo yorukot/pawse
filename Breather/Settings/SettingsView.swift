@@ -192,24 +192,23 @@ struct BreatherWindowView: View {
                 brandBanner
             }
             Section("Timers") {
-                IntegerSliderSetting(
+                DurationSliderSetting(
                     title: "Focus Duration",
-                    value: $settings.focusMinutes,
-                    range: 1...180,
-                    valueText: { "\($0) min" }
+                    value: $settings.focusSeconds,
+                    range: SettingsStore.focusDurationRange,
+                    scale: .linear
                 )
-                LogarithmicIntegerSliderSetting(
+                DurationSliderSetting(
                     title: "Short Break Duration",
                     value: $settings.shortBreakSeconds,
-                    range: 10...3_600,
-                    step: 10,
-                    valueText: { DurationFormatter.concise(TimeInterval($0)) }
+                    range: SettingsStore.shortBreakDurationRange,
+                    scale: .logarithmic
                 )
-                IntegerSliderSetting(
+                DurationSliderSetting(
                     title: "Long Break Duration",
-                    value: $settings.longBreakMinutes,
-                    range: 1...120,
-                    valueText: { "\($0) min" }
+                    value: $settings.longBreakSeconds,
+                    range: SettingsStore.longBreakDurationRange,
+                    scale: .linear
                 )
             }
             Text("Changes apply to the next session and never move an active session’s deadline.")
@@ -341,6 +340,17 @@ struct BreatherWindowView: View {
                 }
             }
             Section("Display") {
+                Picker("Menu Bar Icon", selection: $settings.menuBarIconStyle) {
+                    ForEach(MenuBarIconStyle.allCases) { style in
+                        Label {
+                            Text(style.displayName)
+                        } icon: {
+                            MenuBarIconStylePreview(style: style)
+                        }
+                        .tag(style)
+                    }
+                }
+                .pickerStyle(.segmented)
                 Toggle("Show Countdown During Break", isOn: $settings.showCountdownDuringBreak)
                 Toggle("Show Progress in Menu Bar Ring", isOn: $settings.showSessionProgressInMenuBar)
             }
@@ -447,6 +457,26 @@ struct BreatherWindowView: View {
     }
 }
 
+private struct MenuBarIconStylePreview: View {
+    let style: MenuBarIconStyle
+
+    @ViewBuilder
+    var body: some View {
+        switch style {
+        case .timer:
+            Image(systemName: "timer")
+                .symbolRenderingMode(.monochrome)
+                .frame(width: 13, height: 13)
+        case .sleepingCat:
+            Image("MenuBarSleepingCat")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 13, height: 13)
+        }
+    }
+}
+
 private struct IntegerSliderSetting: View {
     let title: String
     @Binding var value: Int
@@ -490,14 +520,67 @@ private struct DoubleSliderSetting: View {
     }
 }
 
-private struct LogarithmicIntegerSliderSetting: View {
+private enum DurationSliderScale {
+    case linear
+    case logarithmic
+}
+
+private enum DurationInputUnit: String, CaseIterable, Identifiable {
+    case seconds = "sec"
+    case minutes = "min"
+
+    var id: Self { self }
+
+    var accessibilityName: String {
+        switch self {
+        case .seconds: "Seconds"
+        case .minutes: "Minutes"
+        }
+    }
+
+    func displayValue(for seconds: Int) -> String {
+        switch self {
+        case .seconds:
+            return String(seconds)
+        case .minutes:
+            return (Double(seconds) / 60).formatted(
+                .number.precision(.fractionLength(0...2))
+            )
+        }
+    }
+
+    func seconds(from value: Double) -> Double {
+        switch self {
+        case .seconds: value
+        case .minutes: value * 60
+        }
+    }
+}
+
+private struct DurationSliderSetting: View {
     let title: String
     @Binding var value: Int
     let range: ClosedRange<Int>
-    let step: Int
-    let valueText: (Int) -> String
+    let scale: DurationSliderScale
 
-    private var sliderPosition: Binding<Double> {
+    @State private var unit = DurationInputUnit.seconds
+    @State private var draftValue: String
+    @FocusState private var isInputFocused: Bool
+
+    init(
+        title: String,
+        value: Binding<Int>,
+        range: ClosedRange<Int>,
+        scale: DurationSliderScale
+    ) {
+        self.title = title
+        self._value = value
+        self.range = range
+        self.scale = scale
+        self._draftValue = State(initialValue: String(value.wrappedValue))
+    }
+
+    private var logarithmicSliderPosition: Binding<Double> {
         let lower = Double(range.lowerBound)
         let upper = Double(range.upperBound)
         let logarithmicSpan = log(upper / lower)
@@ -509,20 +592,113 @@ private struct LogarithmicIntegerSliderSetting: View {
             },
             set: { position in
                 let rawValue = lower * exp(logarithmicSpan * position)
-                let steppedValue = Int((rawValue / Double(step)).rounded()) * step
-                value = min(range.upperBound, max(range.lowerBound, steppedValue))
+                value = normalizedSeconds(rawValue)
+            }
+        )
+    }
+
+    private var linearSliderValue: Binding<Double> {
+        Binding(
+            get: { Double(value) },
+            set: { value = normalizedSeconds($0) }
+        )
+    }
+
+    private var unitSelection: Binding<DurationInputUnit> {
+        Binding(
+            get: { unit },
+            set: { newUnit in
+                commitDraftValue()
+                unit = newUnit
+                synchronizeDraftValue()
             }
         )
     }
 
     var body: some View {
         LabeledContent(title) {
-            SliderValueLayout(value: valueText(value)) {
-                Slider(value: sliderPosition, in: 0...1)
-                    .accessibilityLabel(title)
-                    .accessibilityValue(valueText(value))
+            HStack(spacing: 8) {
+                slider
+                    .frame(minWidth: 180, idealWidth: 250)
+
+                TextField("Duration", text: $draftValue)
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.trailing)
+                    .monospacedDigit()
+                    .frame(width: 72)
+                    .focused($isInputFocused)
+                    .onSubmit(commitDraftValue)
+                    .accessibilityLabel("\(title) value")
+                    .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+
+                Picker("Unit", selection: unitSelection) {
+                    ForEach(DurationInputUnit.allCases) { inputUnit in
+                        Text(inputUnit.rawValue)
+                            .tag(inputUnit)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 68)
+                .accessibilityLabel("\(title) unit")
+                .accessibilityValue(unit.accessibilityName)
+            }
+            .onChange(of: value) { _, _ in
+                guard !isInputFocused else { return }
+                synchronizeDraftValue()
+            }
+            .onChange(of: isInputFocused) { wasFocused, isFocused in
+                if wasFocused && !isFocused {
+                    commitDraftValue()
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private var slider: some View {
+        switch scale {
+        case .linear:
+            Slider(
+                value: linearSliderValue,
+                in: Double(range.lowerBound)...Double(range.upperBound),
+                step: Double(SettingsStore.durationStep)
+            )
+            .accessibilityLabel(title)
+            .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+        case .logarithmic:
+            Slider(value: logarithmicSliderPosition, in: 0...1)
+                    .accessibilityLabel(title)
+                    .accessibilityValue(DurationFormatter.concise(TimeInterval(value)))
+        }
+    }
+
+    private func commitDraftValue() {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .decimal
+
+        guard let input = formatter.number(from: draftValue)?.doubleValue,
+              input.isFinite else {
+            synchronizeDraftValue()
+            return
+        }
+
+        value = normalizedSeconds(unit.seconds(from: input))
+        synchronizeDraftValue()
+    }
+
+    private func synchronizeDraftValue() {
+        draftValue = unit.displayValue(for: value)
+    }
+
+    private func normalizedSeconds(_ rawValue: Double) -> Int {
+        let clampedValue = min(
+            Double(range.upperBound),
+            max(Double(range.lowerBound), rawValue)
+        )
+        let step = Double(SettingsStore.durationStep)
+        return Int((clampedValue / step).rounded() * step)
     }
 }
 

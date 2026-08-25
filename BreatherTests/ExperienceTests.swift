@@ -7,6 +7,9 @@ final class ExperienceTests: XCTestCase {
     func testBrandImagesAreAvailableInApplicationBundle() {
         XCTAssertNotNil(NSImage(named: "BreatherLogo"))
         XCTAssertNotNil(NSImage(named: "BreatherBanner"))
+        let menuBarCat = NSImage(named: "MenuBarSleepingCat")
+        XCTAssertNotNil(menuBarCat)
+        XCTAssertTrue(menuBarCat?.isTemplate == true)
         XCTAssertNotNil(NSImage(named: NSImage.applicationIconName))
     }
 
@@ -16,14 +19,59 @@ final class ExperienceTests: XCTestCase {
 
         let settings = SettingsStore(defaults: defaults)
 
-        XCTAssertEqual(settings.focusMinutes, 25)
+        XCTAssertEqual(settings.focusSeconds, 1_500)
         XCTAssertEqual(settings.shortBreakSeconds, 30)
-        XCTAssertEqual(settings.longBreakMinutes, 10)
+        XCTAssertEqual(settings.longBreakSeconds, 600)
         XCTAssertEqual(settings.shortBreaksBeforeLongBreak, 2)
         XCTAssertEqual(settings.idleBeforeBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
+    }
+
+    func testLegacyMinuteDurationsMigrateToSeconds() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(25, forKey: SettingsStore.Key.legacyFocusMinutes)
+        defaults.set(10, forKey: SettingsStore.Key.legacyLongBreakMinutes)
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertEqual(settings.focusSeconds, 1_500)
+        XCTAssertEqual(settings.longBreakSeconds, 600)
+        XCTAssertEqual(defaults.integer(forKey: SettingsStore.Key.focusSeconds), 1_500)
+        XCTAssertEqual(defaults.integer(forKey: SettingsStore.Key.longBreakSeconds), 600)
+    }
+
+    func testStoredSecondDurationsTakePriorityOverLegacyMinutes() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(25, forKey: SettingsStore.Key.legacyFocusMinutes)
+        defaults.set(300, forKey: SettingsStore.Key.focusSeconds)
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertEqual(settings.focusSeconds, 300)
+    }
+
+    func testMenuBarIconStylePersistsFallsBackAndResets() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.menuBarIconStyle = .timer
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertEqual(settings.menuBarIconStyle, .timer)
+
+        defaults.set("unsupported", forKey: SettingsStore.Key.menuBarIconStyle)
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
+
+        settings.menuBarIconStyle = .timer
+        settings.resetToDefaults()
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
     }
 
     func testCustomBackgroundSelectionPersistsAndSettingsResetClearsIt() {
@@ -48,7 +96,7 @@ final class ExperienceTests: XCTestCase {
         let harness = ControllerHarness { settings in
             settings.shortBreaksBeforeLongBreak = 2
             settings.shortBreakSeconds = 30
-            settings.longBreakMinutes = 10
+            settings.longBreakSeconds = 600
         }
 
         var summary = harness.controller.upcomingBreakSummary

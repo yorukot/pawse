@@ -118,7 +118,7 @@ final class SessionControllerTests: XCTestCase {
             return XCTFail("Expected running Focus")
         }
 
-        harness.settings.focusMinutes = 2
+        harness.settings.focusSeconds = 120
         guard case .running(let unchanged) = harness.controller.state else {
             return XCTFail("Expected running Focus")
         }
@@ -193,25 +193,31 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(DurationFormatter.timer(3_661), "01:01:01")
         XCTAssertEqual(DurationFormatter.timer(-10), "00:00")
         XCTAssertEqual(DurationFormatter.timer(59.1), "01:00")
+        XCTAssertEqual(DurationFormatter.concise(30), "30 sec")
+        XCTAssertEqual(DurationFormatter.concise(60), "1 min")
+        XCTAssertEqual(DurationFormatter.concise(90), "1 min 30 sec")
     }
 
     func testSettingsAreClampedToAllowedRanges() {
         let harness = ControllerHarness()
-        harness.settings.focusMinutes = 999
+        harness.settings.focusSeconds = 99_999
         harness.settings.shortBreakSeconds = 0
-        harness.settings.longBreakMinutes = 999
+        harness.settings.longBreakSeconds = 99_999
         harness.settings.shortBreaksBeforeLongBreak = 0
         harness.settings.idleBeforeBreak = 8
         harness.settings.breakEntryGracePeriod = 99
         harness.settings.soundVolume = -2
 
-        XCTAssertEqual(harness.settings.focusMinutes, 180)
+        XCTAssertEqual(harness.settings.focusSeconds, 10_800)
         XCTAssertEqual(harness.settings.shortBreakSeconds, 10)
-        XCTAssertEqual(harness.settings.longBreakMinutes, 120)
+        XCTAssertEqual(harness.settings.longBreakSeconds, 7_200)
         XCTAssertEqual(harness.settings.shortBreaksBeforeLongBreak, 1)
         XCTAssertEqual(harness.settings.idleBeforeBreak, 10)
         XCTAssertEqual(harness.settings.breakEntryGracePeriod, 10)
         XCTAssertEqual(harness.settings.soundVolume, 0)
+
+        harness.settings.focusSeconds = 1_505
+        XCTAssertEqual(harness.settings.focusSeconds, 1_510)
     }
 
     func testProductDefaultsMatchAutomaticTwentyFiveMinuteCycle() {
@@ -222,9 +228,9 @@ final class SessionControllerTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
         let settings = SettingsStore(defaults: defaults)
 
-        XCTAssertEqual(settings.focusMinutes, 25)
+        XCTAssertEqual(settings.focusSeconds, 1_500)
         XCTAssertEqual(settings.shortBreakSeconds, 30)
-        XCTAssertEqual(settings.longBreakMinutes, 10)
+        XCTAssertEqual(settings.longBreakSeconds, 600)
         XCTAssertEqual(settings.shortBreaksBeforeLongBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)

@@ -5,9 +5,11 @@ import Observation
 @Observable
 final class SettingsStore {
     enum Key {
-        static let focusMinutes = "focusMinutes"
+        static let focusSeconds = "focusSeconds"
         static let shortBreakSeconds = "shortBreakSeconds"
-        static let longBreakMinutes = "longBreakMinutes"
+        static let longBreakSeconds = "longBreakSeconds"
+        static let legacyFocusMinutes = "focusMinutes"
+        static let legacyLongBreakMinutes = "longBreakMinutes"
         static let shortBreaksBeforeLongBreak = "shortBreaksBeforeLongBreak"
         static let automaticallyStartBreaks = "automaticallyStartBreaks"
         static let automaticallyStartNextFocus = "automaticallyStartNextFocus"
@@ -21,6 +23,7 @@ final class SettingsStore {
         static let soundVolume = "soundVolume"
         static let showCountdownDuringBreak = "showCountdownDuringBreak"
         static let showSessionProgressInMenuBar = "showSessionProgressInMenuBar"
+        static let menuBarIconStyle = "menuBarIconStyle"
         static let breakBackgroundMode = "breakBackgroundMode"
         static let customBreakImageBookmark = "customBreakImageBookmark"
         static let customBreakImageName = "customBreakImageName"
@@ -30,25 +33,30 @@ final class SettingsStore {
     private let defaults: UserDefaults
     private var isLoading = true
 
-    var focusMinutes = 25 {
+    static let focusDurationRange = 10...10_800
+    static let shortBreakDurationRange = 10...3_600
+    static let longBreakDurationRange = 10...7_200
+    static let durationStep = 10
+
+    var focusSeconds = 1_500 {
         didSet {
-            let validated = clamped(focusMinutes, 1...180)
-            guard validated == focusMinutes else { focusMinutes = validated; return }
-            persist(Key.focusMinutes, focusMinutes)
+            let validated = normalizedDuration(focusSeconds, in: Self.focusDurationRange)
+            guard validated == focusSeconds else { focusSeconds = validated; return }
+            persist(Key.focusSeconds, focusSeconds)
         }
     }
     var shortBreakSeconds = 30 {
         didSet {
-            let validated = clamped(shortBreakSeconds, 10...3_600)
+            let validated = normalizedDuration(shortBreakSeconds, in: Self.shortBreakDurationRange)
             guard validated == shortBreakSeconds else { shortBreakSeconds = validated; return }
             persist(Key.shortBreakSeconds, shortBreakSeconds)
         }
     }
-    var longBreakMinutes = 10 {
+    var longBreakSeconds = 600 {
         didSet {
-            let validated = clamped(longBreakMinutes, 1...120)
-            guard validated == longBreakMinutes else { longBreakMinutes = validated; return }
-            persist(Key.longBreakMinutes, longBreakMinutes)
+            let validated = normalizedDuration(longBreakSeconds, in: Self.longBreakDurationRange)
+            guard validated == longBreakSeconds else { longBreakSeconds = validated; return }
+            persist(Key.longBreakSeconds, longBreakSeconds)
         }
     }
     var shortBreaksBeforeLongBreak = 2 {
@@ -97,6 +105,9 @@ final class SettingsStore {
     }
     var showCountdownDuringBreak = true { didSet { persist(Key.showCountdownDuringBreak, showCountdownDuringBreak) } }
     var showSessionProgressInMenuBar = true { didSet { persist(Key.showSessionProgressInMenuBar, showSessionProgressInMenuBar) } }
+    var menuBarIconStyle: MenuBarIconStyle = .sleepingCat {
+        didSet { persist(Key.menuBarIconStyle, menuBarIconStyle.rawValue) }
+    }
     var breakBackgroundMode: BreakBackgroundMode = .systemWallpaper {
         didSet { persist(Key.breakBackgroundMode, breakBackgroundMode.rawValue) }
     }
@@ -118,6 +129,7 @@ final class SettingsStore {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        Self.migrateLegacyDurations(in: defaults)
         defaults.register(defaults: Self.defaultValues)
         load()
         isLoading = false
@@ -125,9 +137,9 @@ final class SettingsStore {
 
     func duration(for mode: SessionMode) -> TimeInterval {
         switch mode {
-        case .focus: TimeInterval(focusMinutes * 60)
+        case .focus: TimeInterval(focusSeconds)
         case .shortBreak: TimeInterval(shortBreakSeconds)
-        case .longBreak: TimeInterval(longBreakMinutes * 60)
+        case .longBreak: TimeInterval(longBreakSeconds)
         }
     }
 
@@ -148,9 +160,9 @@ final class SettingsStore {
     }
 
     func resetToDefaults() {
-        focusMinutes = 25
+        focusSeconds = 1_500
         shortBreakSeconds = 30
-        longBreakMinutes = 10
+        longBreakSeconds = 600
         shortBreaksBeforeLongBreak = 2
         automaticallyStartBreaks = true
         automaticallyStartNextFocus = true
@@ -164,13 +176,14 @@ final class SettingsStore {
         soundVolume = 0.7
         showCountdownDuringBreak = true
         showSessionProgressInMenuBar = true
+        menuBarIconStyle = .sleepingCat
         clearCustomBreakImage()
     }
 
     private func load() {
-        focusMinutes = defaults.integer(forKey: Key.focusMinutes)
+        focusSeconds = defaults.integer(forKey: Key.focusSeconds)
         shortBreakSeconds = defaults.integer(forKey: Key.shortBreakSeconds)
-        longBreakMinutes = defaults.integer(forKey: Key.longBreakMinutes)
+        longBreakSeconds = defaults.integer(forKey: Key.longBreakSeconds)
         shortBreaksBeforeLongBreak = defaults.integer(forKey: Key.shortBreaksBeforeLongBreak)
         automaticallyStartBreaks = defaults.bool(forKey: Key.automaticallyStartBreaks)
         automaticallyStartNextFocus = defaults.bool(forKey: Key.automaticallyStartNextFocus)
@@ -184,6 +197,9 @@ final class SettingsStore {
         soundVolume = defaults.double(forKey: Key.soundVolume)
         showCountdownDuringBreak = defaults.bool(forKey: Key.showCountdownDuringBreak)
         showSessionProgressInMenuBar = defaults.bool(forKey: Key.showSessionProgressInMenuBar)
+        menuBarIconStyle = MenuBarIconStyle(
+            rawValue: defaults.string(forKey: Key.menuBarIconStyle) ?? ""
+        ) ?? .sleepingCat
         breakBackgroundMode = BreakBackgroundMode(
             rawValue: defaults.string(forKey: Key.breakBackgroundMode) ?? ""
         ) ?? .systemWallpaper
@@ -210,15 +226,21 @@ final class SettingsStore {
         min(range.upperBound, max(range.lowerBound, value))
     }
 
+    private func normalizedDuration(_ value: Int, in range: ClosedRange<Int>) -> Int {
+        let clampedValue = clamped(value, range)
+        let step = Self.durationStep
+        return Int((Double(clampedValue) / Double(step)).rounded()) * step
+    }
+
     private func allowedIdleDelay(_ value: TimeInterval) -> TimeInterval {
         let choices: [TimeInterval] = [2, 3, 5, 10, 15, 30]
         return choices.min(by: { abs($0 - value) < abs($1 - value) }) ?? 3
     }
 
     private static let defaultValues: [String: Any] = [
-        Key.focusMinutes: 25,
+        Key.focusSeconds: 1_500,
         Key.shortBreakSeconds: 30,
-        Key.longBreakMinutes: 10,
+        Key.longBreakSeconds: 600,
         Key.shortBreaksBeforeLongBreak: 2,
         Key.automaticallyStartBreaks: true,
         Key.automaticallyStartNextFocus: true,
@@ -232,7 +254,38 @@ final class SettingsStore {
         Key.soundVolume: 0.7,
         Key.showCountdownDuringBreak: true,
         Key.showSessionProgressInMenuBar: true,
+        Key.menuBarIconStyle: MenuBarIconStyle.sleepingCat.rawValue,
         Key.breakBackgroundMode: BreakBackgroundMode.systemWallpaper.rawValue,
         Key.focusCycleCount: 0
     ]
+
+    private static func migrateLegacyDurations(in defaults: UserDefaults) {
+        migrateLegacyDuration(
+            in: defaults,
+            legacyKey: Key.legacyFocusMinutes,
+            secondsKey: Key.focusSeconds,
+            range: focusDurationRange
+        )
+        migrateLegacyDuration(
+            in: defaults,
+            legacyKey: Key.legacyLongBreakMinutes,
+            secondsKey: Key.longBreakSeconds,
+            range: longBreakDurationRange
+        )
+    }
+
+    private static func migrateLegacyDuration(
+        in defaults: UserDefaults,
+        legacyKey: String,
+        secondsKey: String,
+        range: ClosedRange<Int>
+    ) {
+        guard defaults.object(forKey: secondsKey) == nil,
+              let legacyMinutes = defaults.object(forKey: legacyKey) as? NSNumber else {
+            return
+        }
+
+        let seconds = legacyMinutes.intValue * 60
+        defaults.set(min(range.upperBound, max(range.lowerBound, seconds)), forKey: secondsKey)
+    }
 }
