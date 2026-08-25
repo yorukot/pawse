@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a focused improvement to Breather.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem would this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful outcome rather than only its visual treatment.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Privacy, accessibility, and safety impact
+      description: Explain any effect on local data, permissions, input detection, Emergency Exit, or Reduce Motion.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for a similar request.
+          required: true
+        - label: This proposal remains a native macOS experience.
+          required: true

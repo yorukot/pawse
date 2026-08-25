@@ -1,0 +1,55 @@
+# Releasing Breather
+
+This document describes the maintainer release process. Ordinary contributors do not need Apple signing credentials.
+
+## Before Release
+
+1. Ensure `main` is clean and CI passes.
+2. Update `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` for both Debug and Release configurations.
+3. Move relevant entries from `Unreleased` into a dated version section in `CHANGELOG.md`.
+4. Run the complete local verification:
+
+```bash
+make clean
+make test
+make release
+git diff --check
+```
+
+5. Manually test the menu-bar item, natural-break flow, Emergency Exit, sound settings, Analytics, and at least one full break. Test display synchronization when multiple displays are available.
+
+## Archive
+
+Create an archive with a configured Apple Developer identity:
+
+```bash
+xcodebuild \
+  -project Breather.xcodeproj \
+  -scheme Breather \
+  -configuration Release \
+  -destination 'generic/platform=macOS' \
+  -archivePath .build/Breather.xcarchive \
+  archive
+```
+
+Use Xcode Organizer or an explicit export-options plist to export the Developer ID application. Do not commit archives, exported applications, signing certificates, provisioning data, or notarization credentials.
+
+## Signing and Notarization
+
+Public binary releases should be signed with Developer ID, use Hardened Runtime, and be notarized through Apple’s supported notary tooling. Verify the exported app before distribution:
+
+```bash
+codesign --verify --deep --strict --verbose=2 Breather.app
+spctl --assess --type execute --verbose=2 Breather.app
+```
+
+Ad-hoc “Sign to Run Locally” builds are suitable for local development only and should not be presented as notarized public binaries.
+
+## Publish
+
+1. Create a signed Git tag matching the changelog version.
+2. Publish release notes derived from `CHANGELOG.md`.
+3. Attach only the notarized distribution archive and its SHA-256 checksum.
+4. Verify installation on a clean macOS account before announcing the release.
+
+Never publish from a dirty worktree or push rewritten release history.

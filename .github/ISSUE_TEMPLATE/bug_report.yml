@@ -1,0 +1,82 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Breather.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Breather. For security vulnerabilities, stop here and follow SECURITY.md instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: Breather version
+      description: Enter the release version or Git commit.
+      placeholder: 1.0 (build 1) or d506a6f
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS and hardware
+      description: Include the macOS version and Apple Silicon or Intel.
+      placeholder: macOS 15.6, Apple Silicon
+    validations:
+      required: true
+
+  - type: dropdown
+    id: displays
+    attributes:
+      label: Displays
+      options:
+        - One display
+        - Multiple displays
+        - Display configuration changed during the problem
+        - Not relevant
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Give the smallest reliable sequence that triggers the problem.
+      placeholder: |
+        1. Start Focus
+        2. Wait for Break Pending
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add sanitized logs or screenshots if useful. Never include private session history or personal screen contents.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for this problem.
+          required: true
+        - label: I removed private information from this report and its attachments.
+          required: true
+        - label: This is not an undisclosed security vulnerability.
+          required: true

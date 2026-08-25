@@ -4,6 +4,19 @@ Breather is a native macOS focus timer that waits for a natural stopping point b
 
 It lives in the menu bar and starts a Focus session when it opens. The default cycle is two rounds of **25 minute Focus → 30 second Short Break**, followed by another 25 minute Focus and a **10 minute Long Break**. When a scheduled Focus session finishes, Breather shows a compact **Break soon** HUD and waits until the Mac has been idle for two seconds. A short grace period backs out of the break overlay if activity immediately resumes. Once committed, the break covers every connected display until its countdown completes or the user confirms Emergency Exit.
 
+Breather is open-source software released under the [MIT License](LICENSE). It has no third-party runtime dependencies, telemetry, or network service.
+
+## Project documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Design guidelines](DESIGN_GUIDELINES.md)
+- [Privacy](docs/PRIVACY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Governance](GOVERNANCE.md)
+- [Security policy](SECURITY.md)
+- [Release process](docs/RELEASING.md)
+- [Changelog](CHANGELOG.md)
+
 ## Requirements
 
 - macOS 14 or later
@@ -70,6 +83,14 @@ Open `Breather.xcodeproj` in Xcode to run the app interactively. The built app s
 
 Use **Open Breather…** from the menu-bar popover, or press Command-comma, to open the unified Analytics and Settings window.
 
+For command-line development, the repository also provides these shortcuts:
+
+```bash
+make build
+make test
+make release
+```
+
 ## Test
 
 ```bash
@@ -99,6 +120,16 @@ Breather only checks aggregate system idle time and aggregate input counters to 
 Each completed or interrupted actual session produces one finalized local record. Focus records store active time with pauses excluded. Automatically scheduled breaks preserve both `scheduledAt` and actual `startedAt`, allowing Break Deferral to be calculated without storing activity events.
 
 Analytics supports Today, Last 7 Days, Last 30 Days, and All Time using the current local calendar and time zone. Clearing Analytics deletes finalized history only; it does not change settings, the Focus cycle, or a session currently in progress.
+
+## Contributing
+
+Bug reports, focused feature proposals, documentation improvements, and tested code contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Community participation follows the [Code of Conduct](CODE_OF_CONDUCT.md), and vulnerabilities must be reported privately according to [SECURITY.md](SECURITY.md).
+
+GitHub Actions builds and tests every proposed change on macOS. The same verification can be run locally with `make verify`.
+
+## License
+
+Breather’s source code and project-owned visual assets are available under the [MIT License](LICENSE), unless a file explicitly states otherwise.
 
 ## Known limitations
 
