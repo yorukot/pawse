@@ -6,6 +6,7 @@ struct MenuBarLabel: View {
     var body: some View {
         let controller = model.controller
         CountdownRingIcon(
+            symbolName: controller.currentMode.symbolName,
             fractionRemaining: model.settings.showSessionProgressInMenuBar
                 ? controller.countdownFractionRemaining
                 : nil
@@ -29,6 +30,7 @@ struct MenuBarLabel: View {
 }
 
 private struct CountdownRingIcon: View {
+    let symbolName: String
     let fractionRemaining: Double?
 
     var body: some View {
@@ -43,8 +45,13 @@ private struct CountdownRingIcon: View {
                     style: StrokeStyle(lineWidth: 2.2, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
+
+            Image(systemName: symbolName)
+                .symbolRenderingMode(.monochrome)
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.primary)
         }
-        .frame(width: 17, height: 17)
+        .frame(width: 19, height: 19)
         .accessibilityHidden(true)
     }
 }
