@@ -1,0 +1,15 @@
+* text=auto
+
+*.swift text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.pbxproj text eol=lf
+Makefile text eol=lf
+
+*.icns binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.zip binary

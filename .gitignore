@@ -1,16 +1,38 @@
-# Xcode
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode build products and archives
+Build/
 DerivedData/
 build/
+*.dSYM
+*.dSYM.zip
+*.ipa
+*.xcarchive
 *.xcresult
+
+# Xcode per-user state
+*.moved-aside
 *.xccheckout
 *.xcscmblueprint
+*.xcuserstate
 xcuserdata/
-*.moved-aside
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
 
-# Swift Package Manager
+# Swift Package Manager caches (keep Package.resolved when one is added)
 .build/
 .swiftpm/
 
-# macOS
-.DS_Store
-
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
