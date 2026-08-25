@@ -77,6 +77,13 @@ final class MenuBarIconRendererTests: XCTestCase {
         XCTAssertEqual(chromaticPixelCount(in: sleepingDog), 0)
     }
 
+    func testRendererReusesIndistinguishableFractionSteps() throws {
+        let first = try renderedImage(fractionRemaining: 0.5001, showsRing: true)
+        let second = try renderedImage(fractionRemaining: 0.5002, showsRing: true)
+
+        XCTAssertTrue(first === second)
+    }
+
     private func renderedImage(
         iconStyle: MenuBarIconStyle = .timer,
         fractionRemaining: Double?,

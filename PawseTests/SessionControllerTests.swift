@@ -66,6 +66,38 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertTrue(harness.recorder.records.isEmpty)
     }
 
+    func testBackgroundFocusUsesCoarseRefreshUntilMenuIsPresented() {
+        let harness = ControllerHarness { settings in
+            settings.focusSeconds = 120
+        }
+        harness.startFocus()
+
+        XCTAssertEqual(
+            harness.scheduler.interval,
+            SessionController.backgroundFocusRefreshInterval
+        )
+
+        harness.controller.setMenuBarExtraPresented(true)
+        XCTAssertEqual(harness.scheduler.interval, 1)
+
+        harness.controller.setMenuBarExtraPresented(false)
+        XCTAssertEqual(
+            harness.scheduler.interval,
+            SessionController.backgroundFocusRefreshInterval
+        )
+    }
+
+    func testBackgroundFocusReturnsToSecondRefreshNearDeadline() {
+        let harness = ControllerHarness { settings in
+            settings.focusSeconds = 120
+        }
+        harness.startFocus()
+
+        harness.advance(91)
+
+        XCTAssertEqual(harness.scheduler.interval, 1)
+    }
+
     func testFocusPauseResumeExcludesPausedTimeFromAnalytics() {
         let harness = ControllerHarness()
         harness.startFocus()

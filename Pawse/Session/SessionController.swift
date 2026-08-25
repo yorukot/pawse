@@ -5,6 +5,8 @@ import Observation
 @Observable
 final class SessionController {
     static let breakReminderLeadTime: TimeInterval = 10
+    static let backgroundFocusRefreshInterval: TimeInterval = 15
+    static let frequentFocusRefreshThreshold: TimeInterval = 30
 
     private(set) var state: SessionState = .idle(selectedMode: .focus)
     private(set) var nowSnapshot: Date
@@ -24,6 +26,8 @@ final class SessionController {
     private var finalizedSessionIDs: Set<UUID> = []
     private var queuedFocusDurations: [TimeInterval] = []
     private var focusSequencePlannedDuration: TimeInterval = 0
+    @ObservationIgnored private var isMenuBarExtraPresented = false
+    @ObservationIgnored private var scheduledInterval: TimeInterval?
 
     init(
         settings: SettingsStore,
@@ -156,8 +160,17 @@ final class SessionController {
         )
         state = .running(running)
         nowSnapshot = now
-        schedule(every: 1)
+        scheduleRunningSession(running, at: now)
         updateUpcomingReminder(for: running, at: now)
+    }
+
+    func setMenuBarExtraPresented(_ isPresented: Bool) {
+        guard isMenuBarExtraPresented != isPresented else { return }
+        isMenuBarExtraPresented = isPresented
+        refreshNow()
+
+        guard case .running(let session) = state else { return }
+        scheduleRunningSession(session, at: nowSnapshot)
     }
 
     func skipNextBreak() {
@@ -308,6 +321,11 @@ final class SessionController {
                 completeRunningSession(session, at: now)
             } else if session.mode == .focus {
                 updateUpcomingReminder(for: session, at: now)
+                if !isMenuBarExtraPresented,
+                   session.remaining(at: now) <= Self.frequentFocusRefreshThreshold,
+                   scheduledInterval != 1 {
+                    schedule(every: 1)
+                }
             }
         case .breakPending(let pending):
             let sample = activityMonitor.sample()
@@ -415,7 +433,7 @@ final class SessionController {
         state = .running(session)
         nowSnapshot = now
         playSound(.sessionStarted(mode))
-        schedule(every: 1)
+        scheduleRunningSession(session, at: now)
         if mode == .focus {
             updateUpcomingReminder(for: session, at: now)
         }
@@ -598,7 +616,7 @@ final class SessionController {
         nowSnapshot = now
         breakEnvironment.commitPresentation()
         playSound(.breakStarted(entry.mode))
-        schedule(every: 1)
+        scheduleRunningSession(running, at: now)
     }
 
     private func handleOverlayFailure() {
@@ -816,9 +834,22 @@ final class SessionController {
     }
 
     private func schedule(every interval: TimeInterval) {
+        scheduledInterval = interval
         scheduler.schedule(every: interval) { [weak self] in
             self?.handleTick()
         }
+    }
+
+    private func scheduleRunningSession(_ session: RunningSession, at now: Date) {
+        let interval: TimeInterval
+        if session.mode.isBreak || isMenuBarExtraPresented {
+            interval = 1
+        } else if session.remaining(at: now) <= Self.frequentFocusRefreshThreshold {
+            interval = 1
+        } else {
+            interval = Self.backgroundFocusRefreshInterval
+        }
+        schedule(every: interval)
     }
 
     private func playSound(_ event: SoundEvent) {

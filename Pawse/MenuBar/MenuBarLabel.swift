@@ -90,6 +90,17 @@ enum MenuBarIconRenderer {
     static let iconSize: CGFloat = 22
     static let centerMarkSize: CGFloat = 13
 
+    // At this size the ring has fewer than 120 visually distinct positions.
+    // Reusing those tiny bitmaps avoids rebuilding graphics resources every
+    // second throughout a Focus session.
+    private static let fractionStepCount = 120
+    private static let imageCache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.countLimit = 16
+        cache.totalCostLimit = 512 * 1024
+        return cache
+    }()
+
     static func image(
         iconStyle: MenuBarIconStyle,
         symbolName: String,
@@ -99,85 +110,184 @@ enum MenuBarIconRenderer {
         colorScheme: ColorScheme,
         scale: CGFloat = NSScreen.main?.backingScaleFactor ?? 2
     ) -> NSImage? {
-        let artwork = MenuBarIconArtwork(
+        let clampedScale = max(1, scale)
+        let fractionStep = fractionRemaining.map {
+            Int((min(1, max(0, $0)) * Double(fractionStepCount)).rounded())
+        }
+        let cacheKey = NSString(string: [
+            iconStyle.rawValue,
+            symbolName,
+            fractionStep.map(String.init) ?? "inactive",
+            showsRing ? "ring" : "mark",
+            ringDirection.rawValue,
+            colorScheme == .dark ? "dark" : "light",
+            String(Int((clampedScale * 100).rounded()))
+        ].joined(separator: ":"))
+
+        if let cached = imageCache.object(forKey: cacheKey) {
+            return cached
+        }
+
+        guard let representation = bitmapRepresentation(scale: clampedScale),
+              let graphicsContext = NSGraphicsContext(bitmapImageRep: representation) else {
+            return nil
+        }
+
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = graphicsContext
+        graphicsContext.imageInterpolation = .high
+        graphicsContext.cgContext.clear(CGRect(
+            x: 0,
+            y: 0,
+            width: representation.pixelsWide,
+            height: representation.pixelsHigh
+        ))
+        graphicsContext.cgContext.scaleBy(x: clampedScale, y: clampedScale)
+
+        let foregroundColor: NSColor = colorScheme == .dark ? .white : .black
+        drawCenterMark(
             iconStyle: iconStyle,
             symbolName: symbolName,
-            fractionRemaining: fractionRemaining,
-            showsRing: showsRing,
-            ringDirection: ringDirection,
-            colorScheme: colorScheme
+            foregroundColor: foregroundColor
         )
-        let renderer = ImageRenderer(content: artwork)
-        renderer.proposedSize = ProposedViewSize(width: iconSize, height: iconSize)
-        renderer.scale = scale
+        if showsRing {
+            drawRing(
+                fraction: fractionStep.map { Double($0) / Double(fractionStepCount) },
+                direction: ringDirection,
+                foregroundColor: foregroundColor
+            )
+        }
+        NSGraphicsContext.restoreGraphicsState()
 
-        guard let image = renderer.nsImage else { return nil }
+        representation.size = NSSize(width: iconSize, height: iconSize)
+        let image = NSImage(size: representation.size)
+        image.addRepresentation(representation)
         image.isTemplate = false
+        imageCache.setObject(
+            image,
+            forKey: cacheKey,
+            cost: representation.pixelsWide * representation.pixelsHigh * 4
+        )
         return image
     }
-}
 
-private struct MenuBarIconArtwork: View {
-    let iconStyle: MenuBarIconStyle
-    let symbolName: String
-    let fractionRemaining: Double?
-    let showsRing: Bool
-    let ringDirection: MenuBarRingDirection
-    let colorScheme: ColorScheme
-
-    private var foregroundColor: Color {
-        colorScheme == .dark ? .white : .black
+    private static func bitmapRepresentation(scale: CGFloat) -> NSBitmapImageRep? {
+        let pixelSize = Int((iconSize * scale).rounded(.up))
+        return NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelSize,
+            pixelsHigh: pixelSize,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bitmapFormat: [],
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        )
     }
 
-    private var clampedFractionRemaining: Double? {
-        fractionRemaining.map { min(1, max(0, $0)) }
-    }
-
-    var body: some View {
-        ZStack {
-            if showsRing {
-                Circle()
-                    .stroke(
-                        foregroundColor.opacity(0.28),
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round)
-                    )
-                    .padding(1.6)
-
-                if let fraction = clampedFractionRemaining, fraction > 0 {
-                    let trimStart = ringDirection == .clockwise ? 1 - fraction : 0
-                    let trimEnd = ringDirection == .clockwise ? 1 : fraction
-
-                    Circle()
-                        .trim(from: trimStart, to: trimEnd)
-                        .stroke(
-                            foregroundColor,
-                            style: StrokeStyle(lineWidth: 2.2, lineCap: .round)
-                        )
-                        .padding(1.6)
-                        .rotationEffect(.degrees(-90))
-                }
-            }
-
-            centerMark
-        }
-        .frame(width: MenuBarIconRenderer.iconSize, height: MenuBarIconRenderer.iconSize)
-    }
-
-    @ViewBuilder
-    private var centerMark: some View {
+    private static func drawCenterMark(
+        iconStyle: MenuBarIconStyle,
+        symbolName: String,
+        foregroundColor: NSColor
+    ) {
+        let image: NSImage?
+        let maximumSize: CGFloat
         switch iconStyle {
         case .timer:
-            Image(systemName: symbolName)
-                .symbolRenderingMode(.monochrome)
-                .font(.system(size: 8.5, weight: .bold))
-                .foregroundStyle(foregroundColor)
+            let configuration = NSImage.SymbolConfiguration(pointSize: 8.5, weight: .bold)
+            image = NSImage(
+                systemSymbolName: symbolName,
+                accessibilityDescription: nil
+            )?.withSymbolConfiguration(configuration)
+            maximumSize = 10
         case .sleepingDog:
-            Image("MenuBarSleepingDog")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: MenuBarIconRenderer.centerMarkSize, height: MenuBarIconRenderer.centerMarkSize)
-                .foregroundStyle(foregroundColor)
+            image = NSImage(named: "MenuBarSleepingDog")
+            maximumSize = centerMarkSize
         }
+
+        guard let image else { return }
+        let sourceSize = image.size
+        let sourceAspectRatio = sourceSize.height > 0 ? sourceSize.width / sourceSize.height : 1
+        let targetSize: NSSize
+        if sourceAspectRatio > 1 {
+            targetSize = NSSize(width: maximumSize, height: maximumSize / sourceAspectRatio)
+        } else {
+            targetSize = NSSize(width: maximumSize * sourceAspectRatio, height: maximumSize)
+        }
+        let targetRect = NSRect(
+            x: (iconSize - targetSize.width) / 2,
+            y: (iconSize - targetSize.height) / 2,
+            width: targetSize.width,
+            height: targetSize.height
+        )
+
+        image.draw(
+            in: targetRect,
+            from: .zero,
+            operation: .sourceOver,
+            fraction: 1,
+            respectFlipped: true,
+            hints: [.interpolation: NSImageInterpolation.high]
+        )
+
+        // Asset-catalog template tinting normally happens in NSImageView.
+        // Source-atop applies the same monochrome tint to this bitmap without
+        // introducing an AppKit view or a SwiftUI render graph.
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        context.saveGState()
+        context.setBlendMode(.sourceAtop)
+        context.setFillColor(foregroundColor.cgColor)
+        context.fill(targetRect)
+        context.restoreGState()
+    }
+
+    private static func drawRing(
+        fraction: Double?,
+        direction: MenuBarRingDirection,
+        foregroundColor: NSColor
+    ) {
+        let center = NSPoint(x: iconSize / 2, y: iconSize / 2)
+        let radius = (iconSize - 3.2) / 2
+
+        let track = NSBezierPath()
+        track.appendArc(
+            withCenter: center,
+            radius: radius,
+            startAngle: 0,
+            endAngle: 360,
+            clockwise: false
+        )
+        track.lineWidth = 2
+        track.lineCapStyle = .round
+        foregroundColor.withAlphaComponent(0.28).setStroke()
+        track.stroke()
+
+        guard let fraction, fraction > 0 else { return }
+        let active = NSBezierPath()
+        switch direction {
+        case .clockwise:
+            active.appendArc(
+                withCenter: center,
+                radius: radius,
+                startAngle: 90,
+                endAngle: 90 + 360 * fraction,
+                clockwise: false
+            )
+        case .counterclockwise:
+            active.appendArc(
+                withCenter: center,
+                radius: radius,
+                startAngle: 90 + 360 * (1 - fraction),
+                endAngle: 450,
+                clockwise: false
+            )
+        }
+        active.lineWidth = 2.2
+        active.lineCapStyle = .round
+        foregroundColor.setStroke()
+        active.stroke()
     }
 }
