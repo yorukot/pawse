@@ -16,15 +16,17 @@ concurrency:
 jobs:
   build-and-test:
     name: Build and test on macOS
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Show toolchain
-        run: xcodebuild -version
+      - name: Verify release toolchain
+        run: make release-toolchain-check
 
       - name: Build and test
         run: make test DERIVED_DATA="$RUNNER_TEMP/PawseDerivedData"

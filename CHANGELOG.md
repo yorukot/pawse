@@ -6,6 +6,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-25
+
+### Changed
+
+- Simplified the README around Pawse's product experience, download, privacy, and contribution paths.
+- Pinned CI and release builds to Xcode 26.6 and the macOS 26.5 SDK so Pawse uses the current native appearance on macOS 26 while retaining native compatibility with macOS 14 and 15.
+- Rebuilt the DMG as a branded drag-to-Applications Finder window with fixed icon placement and automatic artifact validation.
+- Redesigned Analytics with a clearer Focus summary, completion ring, aligned Break metrics, a combined daily Focus/Break chart, and a cleaner recent-session table.
+
+### Added
+
+- Added a responsive product site using real Pawse screenshots, accessible navigation, social metadata, structured data, sitemap, and GitHub Pages deployment.
+- Added a separate download page that presents optional Ko-fi support and the free download at equal visual priority.
+- Added a custom mounted-volume icon and illustrated installer background to the DMG.
+
+### Fixed
+
+- Fixed Release builds using the older macOS 15 SDK, which caused Pawse to render with the previous system appearance on macOS 26.
+- Fixed mounted Pawse disk images displaying the generic macOS disk icon.
+
 ## [0.1.0] - 2026-08-25
 
 ### Changed
@@ -31,5 +51,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Persist custom break images with read-only security-scoped bookmarks and migrate readable legacy bookmarks.
 
-[Unreleased]: https://github.com/yorukot/pawse/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/yorukot/pawse/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/yorukot/pawse/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/yorukot/pawse/releases/tag/v0.1.0

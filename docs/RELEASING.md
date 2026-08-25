@@ -18,9 +18,11 @@ The values live in `Pawse.xcodeproj/project.pbxproj`. `make release-check VERSIO
 
 Every GitHub Release contains:
 
-- `Pawse-x.y.z.dmg` with a Universal (`arm64` and `x86_64`) macOS application.
+- `Pawse-x.y.z.dmg` with a Universal (`arm64` and `x86_64`) macOS application, a branded drag-to-Applications Finder layout, and a custom mounted-volume icon.
 - `Pawse-x.y.z.dmg.sha256` for integrity verification.
 - Notes extracted from the matching `CHANGELOG.md` section.
+
+Release builds require Xcode 26.6 and the macOS 26.5 SDK. This keeps Pawse's native controls aligned with the current macOS appearance while the macOS 14 deployment target preserves support for macOS 14 and 15. `make release-toolchain-check` fails early if either version differs.
 
 The tag-triggered workflow currently publishes `0.x` builds with an ad-hoc signature and marks them as pre-releases. They are suitable for transparent early-access distribution but are not Apple-notarized; macOS may require Control-click → Open on first launch.
 
@@ -37,6 +39,7 @@ Stable public releases must be Developer ID signed and Apple-notarized. Do not d
 
 ```bash
 make release-check VERSION=x.y.z
+make release-toolchain-check
 make clean
 make test
 make release
@@ -44,7 +47,7 @@ make package VERSION=x.y.z
 git diff --check
 ```
 
-7. Install the generated DMG and manually validate the menu-bar item, timer, natural-break entry and retry, Emergency Exit, sounds, Analytics, settings persistence, and a complete break. Test display synchronization when multiple displays are available.
+7. Open the generated DMG and verify its desktop volume icon, illustrated Finder background, Pawse and Applications icon positions, and drag-to-install flow. Then validate the installed menu-bar item, timer, natural-break entry and retry, Emergency Exit, sounds, Analytics, settings persistence, and a complete break. Test display synchronization when multiple displays are available.
 8. Treat localization as a release gate. Native speakers should review Spanish, Japanese, Traditional Chinese, and Simplified Chinese strings, and the Language restart flow should be checked in every supported language.
 
 The local package is written to `dist/`; build products and release artifacts are ignored by Git.

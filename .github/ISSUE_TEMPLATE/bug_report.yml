@@ -12,7 +12,7 @@ body:
     attributes:
       label: Pawse version
       description: Enter the release version or Git commit.
-      placeholder: 0.1.0 (build 1) or d506a6f
+      placeholder: 0.1.1 (build 2) or d506a6f
     validations:
       required: true
 

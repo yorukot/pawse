@@ -6,7 +6,7 @@ DIST_DIR ?= dist
 VERSION ?=
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -destination '$(DESTINATION)' -derivedDataPath '$(DERIVED_DATA)'
 
-.PHONY: list build test release clean verify release-check release-notes package
+.PHONY: list build test release clean verify release-check release-toolchain-check release-notes package
 
 list:
 	xcodebuild -list -project $(PROJECT)
@@ -17,7 +17,7 @@ build:
 test:
 	$(XCODEBUILD) test
 
-release:
+release: release-toolchain-check
 	$(XCODEBUILD) -configuration Release build
 
 clean:
@@ -28,6 +28,9 @@ verify: test
 
 release-check:
 	./scripts/release/verify-version.sh $(VERSION)
+
+release-toolchain-check:
+	./scripts/release/verify-toolchain.sh
 
 release-notes: release-check
 	./scripts/release/release-notes.sh $(VERSION) $(DIST_DIR)/release-notes.md

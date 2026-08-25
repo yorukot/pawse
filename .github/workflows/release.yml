@@ -15,15 +15,17 @@ concurrency:
 jobs:
   release:
     name: Build and publish release
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
     steps:
       - name: Check out tagged source
         uses: actions/checkout@v6
 
-      - name: Show toolchain
-        run: xcodebuild -version
+      - name: Verify release toolchain
+        run: make release-toolchain-check
 
       - name: Validate release metadata
         run: |
