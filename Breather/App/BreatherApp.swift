@@ -9,12 +9,12 @@ struct BreatherApp: App {
         MenuBarExtra {
             MenuBarView(model: model)
         } label: {
-            Label("Breather", systemImage: "timer")
+            MenuBarLabel(model: model)
         }
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView()
+            SettingsView(settings: model.settings)
         }
 
         Window("Analytics", id: "analytics") {
@@ -23,4 +23,3 @@ struct BreatherApp: App {
         .defaultSize(width: 760, height: 560)
     }
 }
-

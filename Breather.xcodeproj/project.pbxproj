@@ -19,6 +19,23 @@
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
+/* Begin PBXFileReference section */
+		A40000000000000000000001 /* Breather.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = Breather.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A40000000000000000000002 /* BreatherTests.xctest */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = BreatherTests.xctest;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXFileReference section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		A20000000000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -427,4 +444,3 @@
 	};
 	rootObject = AA0000000000000000000001 /* Project object */;
 }
-

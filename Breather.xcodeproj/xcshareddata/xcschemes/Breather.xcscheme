@@ -21,6 +21,20 @@
                ReferencedContainer = "container:Breather.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A50000000000000000000002"
+               BuildableName = "BreatherTests.xctest"
+               BlueprintName = "BreatherTests"
+               ReferencedContainer = "container:Breather.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -28,7 +42,7 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldAutocreateTestPlan = "NO">
       <Testables>
          <TestableReference skipped = "NO" parallelizable = "YES">
             <BuildableReference
@@ -80,4 +94,3 @@
    <AnalyzeAction buildConfiguration = "Debug"/>
    <ArchiveAction buildConfiguration = "Release" revealArchiveInOrganizer = "YES"/>
 </Scheme>
-
