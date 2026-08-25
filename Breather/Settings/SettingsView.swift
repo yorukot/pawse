@@ -47,6 +47,7 @@ struct SettingsView: View {
         ) {
             Button("Reset Settings", role: .destructive) {
                 settings.resetToDefaults()
+                soundService.validateSelections()
                 launchAtLoginService.setEnabled(false)
             }
         } message: {
@@ -121,25 +122,27 @@ struct SettingsView: View {
         Form {
             Section("Sounds") {
                 Toggle("Enable Sounds", isOn: $settings.enableSounds)
-                soundPicker(
-                    title: "Session Start Sound",
-                    selection: $settings.sessionStartSound
-                )
-                soundPicker(
-                    title: "Break Ready Sound",
-                    selection: $settings.breakReadySound
-                )
-                soundPicker(
-                    title: "Break Complete Sound",
-                    selection: $settings.breakCompleteSound
-                )
-                LabeledContent("Volume") {
-                    Slider(value: $settings.soundVolume, in: 0...1)
-                        .frame(width: 220)
-                        .accessibilityValue("\(Int(settings.soundVolume * 100)) percent")
+                Group {
+                    soundPicker(
+                        title: "Session Start Sound",
+                        selection: $settings.sessionStartSound
+                    )
+                    soundPicker(
+                        title: "Break Ready Sound",
+                        selection: $settings.breakReadySound
+                    )
+                    soundPicker(
+                        title: "Break Complete Sound",
+                        selection: $settings.breakCompleteSound
+                    )
+                    LabeledContent("Volume") {
+                        Slider(value: $settings.soundVolume, in: 0...1)
+                            .frame(width: 220)
+                            .accessibilityValue("\(Int(settings.soundVolume * 100)) percent")
+                    }
                 }
+                .disabled(!settings.enableSounds)
             }
-            .disabled(!settings.enableSounds)
             Text("Only system sounds available on this Mac are shown.")
                 .font(.caption)
                 .foregroundStyle(.secondary)

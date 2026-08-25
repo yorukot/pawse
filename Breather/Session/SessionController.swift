@@ -303,7 +303,7 @@ final class SessionController {
         }
         state = .running(session)
         nowSnapshot = now
-        soundPlayer.play(.sessionStarted(mode))
+        playSound(.sessionStarted(mode))
         schedule(every: 1)
     }
 
@@ -324,7 +324,7 @@ final class SessionController {
         let duration = settings.duration(for: breakMode)
 
         guard settings.automaticallyStartBreaks else {
-            soundPlayer.play(.focusCompleted)
+            playSound(.focusCompleted)
             state = .idle(selectedMode: breakMode)
             nowSnapshot = now
             return
@@ -342,7 +342,7 @@ final class SessionController {
             state = .breakPending(pending)
             nowSnapshot = now
             breakEnvironment.showReminder(for: breakMode)
-            soundPlayer.play(.breakReady(breakMode))
+            playSound(.breakReady(breakMode))
             schedule(every: 0.25)
         } else {
             state = .idle(selectedMode: breakMode)
@@ -360,7 +360,7 @@ final class SessionController {
             settings.focusCycleCount = 0
         }
         cleanupBreakEnvironment()
-        soundPlayer.play(.breakCompleted(session.mode))
+        playSound(.breakCompleted(session.mode))
         state = .idle(selectedMode: .focus)
         nowSnapshot = now
         if settings.automaticallyStartNextFocus {
@@ -395,8 +395,7 @@ final class SessionController {
 
     private func cancelBreakEntry(_ entry: BreakEntry) {
         guard case .breakEntering(let current) = state, current.id == entry.id else { return }
-        breakEnvironment.cleanup()
-        entryActivityBaseline = nil
+        cleanupBreakEnvironment()
         let pending = PendingBreak(
             id: entry.id,
             mode: entry.mode,
@@ -432,7 +431,7 @@ final class SessionController {
         state = .running(running)
         nowSnapshot = now
         breakEnvironment.commitPresentation()
-        soundPlayer.play(.breakStarted(entry.mode))
+        playSound(.breakStarted(entry.mode))
         schedule(every: 1)
     }
 
@@ -516,6 +515,11 @@ final class SessionController {
         scheduler.schedule(every: interval) { [weak self] in
             self?.handleTick()
         }
+    }
+
+    private func playSound(_ event: SoundEvent) {
+        guard settings.enableSounds else { return }
+        soundPlayer.play(event)
     }
 
     private func refreshNow() {

@@ -5,6 +5,8 @@ import Observation
 @Observable
 final class SoundService: SoundPlaying {
     let availableSounds: [AppSound]
+    private(set) var lastPlayedName: String?
+    private(set) var lastPlaybackVolume: Double?
 
     private let settings: SettingsStore
     @ObservationIgnored private var activeSound: NSSound?
@@ -15,7 +17,7 @@ final class SoundService: SoundPlaying {
         availableSounds = [.none] + candidates.compactMap { name in
             NSSound(named: NSSound.Name(name)) == nil ? nil : AppSound(name: name)
         }
-        normalizeSelections()
+        validateSelections()
     }
 
     func play(_ event: SoundEvent) {
@@ -51,11 +53,13 @@ final class SoundService: SoundPlaying {
               availableSounds.contains(where: { $0.name == name }),
               let sound = NSSound(named: NSSound.Name(name)) else { return }
         sound.volume = Float(min(1, max(0, settings.soundVolume)))
+        lastPlayedName = name
+        lastPlaybackVolume = Double(sound.volume)
         activeSound = sound
         sound.play()
     }
 
-    private func normalizeSelections() {
+    func validateSelections() {
         let names = Set(availableSounds.map(\.name))
         let gentleDefault = availableSounds.first(where: { !$0.isNone })?.name ?? AppSound.none.name
         if !names.contains(settings.sessionStartSound) {
