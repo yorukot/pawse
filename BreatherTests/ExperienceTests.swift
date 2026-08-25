@@ -122,7 +122,7 @@ final class ExperienceTests: XCTestCase {
         XCTAssertNil(settings.customBreakImageBookmark)
     }
 
-    func testUpcomingBreakSummaryExplainsTwoShortBreakCycle() {
+    func testUpcomingBreakSummaryEstimatesBothBreaksAcrossTheCycle() {
         let harness = ControllerHarness { settings in
             settings.shortBreaksBeforeLongBreak = 2
             settings.shortBreakSeconds = 30
@@ -130,82 +130,91 @@ final class ExperienceTests: XCTestCase {
         }
 
         var summary = harness.controller.upcomingBreakSummary
-        XCTAssertEqual(summary.nextMode, .shortBreak)
-        XCTAssertEqual(summary.nextDuration, 30)
-        XCTAssertEqual(summary.focusSessionsUntilLongBreak, 3)
-        XCTAssertEqual(summary.longBreakDuration, 600)
+        XCTAssertEqual(summary.shortBreak, .estimated(60))
+        XCTAssertEqual(summary.longBreak, .estimated(240))
 
         harness.settings.focusCycleCount = 2
         summary = harness.controller.upcomingBreakSummary
-        XCTAssertEqual(summary.nextMode, .longBreak)
-        XCTAssertEqual(summary.focusSessionsUntilLongBreak, 1)
+        XCTAssertEqual(summary.shortBreak, .estimated(720))
+        XCTAssertEqual(summary.longBreak, .estimated(60))
 
         harness.settings.focusCycleCount = 3
         summary = harness.controller.upcomingBreakSummary
-        XCTAssertEqual(summary.nextMode, .longBreak)
-        XCTAssertEqual(summary.focusSessionsUntilLongBreak, 0)
+        XCTAssertEqual(summary.shortBreak, .estimated(720))
+        XCTAssertEqual(summary.longBreak, .estimated(60))
     }
 
-    func testBreakReminderAttentionProgressBecomesReadyWithoutForcingTransition() {
-        let scheduledAt = Date(timeIntervalSince1970: 100)
+    func testBreakReminderProgressRunsBeforeTheFocusDeadline() {
+        let deadline = Date(timeIntervalSince1970: 110)
+        let upcoming = BreakReminderPhase.upcoming(deadline: deadline, leadTime: 10)
 
         XCTAssertEqual(
-            BreakReminderView.attentionProgress(scheduledAt: scheduledAt, now: scheduledAt),
+            BreakReminderView.progress(
+                for: upcoming,
+                now: deadline.addingTimeInterval(-10)
+            ),
             0
         )
         XCTAssertEqual(
-            BreakReminderView.attentionProgress(
-                scheduledAt: scheduledAt,
-                now: scheduledAt.addingTimeInterval(7.5)
+            BreakReminderView.progress(
+                for: upcoming,
+                now: deadline.addingTimeInterval(-5)
             ),
             0.5,
             accuracy: 0.001
         )
-        XCTAssertFalse(
-            BreakReminderView.isAttentionState(
-                scheduledAt: scheduledAt,
-                now: scheduledAt.addingTimeInterval(14.9)
-            )
-        )
-        XCTAssertTrue(
-            BreakReminderView.isAttentionState(
-                scheduledAt: scheduledAt,
-                now: scheduledAt.addingTimeInterval(15)
-            )
-        )
         XCTAssertEqual(
-            BreakReminderView.attentionProgress(
-                scheduledAt: scheduledAt,
-                now: scheduledAt.addingTimeInterval(120)
-            ),
+            BreakReminderView.progress(for: upcoming, now: deadline),
+            1
+        )
+        XCTAssertFalse(BreakReminderView.isAttentionState(upcoming))
+        XCTAssertTrue(BreakReminderView.isAttentionState(.ready(scheduledAt: deadline)))
+        XCTAssertEqual(
+            BreakReminderView.progress(for: .ready(scheduledAt: deadline), now: deadline),
             1
         )
     }
 
     func testBreakReminderCopyUsesSentenceCaseAndNamesLongBreak() {
         XCTAssertEqual(
-            BreakReminderView.title(for: .shortBreak, isAttentionState: false),
+            BreakReminderView.title(
+                for: .shortBreak,
+                phase: .upcoming(deadline: .now, leadTime: 10)
+            ),
             "Break soon"
         )
         XCTAssertEqual(
-            BreakReminderView.title(for: .shortBreak, isAttentionState: true),
+            BreakReminderView.title(for: .shortBreak, phase: .ready(scheduledAt: .now)),
             "Break ready"
         )
         XCTAssertEqual(
-            BreakReminderView.title(for: .longBreak, isAttentionState: false),
+            BreakReminderView.title(
+                for: .longBreak,
+                phase: .upcoming(deadline: .now, leadTime: 10)
+            ),
             "Long break soon"
         )
         XCTAssertEqual(
-            BreakReminderView.title(for: .longBreak, isAttentionState: true),
+            BreakReminderView.title(for: .longBreak, phase: .ready(scheduledAt: .now)),
             "Long break ready"
         )
         XCTAssertEqual(
-            BreakReminderView.accessibilityLabel(for: .shortBreak, isAttentionState: true),
+            BreakReminderView.accessibilityLabel(
+                for: BreakReminderPresentation(
+                    mode: .shortBreak,
+                    phase: .ready(scheduledAt: .now)
+                )
+            ),
             "Short break ready. Click to start."
         )
         XCTAssertEqual(
-            BreakReminderView.accessibilityLabel(for: .longBreak, isAttentionState: false),
-            "Long break soon. Click to start."
+            BreakReminderView.accessibilityLabel(
+                for: BreakReminderPresentation(
+                    mode: .longBreak,
+                    phase: .upcoming(deadline: .now, leadTime: 10)
+                )
+            ),
+            "Long break soon. Click to finish Focus and start now."
         )
     }
 
@@ -262,8 +271,11 @@ final class ExperienceTests: XCTestCase {
             return XCTFail("Expected entry activity to return to pending")
         }
         XCTAssertEqual(retriedPending.scheduledAt, firstPending.scheduledAt)
-        XCTAssertEqual(harness.environment.pendingReminders.count, 2)
-        XCTAssertEqual(harness.environment.pendingReminders.last?.scheduledAt, firstPending.scheduledAt)
+        XCTAssertEqual(harness.environment.reminderPresentations.count, 2)
+        XCTAssertEqual(
+            harness.environment.reminderPresentations.last?.phase,
+            .ready(scheduledAt: firstPending.scheduledAt)
+        )
         XCTAssertEqual(harness.environment.cleanupAnimationValues.last, true)
     }
 

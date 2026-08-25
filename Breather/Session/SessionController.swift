@@ -4,11 +4,13 @@ import Observation
 @MainActor
 @Observable
 final class SessionController {
+    static let breakReminderLeadTime: TimeInterval = 10
+
     private(set) var state: SessionState = .idle(selectedMode: .focus)
     private(set) var nowSnapshot: Date
     private(set) var modeSwitchTarget: SessionMode?
     private(set) var isEmergencyExitConfirmationPresented = false
-    private(set) var lastError: String?
+    private(set) var lastError: LocalizedStringResource?
 
     let settings: SettingsStore
     private let clock: SessionClock
@@ -19,6 +21,7 @@ final class SessionController {
     private let breakEnvironment: BreakEnvironmentManaging
 
     private var entryActivityBaseline: UInt64?
+    private var activeReminderPresentation: BreakReminderPresentation?
     private var finalizedSessionIDs: Set<UUID> = []
 
     init(
@@ -77,17 +80,7 @@ final class SessionController {
     var currentMode: SessionMode { state.selectedOrCurrentMode }
 
     var upcomingBreakSummary: UpcomingBreakSummary {
-        let focusSessionsUntilLongBreak = max(
-            0,
-            settings.shortBreaksBeforeLongBreak + 1 - settings.focusCycleCount
-        )
-        let nextMode: SessionMode = focusSessionsUntilLongBreak <= 1 ? .longBreak : .shortBreak
-        return UpcomingBreakSummary(
-            nextMode: nextMode,
-            nextDuration: settings.duration(for: nextMode),
-            focusSessionsUntilLongBreak: focusSessionsUntilLongBreak,
-            longBreakDuration: settings.duration(for: .longBreak)
-        )
+        projectedBreakSummary()
     }
 
     var isFocusRunningOrPaused: Bool {
@@ -132,6 +125,7 @@ final class SessionController {
         state = .paused(paused)
         nowSnapshot = now
         scheduler.cancel()
+        hideBreakReminder()
     }
 
     func resumeFocus() {
@@ -152,6 +146,7 @@ final class SessionController {
         state = .running(running)
         nowSnapshot = now
         schedule(every: 1)
+        updateUpcomingReminder(for: running, at: now)
     }
 
     func stopCurrentSession() {
@@ -160,6 +155,7 @@ final class SessionController {
         case .running(let session) where session.mode == .focus:
             finalize(session, outcome: .stopped, endedAt: now, activeDuration: session.activeDuration(at: now))
             scheduler.cancel()
+            hideBreakReminder()
             state = .idle(selectedMode: .focus)
             nowSnapshot = now
         case .paused(let session):
@@ -194,6 +190,7 @@ final class SessionController {
             return
         }
         scheduler.cancel()
+        hideBreakReminder()
         modeSwitchTarget = nil
         state = .idle(selectedMode: target)
         startSession(mode: target, origin: .manual, scheduledAt: nil, cyclePosition: nil)
@@ -202,6 +199,26 @@ final class SessionController {
     func startPendingBreakNow() {
         guard case .breakPending(let pending) = state else { return }
         beginBreakEntry(pending)
+    }
+
+    func startBreakFromReminder() {
+        switch state {
+        case .running(let session) where session.mode == .focus:
+            let now = clock.now
+            guard settings.automaticallyStartBreaks,
+                  session.remaining(at: now) <= Self.breakReminderLeadTime else { return }
+            finalize(
+                session,
+                outcome: .completed,
+                endedAt: now,
+                activeDuration: session.activeDuration(at: now)
+            )
+            completeFocus(at: now, startBreakImmediately: true)
+        case .breakPending(let pending):
+            beginBreakEntry(pending)
+        default:
+            break
+        }
     }
 
     func cancelPendingBreak() {
@@ -236,8 +253,12 @@ final class SessionController {
         let now = clock.now
         nowSnapshot = now
         switch state {
-        case .running(let session) where now >= session.deadline:
-            completeRunningSession(session, at: now)
+        case .running(let session):
+            if now >= session.deadline {
+                completeRunningSession(session, at: now)
+            } else if session.mode == .focus {
+                updateUpcomingReminder(for: session, at: now)
+            }
         case .breakPending(let pending):
             let sample = activityMonitor.sample()
             if sample.secondsSinceLastInput >= settings.idleBeforeBreak {
@@ -260,6 +281,7 @@ final class SessionController {
         breakEnvironment.cleanup(animated: animated)
         soundPlayer.stopAll()
         entryActivityBaseline = nil
+        activeReminderPresentation = nil
         isEmergencyExitConfirmationPresented = false
     }
 
@@ -325,6 +347,7 @@ final class SessionController {
             cyclePosition: cyclePosition
         )
         if mode.isBreak {
+            activeReminderPresentation = nil
             do {
                 try breakEnvironment.showEntryOverlays(for: mode)
                 breakEnvironment.commitPresentation()
@@ -337,25 +360,29 @@ final class SessionController {
         nowSnapshot = now
         playSound(.sessionStarted(mode))
         schedule(every: 1)
+        if mode == .focus {
+            updateUpcomingReminder(for: session, at: now)
+        }
     }
 
     private func completeRunningSession(_ session: RunningSession, at now: Date) {
         guard !finalizedSessionIDs.contains(session.id) else { return }
         finalize(session, outcome: .completed, endedAt: now, activeDuration: session.plannedDuration)
         if session.mode == .focus {
-            completeFocus(at: now)
+            completeFocus(at: now, startBreakImmediately: false)
         } else {
             completeBreak(session, at: now)
         }
     }
 
-    private func completeFocus(at now: Date) {
+    private func completeFocus(at now: Date, startBreakImmediately: Bool) {
         scheduler.cancel()
         settings.focusCycleCount += 1
-        let breakMode: SessionMode = settings.focusCycleCount > settings.shortBreaksBeforeLongBreak ? .longBreak : .shortBreak
+        let breakMode = scheduledBreakMode(afterCompletedFocusCount: settings.focusCycleCount)
         let duration = settings.duration(for: breakMode)
 
         guard settings.automaticallyStartBreaks else {
+            hideBreakReminder()
             playSound(.focusCompleted)
             state = .idle(selectedMode: breakMode)
             nowSnapshot = now
@@ -373,9 +400,13 @@ final class SessionController {
             )
             state = .breakPending(pending)
             nowSnapshot = now
-            breakEnvironment.showReminder(for: pending)
             playSound(.breakReady(breakMode))
-            schedule(every: 0.25)
+            if startBreakImmediately {
+                beginBreakEntry(pending)
+            } else {
+                showBreakReadyReminder(for: pending)
+                schedule(every: 0.25)
+            }
         } else {
             state = .idle(selectedMode: breakMode)
             startSession(
@@ -404,6 +435,7 @@ final class SessionController {
         guard case .breakPending(let current) = state, current.id == pending.id else { return }
         let now = clock.now
         breakEnvironment.hideReminder()
+        activeReminderPresentation = nil
         do {
             try breakEnvironment.showEntryOverlays(for: pending.mode)
         } catch {
@@ -437,7 +469,7 @@ final class SessionController {
             plannedDuration: entry.plannedDuration
         )
         state = .breakPending(pending)
-        breakEnvironment.showReminder(for: pending)
+        showBreakReadyReminder(for: pending)
         refreshNow()
         schedule(every: 0.25)
     }
@@ -472,6 +504,133 @@ final class SessionController {
         lastError = "Breather could not cover every display. The break was canceled for safety."
         state = .idle(selectedMode: .focus)
         refreshNow()
+    }
+
+    private func updateUpcomingReminder(for session: RunningSession, at now: Date) {
+        guard session.mode == .focus else { return }
+        guard settings.automaticallyStartBreaks else {
+            hideBreakReminder()
+            return
+        }
+
+        let remaining = session.remaining(at: now)
+        guard remaining <= Self.breakReminderLeadTime else {
+            hideBreakReminder()
+            return
+        }
+
+        let mode = scheduledBreakMode(
+            afterCompletedFocusCount: settings.focusCycleCount + 1
+        )
+        showBreakReminder(
+            BreakReminderPresentation(
+                mode: mode,
+                phase: .upcoming(
+                    deadline: session.deadline,
+                    leadTime: Self.breakReminderLeadTime
+                )
+            )
+        )
+    }
+
+    private func showBreakReadyReminder(for pending: PendingBreak) {
+        showBreakReminder(
+            BreakReminderPresentation(
+                mode: pending.mode,
+                phase: .ready(scheduledAt: pending.scheduledAt)
+            )
+        )
+    }
+
+    private func showBreakReminder(_ presentation: BreakReminderPresentation) {
+        guard activeReminderPresentation != presentation else { return }
+        activeReminderPresentation = presentation
+        breakEnvironment.showReminder(presentation)
+    }
+
+    private func hideBreakReminder() {
+        guard activeReminderPresentation != nil else { return }
+        breakEnvironment.hideReminder()
+        activeReminderPresentation = nil
+    }
+
+    private func scheduledBreakMode(afterCompletedFocusCount count: Int) -> SessionMode {
+        count > settings.shortBreaksBeforeLongBreak ? .longBreak : .shortBreak
+    }
+
+    private func projectedBreakSummary() -> UpcomingBreakSummary {
+        var shortBreak: UpcomingBreakTiming?
+        var longBreak: UpcomingBreakTiming?
+        var elapsed: TimeInterval
+        var focusCycleCount = settings.focusCycleCount
+
+        switch state {
+        case .idle:
+            elapsed = settings.duration(for: .focus)
+        case .running(let session) where session.mode == .focus:
+            elapsed = session.remaining(at: nowSnapshot)
+        case .paused(let session):
+            elapsed = max(0, session.remainingDuration)
+        case .running(let session):
+            if session.mode == .shortBreak {
+                shortBreak = .inProgress
+            } else {
+                longBreak = .inProgress
+            }
+            elapsed = session.remaining(at: nowSnapshot)
+            if session.origin == .automatic && session.mode == .longBreak {
+                focusCycleCount = 0
+            }
+            elapsed += settings.duration(for: .focus)
+        case .breakPending(let pending):
+            if pending.mode == .shortBreak {
+                shortBreak = .readyNow
+            } else {
+                longBreak = .readyNow
+            }
+            elapsed = pending.plannedDuration
+            if pending.origin == .automatic && pending.mode == .longBreak {
+                focusCycleCount = 0
+            }
+            elapsed += settings.duration(for: .focus)
+        case .breakEntering(let entry):
+            if entry.mode == .shortBreak {
+                shortBreak = .inProgress
+            } else {
+                longBreak = .inProgress
+            }
+            elapsed = max(
+                0,
+                entry.plannedDuration - nowSnapshot.timeIntervalSince(entry.beganEnteringAt)
+            )
+            if entry.origin == .automatic && entry.mode == .longBreak {
+                focusCycleCount = 0
+            }
+            elapsed += settings.duration(for: .focus)
+        }
+
+        for _ in 0..<64 where shortBreak == nil || longBreak == nil {
+            focusCycleCount += 1
+            let mode = scheduledBreakMode(afterCompletedFocusCount: focusCycleCount)
+            let timing = UpcomingBreakTiming.estimated(max(0, elapsed))
+
+            if mode == .shortBreak, shortBreak == nil {
+                shortBreak = timing
+            } else if mode == .longBreak, longBreak == nil {
+                longBreak = timing
+            }
+
+            elapsed += settings.duration(for: mode)
+            if mode == .longBreak {
+                focusCycleCount = 0
+            }
+            elapsed += settings.duration(for: .focus)
+        }
+
+        return UpcomingBreakSummary(
+            shortBreak: shortBreak ?? .estimated(max(0, elapsed)),
+            longBreak: longBreak ?? .estimated(max(0, elapsed))
+        )
     }
 
     private func finalize(

@@ -69,7 +69,7 @@ enum BreakEnvironmentError: Error {
 
 @MainActor
 protocol BreakEnvironmentManaging: AnyObject {
-    func showReminder(for pendingBreak: PendingBreak)
+    func showReminder(_ presentation: BreakReminderPresentation)
     func hideReminder()
     func showEntryOverlays(for mode: SessionMode) throws
     func commitPresentation()
@@ -78,7 +78,7 @@ protocol BreakEnvironmentManaging: AnyObject {
 
 @MainActor
 final class NoOpBreakEnvironment: BreakEnvironmentManaging {
-    func showReminder(for pendingBreak: PendingBreak) {}
+    func showReminder(_ presentation: BreakReminderPresentation) {}
     func hideReminder() {}
     func showEntryOverlays(for mode: SessionMode) throws {}
     func commitPresentation() {}

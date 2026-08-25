@@ -190,12 +190,13 @@ final class SessionControllerTests: XCTestCase {
     }
 
     func testDurationFormatterSupportsHoursAndClampsNegativeValues() {
+        let english = Locale(identifier: "en_US")
         XCTAssertEqual(DurationFormatter.timer(3_661), "01:01:01")
         XCTAssertEqual(DurationFormatter.timer(-10), "00:00")
         XCTAssertEqual(DurationFormatter.timer(59.1), "01:00")
-        XCTAssertEqual(DurationFormatter.concise(30), "30 sec")
-        XCTAssertEqual(DurationFormatter.concise(60), "1 min")
-        XCTAssertEqual(DurationFormatter.concise(90), "1 min 30 sec")
+        XCTAssertEqual(DurationFormatter.concise(30, locale: english), "30 sec")
+        XCTAssertEqual(DurationFormatter.concise(60, locale: english), "1 min")
+        XCTAssertEqual(DurationFormatter.concise(90, locale: english), "1 min, 30 sec")
     }
 
     func testSettingsAreClampedToAllowedRanges() {

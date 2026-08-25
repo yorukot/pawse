@@ -64,11 +64,25 @@ struct BreakEntry: Equatable, Sendable {
     let plannedDuration: TimeInterval
 }
 
+enum BreakReminderPhase: Equatable, Sendable {
+    case upcoming(deadline: Date, leadTime: TimeInterval)
+    case ready(scheduledAt: Date)
+}
+
+struct BreakReminderPresentation: Equatable, Sendable {
+    let mode: SessionMode
+    let phase: BreakReminderPhase
+}
+
+enum UpcomingBreakTiming: Equatable, Sendable {
+    case readyNow
+    case inProgress
+    case estimated(TimeInterval)
+}
+
 struct UpcomingBreakSummary: Equatable, Sendable {
-    let nextMode: SessionMode
-    let nextDuration: TimeInterval
-    let focusSessionsUntilLongBreak: Int
-    let longBreakDuration: TimeInterval
+    let shortBreak: UpcomingBreakTiming
+    let longBreak: UpcomingBreakTiming
 }
 
 enum SessionState: Equatable, Sendable {

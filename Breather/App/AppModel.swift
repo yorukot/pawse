@@ -65,7 +65,7 @@ final class AppModel {
         self.controller = controller
         breakEnvironment.connect(controller: controller)
         breakEnvironment.onStartBreak = { [weak controller] in
-            controller?.startPendingBreakNow()
+            controller?.startBreakFromReminder()
         }
         AppDelegate.sessionController = controller
         if startsFocusOnLaunch {

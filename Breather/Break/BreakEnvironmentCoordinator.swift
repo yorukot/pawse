@@ -31,11 +31,8 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
         }
     }
 
-    func showReminder(for pendingBreak: PendingBreak) {
-        reminderCoordinator.show(
-            for: pendingBreak.mode,
-            scheduledAt: pendingBreak.scheduledAt
-        )
+    func showReminder(_ presentation: BreakReminderPresentation) {
+        reminderCoordinator.show(presentation)
     }
 
     func hideReminder() {

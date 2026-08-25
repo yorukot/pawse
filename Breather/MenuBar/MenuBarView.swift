@@ -4,6 +4,7 @@ import SwiftUI
 struct MenuBarView: View {
     let model: AppModel
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.locale) private var locale
     @State private var isSwitchModeHovered = false
 
     private var controller: SessionController { model.controller }
@@ -277,26 +278,35 @@ struct MenuBarView: View {
         }
     }
 
+    private func timingLabel(_ timing: UpcomingBreakTiming) -> String {
+        switch timing {
+        case .readyNow:
+            String(localized: "Ready now", locale: locale)
+        case .inProgress:
+            String(localized: "In progress", locale: locale)
+        case .estimated(let duration):
+            "≈ \(DurationFormatter.estimate(duration, locale: locale))"
+        }
+    }
+
     private var upNextContent: some View {
         let summary = controller.upcomingBreakSummary
         return GroupBox {
             VStack(alignment: .leading, spacing: Layout.actionSpacing) {
                 detailRow(
-                    title: "Next",
-                    value: "\(summary.nextMode.displayName) · \(DurationFormatter.concise(summary.nextDuration))"
+                    title: "Short Break",
+                    value: timingLabel(summary.shortBreak)
                 )
 
-                if summary.focusSessionsUntilLongBreak == 0 {
-                    detailRow(
-                        title: "Long Break",
-                        value: "Ready · \(DurationFormatter.concise(summary.longBreakDuration))"
-                    )
-                } else {
-                    detailRow(
-                        title: "Long Break",
-                        value: "In \(summary.focusSessionsUntilLongBreak) Focus \(summary.focusSessionsUntilLongBreak == 1 ? "session" : "sessions") · \(DurationFormatter.concise(summary.longBreakDuration))"
-                    )
-                }
+                detailRow(
+                    title: "Long Break",
+                    value: timingLabel(summary.longBreak)
+                )
+
+                Text("Estimates exclude pauses and natural-break waiting.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
         } label: {

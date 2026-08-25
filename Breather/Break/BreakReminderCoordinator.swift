@@ -5,6 +5,7 @@ import SwiftUI
 final class BreakReminderCoordinator: NSObject {
     var onStartBreak: (@MainActor () -> Void)?
 
+    private let locale: Locale
     private var panel: BreakReminderPanel?
     private var isMonitoringScreens = false
 
@@ -14,16 +15,20 @@ final class BreakReminderCoordinator: NSObject {
     var usesHUDMaterial: Bool { panel?.usesHUDMaterial == true }
     var hostedContentViewCount: Int { panel?.hostedContentViewCount ?? 0 }
 
-    func show(for mode: SessionMode, scheduledAt: Date = .now) {
+    init(locale: Locale = .autoupdatingCurrent) {
+        self.locale = locale
+    }
+
+    func show(_ presentation: BreakReminderPresentation) {
         if let panel {
-            panel.installHostedView(hostingView(for: mode, scheduledAt: scheduledAt))
+            panel.installHostedView(hostingView(for: presentation))
             reposition(panel)
             panel.orderFrontRegardless()
             return
         }
 
         let panel = BreakReminderPanel()
-        panel.installHostedView(hostingView(for: mode, scheduledAt: scheduledAt))
+        panel.installHostedView(hostingView(for: presentation))
         self.panel = panel
         reposition(panel)
         startMonitoringScreens()
@@ -37,11 +42,14 @@ final class BreakReminderCoordinator: NSObject {
         stopMonitoringScreens()
     }
 
-    private func hostingView(for mode: SessionMode, scheduledAt: Date) -> NSHostingView<BreakReminderView> {
+    private func hostingView(
+        for presentation: BreakReminderPresentation
+    ) -> NSView {
         NSHostingView(
-            rootView: BreakReminderView(mode: mode, scheduledAt: scheduledAt) { [weak self] in
+            rootView: BreakReminderView(presentation: presentation) { [weak self] in
                 self?.onStartBreak?()
             }
+            .environment(\.locale, locale)
         )
     }
 

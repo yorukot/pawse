@@ -9,7 +9,12 @@ final class BreakInfrastructureTests: XCTestCase {
         var clicked = false
         coordinator.onStartBreak = { clicked = true }
 
-        coordinator.show(for: .shortBreak)
+        coordinator.show(
+            BreakReminderPresentation(
+                mode: .shortBreak,
+                phase: .upcoming(deadline: .now.addingTimeInterval(10), leadTime: 10)
+            )
+        )
         XCTAssertTrue(coordinator.isVisible)
         XCTAssertFalse(coordinator.isKeyWindow)
         XCTAssertEqual(coordinator.panelSize, BreakReminderPanel.reminderSize)
@@ -17,7 +22,9 @@ final class BreakInfrastructureTests: XCTestCase {
         XCTAssertEqual(coordinator.hostedContentViewCount, 1)
         XCTAssertFalse(clicked)
 
-        coordinator.show(for: .longBreak)
+        coordinator.show(
+            BreakReminderPresentation(mode: .longBreak, phase: .ready(scheduledAt: .now))
+        )
         XCTAssertEqual(coordinator.hostedContentViewCount, 1)
 
         coordinator.hide()
