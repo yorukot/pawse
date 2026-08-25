@@ -4,9 +4,11 @@ struct SettingsView: View {
     @Bindable var settings: SettingsStore
     @Bindable var soundService: SoundService
     @Bindable var launchAtLoginService: LaunchAtLoginService
+    @Bindable var analyticsStore: AnalyticsStore
 
     @State private var confirmsCycleReset = false
     @State private var confirmsSettingsReset = false
+    @State private var confirmsAnalyticsClear = false
 
     var body: some View {
         TabView {
@@ -49,6 +51,17 @@ struct SettingsView: View {
             }
         } message: {
             Text("Session history will not be deleted.")
+        }
+        .confirmationDialog(
+            "Clear Analytics Data?",
+            isPresented: $confirmsAnalyticsClear,
+            titleVisibility: .visible
+        ) {
+            Button("Clear Analytics Data", role: .destructive) {
+                analyticsStore.clear()
+            }
+        } message: {
+            Text("Settings and the Focus cycle will not change.")
         }
     }
 
@@ -177,6 +190,12 @@ struct SettingsView: View {
             Section("Natural Break") {
                 Text("Breather checks how long the Mac has been idle so it can start breaks at a natural stopping point.")
                 Text("Breather does not record which keys you press, where you move the pointer, what applications you use, or what is on your screen.")
+            }
+            Section("Session History") {
+                Button("Clear Analytics Data…", role: .destructive) {
+                    confirmsAnalyticsClear = true
+                }
+                .disabled(analyticsStore.records.isEmpty)
             }
         }
     }

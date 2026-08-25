@@ -1,33 +1,55 @@
 import Foundation
 import Observation
+import SwiftData
 
 @MainActor
 @Observable
 final class AppModel {
     let settings: SettingsStore
     let controller: SessionController
-    let analyticsRecorder: InMemorySessionRecorder
+    let analyticsStore: AnalyticsStore
+    let modelContainer: ModelContainer
     let breakEnvironment: BreakEnvironmentCoordinator
     let soundService: SoundService
     let launchAtLoginService: LaunchAtLoginService
+    let analyticsPersistenceNotice: String?
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, modelContainer providedContainer: ModelContainer? = nil) {
         let settings = SettingsStore(defaults: defaults)
-        let analyticsRecorder = InMemorySessionRecorder()
+        let container: ModelContainer
+        var persistenceNotice: String?
+        if let providedContainer {
+            container = providedContainer
+        } else {
+            do {
+                container = try ModelContainer(for: SessionRecord.self)
+            } catch {
+                do {
+                    let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
+                    container = try ModelContainer(for: SessionRecord.self, configurations: fallback)
+                    persistenceNotice = "Session history is temporarily in memory because local storage could not be opened."
+                } catch {
+                    fatalError("Breather could not initialize session storage: \(error.localizedDescription)")
+                }
+            }
+        }
+        let analyticsStore = AnalyticsStore(modelContainer: container)
         let breakEnvironment = BreakEnvironmentCoordinator(settings: settings)
         let soundService = SoundService(settings: settings)
         self.settings = settings
-        self.analyticsRecorder = analyticsRecorder
+        self.analyticsStore = analyticsStore
+        modelContainer = container
         self.breakEnvironment = breakEnvironment
         self.soundService = soundService
         launchAtLoginService = LaunchAtLoginService()
+        analyticsPersistenceNotice = persistenceNotice
         let controller = SessionController(
             settings: settings,
             clock: SystemSessionClock(),
             scheduler: TaskRepeatingScheduler(),
             activityMonitor: SystemUserActivityMonitor(),
             soundPlayer: soundService,
-            analyticsRecorder: analyticsRecorder,
+            analyticsRecorder: analyticsStore,
             breakEnvironment: breakEnvironment
         )
         self.controller = controller
