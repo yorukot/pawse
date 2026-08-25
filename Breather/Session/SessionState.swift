@@ -7,6 +7,7 @@ enum SessionOrigin: String, Codable, Sendable {
 
 enum SessionOutcome: String, Codable, Sendable {
     case completed
+    case skipped
     case stopped
     case switchedMode
     case emergencyExit

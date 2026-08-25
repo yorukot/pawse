@@ -33,6 +33,7 @@ Breather is open-source software released under the [MIT License](LICENSE). It h
 - Confirmation-gated switching from an active Focus session
 - Automatic two-Short-Break cycle with a configurable number of Short Breaks before each Long Break
 - Automatic Focus at launch, with optional automatic breaks and next Focus sessions
+- Paired **Skip Focus** and repeatable **Skip Next Break** actions with confirmation, per-Focus analytics, and cycle-aware behavior
 - Mode icon with a surrounding menu-bar progress ring that drains from full to empty, with no countdown text
 - Cycle-aware **Up Next** details for the next Break and the number of Focus sessions before the Long Break
 - Privacy-preserving natural-break detection using aggregate Core Graphics idle state

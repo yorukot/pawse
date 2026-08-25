@@ -144,6 +144,249 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(unchanged.plannedDuration, 60)
     }
 
+    func testSkippingBreaksAddsConfiguredFocusDurationsWhileRunningAndPaused() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.advance(10)
+
+        harness.controller.skipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 110, accuracy: 0.001)
+        XCTAssertEqual(harness.controller.progress, 10.0 / 120.0, accuracy: 0.001)
+
+        harness.controller.pauseFocus()
+        harness.controller.skipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 170, accuracy: 0.001)
+        XCTAssertEqual(harness.controller.progress, 10.0 / 180.0, accuracy: 0.001)
+
+        harness.controller.resumeFocus()
+        XCTAssertEqual(harness.controller.remainingTime, 170, accuracy: 0.001)
+        XCTAssertEqual(harness.controller.countdownFractionRemaining ?? -1, 170.0 / 180.0, accuracy: 0.001)
+    }
+
+    func testSkipFocusConfirmationCanBeCancelledWithoutChangingFocus() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.advance(10)
+        harness.controller.skipNextBreak()
+        let originalState = harness.controller.state
+        let originalRemainingTime = harness.controller.remainingTime
+
+        harness.controller.requestSkipFocus()
+        XCTAssertTrue(harness.controller.isSkipFocusConfirmationPresented)
+
+        harness.controller.cancelSkipFocus()
+
+        XCTAssertFalse(harness.controller.isSkipFocusConfirmationPresented)
+        XCTAssertEqual(harness.controller.state, originalState)
+        XCTAssertEqual(harness.controller.remainingTime, originalRemainingTime, accuracy: 0.001)
+        XCTAssertEqual(harness.settings.focusCycleCount, 0)
+        XCTAssertTrue(harness.recorder.records.isEmpty)
+        XCTAssertTrue(harness.environment.overlayModes.isEmpty)
+    }
+
+    func testSkipFocusActionStillRunsAfterAlertDismissesPresentationState() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.advance(7)
+        harness.controller.requestSkipFocus()
+
+        harness.controller.cancelSkipFocus()
+        harness.controller.confirmSkipFocus()
+
+        XCTAssertEqual(harness.recorder.records.map(\.outcome), [.skipped])
+        guard case .running(let runningBreak) = harness.controller.state else {
+            return XCTFail("Expected Skip Focus to start a Break")
+        }
+        XCTAssertEqual(runningBreak.mode, .shortBreak)
+    }
+
+    func testSkipNextBreakRequiresConfirmationAndRunsAfterAlertDismissal() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+
+        harness.controller.requestSkipNextBreak()
+        XCTAssertTrue(harness.controller.isSkipNextBreakConfirmationPresented)
+        harness.controller.cancelSkipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 60, accuracy: 0.001)
+
+        harness.controller.requestSkipNextBreak()
+        harness.controller.cancelSkipNextBreak()
+        harness.controller.confirmSkipNextBreak()
+
+        XCTAssertFalse(harness.controller.isSkipNextBreakConfirmationPresented)
+        XCTAssertEqual(harness.controller.remainingTime, 120, accuracy: 0.001)
+        XCTAssertTrue(harness.recorder.records.isEmpty)
+    }
+
+    func testConfirmedSkipFocusClearsQueuedFocusesAndImmediatelyStartsBreak() {
+        let harness = ControllerHarness { settings in
+            settings.automaticallyStartBreaks = false
+            settings.waitForNaturalBreak = true
+        }
+        harness.startFocus()
+        harness.advance(12)
+        harness.controller.skipNextBreak()
+        harness.controller.skipNextBreak()
+
+        harness.controller.requestSkipFocus()
+        harness.controller.confirmSkipFocus()
+        harness.controller.confirmSkipFocus()
+
+        XCTAssertFalse(harness.controller.isSkipFocusConfirmationPresented)
+        XCTAssertEqual(harness.settings.focusCycleCount, 1)
+        XCTAssertEqual(harness.recorder.records.count, 1)
+        XCTAssertEqual(harness.recorder.records[0].outcome, .skipped)
+        XCTAssertEqual(harness.recorder.records[0].activeDuration, 12, accuracy: 0.001)
+        guard case .running(let runningBreak) = harness.controller.state else {
+            return XCTFail("Expected an immediate Break")
+        }
+        XCTAssertEqual(runningBreak.mode, .shortBreak)
+        XCTAssertEqual(runningBreak.origin, .automatic)
+        XCTAssertEqual(runningBreak.scheduledAt, harness.clock.now)
+        XCTAssertEqual(runningBreak.cyclePosition, 1)
+        XCTAssertEqual(harness.environment.overlayModes, [.shortBreak])
+        XCTAssertEqual(harness.environment.commitPresentationCount, 1)
+        XCTAssertEqual(
+            harness.sound.events,
+            [.sessionStarted(.focus), .sessionStarted(.shortBreak)]
+        )
+        XCTAssertTrue(harness.scheduler.isScheduled)
+
+        harness.advance(60)
+        harness.startFocus()
+        XCTAssertEqual(harness.controller.remainingTime, 60, accuracy: 0.001)
+    }
+
+    func testConfirmedSkipPausedFocusPreservesActiveTimeAndStartsLongBreak() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
+            settings.automaticallyStartBreaks = false
+        }
+        harness.startFocus()
+        harness.advance(9)
+        harness.controller.pauseFocus()
+
+        harness.controller.requestSkipFocus()
+        harness.controller.confirmSkipFocus()
+
+        XCTAssertEqual(harness.settings.focusCycleCount, 3)
+        XCTAssertEqual(harness.recorder.records.count, 1)
+        XCTAssertEqual(harness.recorder.records[0].outcome, .skipped)
+        XCTAssertEqual(harness.recorder.records[0].activeDuration, 9, accuracy: 0.001)
+        guard case .running(let runningBreak) = harness.controller.state else {
+            return XCTFail("Expected an immediate Long Break")
+        }
+        XCTAssertEqual(runningBreak.mode, .longBreak)
+        XCTAssertEqual(runningBreak.cyclePosition, 3)
+        XCTAssertEqual(harness.environment.overlayModes, [.longBreak])
+        XCTAssertTrue(harness.scheduler.isScheduled)
+    }
+
+    func testEachQueuedFocusIsRecordedAndTwoSkippedBreaksLeadToLongBreak() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+        }
+        let startedAt = harness.clock.now
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+        harness.controller.skipNextBreak()
+
+        harness.advance(190)
+
+        guard case .breakPending(let pending) = harness.controller.state else {
+            return XCTFail("Expected Long Break after three completed Focus segments")
+        }
+        XCTAssertEqual(pending.mode, .longBreak)
+        XCTAssertEqual(harness.settings.focusCycleCount, 3)
+        XCTAssertEqual(harness.recorder.records.count, 3)
+        XCTAssertEqual(harness.recorder.records.map(\.mode), [.focus, .focus, .focus])
+        XCTAssertTrue(harness.recorder.records.allSatisfy { $0.outcome == .completed })
+        XCTAssertTrue(harness.recorder.records.allSatisfy { $0.plannedDuration == 60 })
+        XCTAssertTrue(harness.recorder.records.allSatisfy { $0.activeDuration == 60 })
+        XCTAssertEqual(harness.recorder.records[0].startedAt, startedAt)
+        XCTAssertEqual(harness.recorder.records[0].endedAt, startedAt.addingTimeInterval(60))
+        XCTAssertEqual(harness.recorder.records[1].startedAt, startedAt.addingTimeInterval(60))
+        XCTAssertEqual(harness.recorder.records[1].endedAt, startedAt.addingTimeInterval(120))
+        XCTAssertEqual(harness.recorder.records[2].startedAt, startedAt.addingTimeInterval(120))
+        XCTAssertEqual(harness.recorder.records[2].endedAt, startedAt.addingTimeInterval(180))
+        XCTAssertEqual(harness.sound.events, [.sessionStarted(.focus), .breakReady(.longBreak)])
+        XCTAssertEqual(harness.environment.reminderModes, [.longBreak])
+        XCTAssertTrue(harness.environment.overlayModes.isEmpty)
+    }
+
+    func testSkippingScheduledLongBreakResetsCycleBeforeQueuedFocus() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
+        }
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+
+        harness.advance(120)
+
+        guard case .breakPending(let pending) = harness.controller.state else {
+            return XCTFail("Expected Short Break after the skipped Long Break")
+        }
+        XCTAssertEqual(pending.mode, .shortBreak)
+        XCTAssertEqual(pending.cyclePosition, 1)
+        XCTAssertEqual(harness.settings.focusCycleCount, 1)
+        XCTAssertEqual(harness.recorder.records.count, 2)
+    }
+
+    func testSkippingBreakHidesReminderUntilFinalQueuedFocusDeadline() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.advance(50)
+        XCTAssertEqual(harness.environment.reminderModes, [.shortBreak])
+
+        harness.controller.skipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 70, accuracy: 0.001)
+        XCTAssertEqual(harness.environment.hideReminderCount, 1)
+
+        harness.controller.startBreakFromReminder()
+        guard case .running(let extendedFocus) = harness.controller.state else {
+            return XCTFail("The stale reminder must not start a queued break")
+        }
+        XCTAssertEqual(extendedFocus.mode, .focus)
+        XCTAssertTrue(harness.recorder.records.isEmpty)
+
+        harness.advance(10)
+        XCTAssertEqual(harness.recorder.records.count, 1)
+        XCTAssertEqual(harness.environment.reminderModes, [.shortBreak])
+
+        harness.advance(50)
+        XCTAssertEqual(harness.environment.reminderModes, [.shortBreak, .shortBreak])
+    }
+
+    func testQueuedDurationIsCapturedAndFutureSkipsUseLatestSetting() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 120, accuracy: 0.001)
+
+        harness.settings.focusSeconds = 120
+        XCTAssertEqual(harness.controller.remainingTime, 120, accuracy: 0.001)
+
+        harness.controller.skipNextBreak()
+        XCTAssertEqual(harness.controller.remainingTime, 240, accuracy: 0.001)
+    }
+
+    func testStoppingFocusDiscardsQueuedSegmentsWithoutAdvancingCycle() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+        harness.advance(10)
+        harness.controller.stopCurrentSession()
+
+        XCTAssertEqual(harness.settings.focusCycleCount, 0)
+        XCTAssertEqual(harness.recorder.records.count, 1)
+        XCTAssertEqual(harness.recorder.records[0].outcome, .stopped)
+
+        harness.startFocus()
+        XCTAssertEqual(harness.controller.remainingTime, 60, accuracy: 0.001)
+    }
+
     func testCountdownFractionTracksAbsoluteRemainingTime() {
         let harness = ControllerHarness()
         harness.startFocus()
@@ -172,6 +415,22 @@ final class SessionControllerTests: XCTestCase {
         }
         XCTAssertEqual(current.id, original.id)
         XCTAssertTrue(harness.recorder.records.isEmpty)
+    }
+
+    func testModeSwitchActionStillRunsAfterAlertDismissesTarget() {
+        let harness = ControllerHarness()
+        harness.startFocus()
+        harness.advance(8)
+        harness.controller.requestModeSwitch(to: .longBreak)
+
+        harness.controller.cancelModeSwitch()
+        harness.controller.confirmModeSwitch(to: .longBreak)
+
+        XCTAssertEqual(harness.recorder.records.map(\.outcome), [.switchedMode])
+        guard case .running(let runningBreak) = harness.controller.state else {
+            return XCTFail("Expected the confirmed mode switch to start")
+        }
+        XCTAssertEqual(runningBreak.mode, .longBreak)
     }
 
     func testConfirmedModeSwitchFinalizesFocusAndStartsOneBreak() {

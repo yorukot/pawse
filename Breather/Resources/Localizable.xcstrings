@@ -197,6 +197,34 @@
         }
       }
     },
+    "Adds one Focus duration to the timer.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade una duración de concentración al temporizador."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイマーに集中時間を1回分追加します。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "將一段專注時間加入計時器。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将一段专注时间加入计时器。"
+          }
+        }
+      }
+    },
     "All Time": {
       "localizations": {
         "es": {
@@ -2125,6 +2153,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "紧急退出次数"
+          }
+        }
+      }
+    },
+    "Ends the current Focus and immediately starts the next Break.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finaliza la concentración actual e inicia inmediatamente el siguiente descanso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の集中を終了し、次の休憩をすぐに開始します。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "結束目前的專注並立即開始下一個休息。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结束当前专注并立即开始下一次休息。"
           }
         }
       }
@@ -4425,6 +4481,146 @@
         }
       }
     },
+    "Skip Focus": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir concentración"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "集中をスキップ"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳過專注"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过专注"
+          }
+        }
+      }
+    },
+    "Skip Focus?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Omitir concentración?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "集中をスキップしますか？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要跳過專注嗎？"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要跳过专注吗？"
+          }
+        }
+      }
+    },
+    "Skip Next Break": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir el próximo descanso"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次の休憩をスキップ"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳過下一個休息"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过下一次休息"
+          }
+        }
+      }
+    },
+    "Skip Next Break?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Omitir el próximo descanso?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次の休憩をスキップしますか？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要跳過下一個休息嗎？"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要跳过下一次休息吗？"
+          }
+        }
+      }
+    },
+    "Skipped": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitida"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スキップ"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已跳過"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已跳过"
+          }
+        }
+      }
+    },
     "Sleeping Cat": {
       "localizations": {
         "es": {
@@ -4953,6 +5149,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "当前的专注会话会标记为已中断。"
+          }
+        }
+      }
+    },
+    "The current Focus will be marked as skipped. Queued Focus sessions will be cleared, and the next Break will start immediately.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La concentración actual se marcará como omitida. Se borrarán las sesiones de concentración en cola y el siguiente descanso comenzará inmediatamente."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の集中はスキップとして記録されます。予約された集中は消去され、次の休憩がすぐに開始されます。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前的專注將標記為已跳過，已加排的專注會被清除，並立即開始下一個休息。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前专注将标记为已跳过，已追加的专注会被清除，并立即开始下一次休息。"
           }
         }
       }

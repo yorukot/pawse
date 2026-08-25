@@ -112,7 +112,9 @@ enum AnalyticsAggregator {
 
     private static func isInterrupted(_ record: SessionRecordSnapshot) -> Bool {
         if record.mode == .focus {
-            return record.outcome == .stopped || record.outcome == .switchedMode
+            return record.outcome == .skipped
+                || record.outcome == .stopped
+                || record.outcome == .switchedMode
         }
         return record.outcome == .emergencyExit || record.outcome == .stopped
     }

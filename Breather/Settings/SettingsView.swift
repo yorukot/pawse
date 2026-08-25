@@ -181,17 +181,11 @@ struct BreatherWindowView: View {
             )
             .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Breather")
-                    .font(.headline)
-                Text("Focus deeply. Rest naturally.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+            Text("Breather")
+                .font(.headline)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Breather. Focus deeply. Rest naturally.")
+        .accessibilityLabel("Breather")
     }
 
     @ViewBuilder
@@ -233,19 +227,22 @@ struct BreatherWindowView: View {
                     title: "Focus Duration",
                     value: $settings.focusSeconds,
                     range: SettingsStore.focusDurationRange,
-                    scale: .linear
+                    scale: .linear,
+                    defaultUnit: .minutes
                 )
                 DurationSliderSetting(
                     title: "Short Break Duration",
                     value: $settings.shortBreakSeconds,
                     range: SettingsStore.shortBreakDurationRange,
-                    scale: .logarithmic
+                    scale: .logarithmic,
+                    defaultUnit: .seconds
                 )
                 DurationSliderSetting(
                     title: "Long Break Duration",
                     value: $settings.longBreakSeconds,
                     range: SettingsStore.longBreakDurationRange,
-                    scale: .linear
+                    scale: .linear,
+                    defaultUnit: .minutes
                 )
             }
             Text("Changes apply to the next session and never move an active session’s deadline.")
@@ -716,7 +713,7 @@ private struct DurationSliderSetting: View {
     let range: ClosedRange<Int>
     let scale: DurationSliderScale
 
-    @State private var unit = DurationInputUnit.seconds
+    @State private var unit: DurationInputUnit
     @State private var draftValue: String
     @FocusState private var isInputFocused: Bool
     @Environment(\.locale) private var locale
@@ -725,13 +722,20 @@ private struct DurationSliderSetting: View {
         title: LocalizedStringResource,
         value: Binding<Int>,
         range: ClosedRange<Int>,
-        scale: DurationSliderScale
+        scale: DurationSliderScale,
+        defaultUnit: DurationInputUnit
     ) {
         self.title = title
         self._value = value
         self.range = range
         self.scale = scale
-        self._draftValue = State(initialValue: String(value.wrappedValue))
+        self._unit = State(initialValue: defaultUnit)
+        self._draftValue = State(
+            initialValue: defaultUnit.displayValue(
+                for: value.wrappedValue,
+                locale: .current
+            )
+        )
     }
 
     private var logarithmicSliderPosition: Binding<Double> {

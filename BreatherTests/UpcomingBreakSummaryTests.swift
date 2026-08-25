@@ -33,6 +33,38 @@ final class UpcomingBreakSummaryTests: XCTestCase {
         XCTAssertEqual(summary.longBreak, .estimated(290))
     }
 
+    func testQueuedFocusSegmentsExcludeSkippedBreaksFromProjection() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+        }
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+        harness.controller.skipNextBreak()
+
+        var summary = harness.controller.upcomingBreakSummary
+        XCTAssertEqual(summary.longBreak, .estimated(180))
+        XCTAssertEqual(summary.shortBreak, .estimated(300))
+
+        harness.advance(60)
+        summary = harness.controller.upcomingBreakSummary
+        XCTAssertEqual(summary.longBreak, .estimated(120))
+        XCTAssertEqual(summary.shortBreak, .estimated(240))
+    }
+
+    func testProjectionResetsAfterSkippedLongBreak() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
+        }
+        harness.startFocus()
+        harness.controller.skipNextBreak()
+
+        let summary = harness.controller.upcomingBreakSummary
+
+        XCTAssertEqual(summary.shortBreak, .estimated(120))
+        XCTAssertEqual(summary.longBreak, .estimated(360))
+    }
+
     func testPendingShortBreakIsReadyAndProjectsTheLongBreakThroughIntermediateSessions() {
         let harness = ControllerHarness()
         harness.completeFocus()

@@ -43,6 +43,7 @@ struct RecentSessionsTable: View {
     private func outcomeName(_ outcome: SessionOutcome) -> LocalizedStringResource {
         switch outcome {
         case .completed: "Completed"
+        case .skipped: "Skipped"
         case .stopped: "Stopped"
         case .switchedMode: "Switched Mode"
         case .emergencyExit: "Emergency Exit"

@@ -34,6 +34,29 @@ final class AnalyticsTests: XCTestCase {
         XCTAssertEqual(metrics.startedFocusSessions, 0)
     }
 
+    func testSkippedFocusCountsAsInterruptedButNotCompleted() {
+        let now = Date(timeIntervalSince1970: 1_720_000_000)
+        let record = makeSnapshot(
+            outcome: .skipped,
+            startedAt: now.addingTimeInterval(-45),
+            plannedDuration: 1_500,
+            activeDuration: 45
+        )
+
+        let metrics = AnalyticsAggregator.metrics(
+            records: [record],
+            range: .allTime,
+            now: now,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(metrics.focusedTime, 45)
+        XCTAssertEqual(metrics.startedFocusSessions, 1)
+        XCTAssertEqual(metrics.completedFocusSessions, 0)
+        XCTAssertEqual(metrics.focusCompletionRate, 0)
+        XCTAssertEqual(metrics.interruptedSessions, 1)
+    }
+
     func testShortLongBreakAndEmergencyMetricsRemainDistinct() {
         let now = Date(timeIntervalSince1970: 1_720_000_000)
         let records = [
@@ -130,6 +153,17 @@ final class AnalyticsTests: XCTestCase {
         XCTAssertNil(store.errorMessage)
     }
 
+    func testAnalyticsStoreRoundTripsSkippedOutcome() throws {
+        let store = try makeStore()
+        let start = Date(timeIntervalSince1970: 1_720_000_000)
+        store.record(makeSnapshot(outcome: .skipped, startedAt: start, activeDuration: 42))
+
+        store.reload()
+
+        XCTAssertEqual(store.records.count, 1)
+        XCTAssertEqual(store.records[0].outcome, .skipped)
+    }
+
     func testAnalyticsStoreClearDeletesFinalizedRecords() throws {
         let store = try makeStore()
         let now = Date(timeIntervalSince1970: 1_720_000_000)
@@ -165,6 +199,12 @@ final class AnalyticsTests: XCTestCase {
         stopped.startFocus()
         stopped.controller.stopCurrentSession()
         XCTAssertEqual(stopped.recorder.records.map(\.outcome), [.stopped])
+
+        let skipped = ControllerHarness()
+        skipped.startFocus()
+        skipped.controller.requestSkipFocus()
+        skipped.controller.confirmSkipFocus()
+        XCTAssertEqual(skipped.recorder.records.map(\.outcome), [.skipped])
 
         let switched = ControllerHarness()
         switched.startFocus()
