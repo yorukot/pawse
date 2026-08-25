@@ -5,25 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Download Pawse for macOS</title>
-  <meta name="description" content="Download Pawse 0.1.0 for macOS 14 or later, or make an optional donation to support its open-source development.">
+  <meta name="description" content="Download Pawse 0.1.1 for macOS 14 or later, or make an optional donation to support its open-source development.">
   <meta name="author" content="Pawse contributors">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#FFF5E3">
   <link rel="canonical" href="https://yorukot.github.io/pawse/download.html">
-  <link rel="icon" type="image/png" href="Pawse/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Pawse">
   <meta property="og:title" content="Download Pawse for macOS">
   <meta property="og:description" content="Pawse is free and open source. Download it now or support its continued development.">
   <meta property="og:url" content="https://yorukot.github.io/pawse/download.html">
-  <meta property="og:image" content="https://yorukot.github.io/pawse/docs/assets/pawse-hero.png">
+  <meta property="og:image" content="https://yorukot.github.io/pawse/assets/pawse-hero.png">
   <meta property="og:image:alt" content="Pawse sleeping-dog logo above a calm illustrated landscape">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Download Pawse for macOS">
   <meta name="twitter:description" content="Download Pawse free or support its open-source development.">
-  <meta name="twitter:image" content="https://yorukot.github.io/pawse/docs/assets/pawse-hero.png">
+  <meta name="twitter:image" content="https://yorukot.github.io/pawse/assets/pawse-hero.png">
 
   <style>
     :root {
@@ -156,7 +156,7 @@
     }
 
     .choice {
-      min-height: 190px;
+      min-height: 390px;
       display: flex;
       flex-direction: column;
       padding: 26px;
@@ -168,6 +168,13 @@
 
     .choice:hover {
       border-color: var(--mountain);
+    }
+
+    .choice-dog {
+      width: 170px;
+      height: 170px;
+      margin: -4px auto 12px;
+      object-fit: contain;
     }
 
     .choice-title {
@@ -201,15 +208,6 @@
       font-size: 14px;
     }
 
-    .landscape {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      object-position: center bottom;
-      border-top: 1px solid var(--line);
-      background: var(--cream);
-    }
-
     .site-footer {
       padding-block: 26px;
       border-top: 1px solid var(--line);
@@ -219,14 +217,12 @@
 
     .footer-content {
       display: flex;
-      justify-content: space-between;
-      gap: 20px;
+      justify-content: center;
+      text-align: center;
     }
 
-    .footer-links {
-      display: flex;
-      gap: 18px;
-    }
+    .footer-content a { font-weight: 650; }
+    .footer-heart { color: var(--pumpkin); }
 
     @media (prefers-color-scheme: dark) {
       :root {
@@ -246,9 +242,7 @@
       main { padding-block: 32px; }
       .panel-content { padding: 38px 20px 34px; }
       .choices { grid-template-columns: 1fr; }
-      .choice { min-height: 175px; }
-      .landscape { height: 105px; }
-      .footer-content { flex-direction: column; }
+      .choice { min-height: 360px; }
     }
   </style>
 </head>
@@ -257,7 +251,7 @@
   <header class="site-header">
     <nav class="navigation shell" aria-label="Download navigation">
       <a class="brand" href="index.html" aria-label="Pawse home">
-        <img src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" alt="">
+        <img src="assets/pawse-logo.png" alt="">
         <span>Pawse</span>
       </a>
       <a class="back-link" href="index.html">Back to Pawse</a>
@@ -267,38 +261,34 @@
   <main>
     <section class="download-panel shell" aria-labelledby="download-title">
       <div class="panel-content">
-        <img class="app-logo" src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" alt="Pawse sleeping white shepherd logo">
+        <img class="app-logo" src="assets/pawse-logo.png" alt="Pawse sleeping white shepherd logo">
         <h1 id="download-title">Get Pawse</h1>
         <p class="intro">Pawse is free and open source. Choose either option — the app is exactly the same.</p>
 
         <div class="choices">
           <a class="choice" href="https://ko-fi.com/yorukot" target="_blank" rel="noopener noreferrer">
+            <img class="choice-dog" src="assets/pawse-donate-dog.png" width="720" height="720" alt="A cheerful white shepherd holding an orange heart">
             <span class="choice-title">Donate</span>
             <span class="choice-copy">Support continued development, testing, and future releases through Ko-fi.</span>
             <span class="choice-action">Donate on Ko-fi</span>
           </a>
 
-          <a class="choice" href="https://github.com/yorukot/pawse/releases/download/v0.1.0/Pawse-0.1.0.dmg">
+          <a class="choice" href="https://github.com/yorukot/pawse/releases/download/v0.1.1/Pawse-0.1.1.dmg">
+            <img class="choice-dog" src="assets/pawse-download-dog.png" width="720" height="720" alt="A happy white shepherd carrying a small package">
             <span class="choice-title">Download now</span>
-            <span class="choice-copy">Download Pawse 0.1.0 directly. No donation, account, or email required.</span>
+            <span class="choice-copy">Download Pawse 0.1.1 directly. No donation, account, or email required.</span>
             <span class="choice-action">Download DMG</span>
           </a>
         </div>
 
-        <p class="details">Requires macOS 14 or later. Version 0.1.0 is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing Open.</p>
+        <p class="details">Requires macOS 14 or later. Version 0.1.1 is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing Open.</p>
       </div>
-
-      <img class="landscape" src="Pawse/Resources/Assets.xcassets/PawseBanner.imageset/PawseBanner.png" alt="" width="1400" height="560">
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="footer-content shell">
-      <span>© 2026 Pawse contributors · MIT License</span>
-      <div class="footer-links">
-        <a href="https://github.com/yorukot/pawse">GitHub</a>
-        <a href="https://github.com/yorukot/pawse/releases/tag/v0.1.0">Release notes</a>
-      </div>
+      <span>Made with <span class="footer-heart" role="img" aria-label="love">♥</span> by <a href="https://github.com/yorukot">yorukot</a></span>
     </div>
   </footer>
 </body>

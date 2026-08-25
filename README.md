@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/pawse-hero.png" width="100%" alt="Pawse — Focus deeply. Rest naturally. A calm white shepherd above an illustrated mountain landscape.">
+  <img src="website/assets/pawse-hero.png" width="100%" alt="Pawse — Focus deeply. Rest naturally. A calm white shepherd above an illustrated mountain landscape.">
 </p>
 
 <div align="center">
@@ -49,11 +49,11 @@ Everything is configurable in Pawse.
 
 ## Download
 
-[Get Pawse 0.1.0 for macOS](https://yorukot.github.io/pawse/download.html). You can make an optional donation or download immediately — the app is exactly the same either way.
+[Get Pawse 0.1.1 for macOS](https://yorukot.github.io/pawse/download.html). You can make an optional donation or download immediately — the app is exactly the same either way.
 
 Open the disk image and drag Pawse to **Applications**.
 
-Pawse requires macOS 14 or later. Version 0.1.0 is an early-access build and is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing **Open**.
+Pawse requires macOS 14 or later. Version 0.1.1 is an early-access build and is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing **Open**.
 
 ## Build from source
 

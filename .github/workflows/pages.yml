@@ -4,14 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "index.html"
-      - "download.html"
-      - "robots.txt"
-      - "sitemap.xml"
-      - "docs/assets/**"
-      - "Pawse/Resources/Assets.xcassets/AppIcon.appiconset/**"
-      - "Pawse/Resources/Assets.xcassets/PawseBanner.imageset/**"
-      - "Pawse/Resources/Assets.xcassets/PawseLogo.imageset/**"
+      - "website/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -37,18 +30,8 @@ jobs:
 
       - name: Assemble static site
         run: |
-          mkdir -p _site/docs/assets
-          mkdir -p _site/Pawse/Resources/Assets.xcassets/AppIcon.appiconset
-          mkdir -p _site/Pawse/Resources/Assets.xcassets/PawseBanner.imageset
-          mkdir -p _site/Pawse/Resources/Assets.xcassets/PawseLogo.imageset
-          cp index.html download.html robots.txt sitemap.xml _site/
-          cp docs/assets/pawse-hero.png _site/docs/assets/
-          cp docs/assets/pawse-menu.png _site/docs/assets/
-          cp docs/assets/pawse-break.jpg _site/docs/assets/
-          cp docs/assets/pawse-settings.png _site/docs/assets/
-          cp Pawse/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png _site/Pawse/Resources/Assets.xcassets/AppIcon.appiconset/
-          cp Pawse/Resources/Assets.xcassets/PawseBanner.imageset/PawseBanner.png _site/Pawse/Resources/Assets.xcassets/PawseBanner.imageset/
-          cp Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png _site/Pawse/Resources/Assets.xcassets/PawseLogo.imageset/
+          mkdir -p _site
+          cp -R website/. _site/
           touch _site/.nojekyll
 
       - name: Configure GitHub Pages
