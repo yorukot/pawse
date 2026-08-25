@@ -7,8 +7,8 @@
 
   <p>
     <a href="https://ko-fi.com/yorukot"><strong>Support Pawse</strong></a>
-    · <a href="https://yorukot.github.io/pawse/download.html">Download for macOS</a>
-    · <a href="https://yorukot.github.io/pawse/">Website</a>
+    · <a href="https://pawse.yorukot.me/download.html">Download for macOS</a>
+    · <a href="https://pawse.yorukot.me/">Website</a>
     · <a href="CONTRIBUTING.md">Contribute</a>
   </p>
 
@@ -49,7 +49,7 @@ Everything is configurable in Pawse.
 
 ## Download
 
-[Get Pawse 0.1.1 for macOS](https://yorukot.github.io/pawse/download.html). You can make an optional donation or download immediately — the app is exactly the same either way.
+[Get Pawse 0.1.1 for macOS](https://pawse.yorukot.me/download.html). You can make an optional donation or download immediately — the app is exactly the same either way.
 
 Open the disk image and drag Pawse to **Applications**.
 
