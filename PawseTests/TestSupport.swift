@@ -135,6 +135,7 @@ final class ControllerHarness {
         settings.idleBeforeBreak = 5
         settings.breakEntryGracePeriod = 3
         settings.automaticallyStartNextFocus = false
+        settings.continueCycleAfterEmergencyExit = false
         configure(settings)
 
         let clock = FakeSessionClock()

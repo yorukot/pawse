@@ -173,9 +173,10 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertTrue(harness.recorder.records.isEmpty)
     }
 
-    func testConfirmedEmergencyExitCleansUpRecordsAndNeverAutoStarts() {
+    func testConfirmedEmergencyExitCleansUpRecordsAndAutoStartsNextFocusWhenEnabled() {
         let harness = ControllerHarness { settings in
-            settings.automaticallyStartNextFocus = true
+            settings.automaticallyStartNextFocus = false
+            settings.continueCycleAfterEmergencyExit = true
         }
         harness.controller.selectMode(.longBreak)
         harness.controller.startSelectedMode()
@@ -184,12 +185,30 @@ final class CycleEmergencySoundTests: XCTestCase {
         harness.controller.confirmEmergencyExit()
         harness.controller.confirmEmergencyExit()
 
-        XCTAssertEqual(harness.controller.state, .idle(selectedMode: .focus))
+        guard case .running(let nextFocus) = harness.controller.state else {
+            return XCTFail("Expected automatic Focus after Emergency Exit")
+        }
+        XCTAssertEqual(nextFocus.mode, .focus)
+        XCTAssertEqual(nextFocus.origin, .automatic)
         XCTAssertEqual(harness.recorder.records.count, 1)
         XCTAssertEqual(harness.recorder.records[0].outcome, .emergencyExit)
         XCTAssertEqual(harness.recorder.records[0].activeDuration, 10, accuracy: 0.001)
         XCTAssertEqual(harness.environment.cleanupCount, 1)
         XCTAssertGreaterThanOrEqual(harness.sound.stopCount, 1)
+        XCTAssertTrue(harness.scheduler.isScheduled)
+    }
+
+    func testConfirmedEmergencyExitWaitsForManualFocusWhenAutoStartIsDisabled() {
+        let harness = ControllerHarness { settings in
+            settings.automaticallyStartNextFocus = true
+            settings.continueCycleAfterEmergencyExit = false
+        }
+        harness.controller.selectMode(.shortBreak)
+        harness.controller.startSelectedMode()
+        harness.controller.requestEmergencyExit()
+        harness.controller.confirmEmergencyExit()
+
+        XCTAssertEqual(harness.controller.state, .idle(selectedMode: .focus))
         XCTAssertFalse(harness.scheduler.isScheduled)
     }
 

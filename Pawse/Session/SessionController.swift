@@ -308,8 +308,10 @@ final class SessionController {
         isEmergencyExitConfirmationPresented = false
         finalize(session, outcome: .emergencyExit, endedAt: now, activeDuration: session.activeDuration(at: now))
         cleanupBreakEnvironment(animated: false)
-        state = .idle(selectedMode: .focus)
-        nowSnapshot = now
+        returnToFocus(
+            afterBreakAt: now,
+            automaticallyStart: settings.continueCycleAfterEmergencyExit
+        )
     }
 
     func handleTick() {
@@ -544,9 +546,16 @@ final class SessionController {
         }
         cleanupBreakEnvironment()
         playSound(.breakCompleted(session.mode))
+        returnToFocus(
+            afterBreakAt: now,
+            automaticallyStart: settings.automaticallyStartNextFocus
+        )
+    }
+
+    private func returnToFocus(afterBreakAt now: Date, automaticallyStart: Bool) {
         state = .idle(selectedMode: .focus)
         nowSnapshot = now
-        if settings.automaticallyStartNextFocus {
+        if automaticallyStart {
             startSession(mode: .focus, origin: .automatic, scheduledAt: nil, cyclePosition: nil)
         }
     }

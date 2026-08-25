@@ -27,6 +27,7 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.idleBeforeBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
+        XCTAssertTrue(settings.continueCycleAfterEmergencyExit)
         XCTAssertTrue(settings.enableSounds)
         XCTAssertEqual(settings.sessionStartSound, "Submarine")
         XCTAssertEqual(settings.breakReadySound, "None")

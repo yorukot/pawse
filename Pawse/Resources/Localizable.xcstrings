@@ -1961,6 +1961,34 @@
         }
       }
     },
+    "Continue Cycle After Emergency Exit": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar el ciclo después de una salida de emergencia"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "緊急終了後もサイクルを続ける"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "緊急退出後繼續循環"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "紧急退出后继续循环"
+          }
+        }
+      }
+    },
     "Cycle": {
       "localizations": {
         "es": {

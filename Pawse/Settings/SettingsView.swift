@@ -262,6 +262,10 @@ struct PawseWindowView: View {
                 )
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
+                Toggle(
+                    "Continue Cycle After Emergency Exit",
+                    isOn: $settings.continueCycleAfterEmergencyExit
+                )
                 LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
                 if settings.shortBreaksBeforeLongBreak == 1 {
                     Text("Pawse schedules one Short Break before each Long Break.")

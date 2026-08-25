@@ -450,5 +450,6 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(settings.shortBreaksBeforeLongBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
+        XCTAssertTrue(settings.continueCycleAfterEmergencyExit)
     }
 }

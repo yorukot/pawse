@@ -13,6 +13,7 @@ final class SettingsStore {
         static let shortBreaksBeforeLongBreak = "shortBreaksBeforeLongBreak"
         static let automaticallyStartBreaks = "automaticallyStartBreaks"
         static let automaticallyStartNextFocus = "automaticallyStartNextFocus"
+        static let continueCycleAfterEmergencyExit = "continueCycleAfterEmergencyExit"
         static let waitForNaturalBreak = "waitForNaturalBreak"
         static let idleBeforeBreak = "idleBeforeBreak"
         static let breakEntryGracePeriod = "breakEntryGracePeriod"
@@ -71,6 +72,9 @@ final class SettingsStore {
     }
     var automaticallyStartBreaks = true { didSet { persist(Key.automaticallyStartBreaks, automaticallyStartBreaks) } }
     var automaticallyStartNextFocus = true { didSet { persist(Key.automaticallyStartNextFocus, automaticallyStartNextFocus) } }
+    var continueCycleAfterEmergencyExit = true {
+        didSet { persist(Key.continueCycleAfterEmergencyExit, continueCycleAfterEmergencyExit) }
+    }
     var waitForNaturalBreak = true { didSet { persist(Key.waitForNaturalBreak, waitForNaturalBreak) } }
     var idleBeforeBreak: TimeInterval = 2 {
         didSet {
@@ -190,6 +194,7 @@ final class SettingsStore {
         shortBreaksBeforeLongBreak = 2
         automaticallyStartBreaks = true
         automaticallyStartNextFocus = true
+        continueCycleAfterEmergencyExit = true
         waitForNaturalBreak = true
         idleBeforeBreak = 2
         breakEntryGracePeriod = 3
@@ -214,6 +219,7 @@ final class SettingsStore {
         shortBreaksBeforeLongBreak = defaults.integer(forKey: Key.shortBreaksBeforeLongBreak)
         automaticallyStartBreaks = defaults.bool(forKey: Key.automaticallyStartBreaks)
         automaticallyStartNextFocus = defaults.bool(forKey: Key.automaticallyStartNextFocus)
+        continueCycleAfterEmergencyExit = defaults.bool(forKey: Key.continueCycleAfterEmergencyExit)
         waitForNaturalBreak = defaults.bool(forKey: Key.waitForNaturalBreak)
         idleBeforeBreak = defaults.double(forKey: Key.idleBeforeBreak)
         breakEntryGracePeriod = defaults.double(forKey: Key.breakEntryGracePeriod)
@@ -282,6 +288,7 @@ final class SettingsStore {
         Key.shortBreaksBeforeLongBreak: 2,
         Key.automaticallyStartBreaks: true,
         Key.automaticallyStartNextFocus: true,
+        Key.continueCycleAfterEmergencyExit: true,
         Key.waitForNaturalBreak: true,
         Key.idleBeforeBreak: 2.0,
         Key.breakEntryGracePeriod: 3.0,
