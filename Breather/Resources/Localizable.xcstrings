@@ -5041,30 +5041,30 @@
         }
       }
     },
-    "Switch Mode…": {
+    "Switch Mode": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambiar de modo…"
+            "value": "Cambiar de modo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "モードを切り替え…"
+            "value": "モードを切り替え"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "切換模式…"
+            "value": "切換模式"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "切换模式…"
+            "value": "切换模式"
           }
         }
       }

@@ -6,6 +6,7 @@ struct MenuBarView: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.locale) private var locale
     @State private var isSwitchModeHovered = false
+    @State private var pendingConfirmation: PendingConfirmation?
 
     private var controller: SessionController { model.controller }
 
@@ -23,6 +24,39 @@ struct MenuBarView: View {
         }
     }
 
+    private enum PendingConfirmation: Equatable {
+        case skipFocus
+        case skipNextBreak
+        case switchMode(SessionMode)
+
+        var title: LocalizedStringResource {
+            switch self {
+            case .skipFocus: "Skip Focus?"
+            case .skipNextBreak: "Skip Next Break?"
+            case .switchMode: "Switch Mode?"
+            }
+        }
+
+        var message: LocalizedStringResource {
+            switch self {
+            case .skipFocus:
+                "The current Focus will be marked as skipped. Queued Focus sessions will be cleared, and the next Break will start immediately."
+            case .skipNextBreak:
+                "Adds one Focus duration to the timer."
+            case .switchMode:
+                "The current Focus session will be marked as interrupted."
+            }
+        }
+
+        var confirmTitle: LocalizedStringResource {
+            switch self {
+            case .skipFocus: "Skip Focus"
+            case .skipNextBreak: "Skip Next Break"
+            case .switchMode: "Switch"
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
             stateContent
@@ -32,6 +66,15 @@ struct MenuBarView: View {
         }
         .padding(Layout.outerPadding)
         .frame(width: Layout.panelWidth)
+        .animation(.easeInOut(duration: 0.16), value: pendingConfirmation)
+        .onChange(of: controller.isFocusRunningOrPaused) { _, isFocusActive in
+            if !isFocusActive {
+                pendingConfirmation = nil
+            }
+        }
+        .onDisappear {
+            pendingConfirmation = nil
+        }
     }
 
     @ViewBuilder
@@ -122,8 +165,7 @@ struct MenuBarView: View {
                     .frame(maxWidth: .infinity)
                 }
 
-                skipActions
-                switchModeMenu
+                focusSecondaryActions
             } else {
                 Text("Your break is active on every display.")
                     .font(.caption)
@@ -160,8 +202,7 @@ struct MenuBarView: View {
                 .frame(maxWidth: .infinity)
             }
 
-            skipActions
-            switchModeMenu
+            focusSecondaryActions
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(
@@ -233,11 +274,11 @@ struct MenuBarView: View {
             }
 
             Menu {
-                Button("Short Break") { confirmModeSwitch(to: .shortBreak) }
-                Button("Long Break") { confirmModeSwitch(to: .longBreak) }
+                Button("Short Break") { requestConfirmation(.switchMode(.shortBreak)) }
+                Button("Long Break") { requestConfirmation(.switchMode(.longBreak)) }
             } label: {
                 HStack {
-                    Label("Switch Mode…", systemImage: "arrow.triangle.2.circlepath")
+                    Label("Switch Mode", systemImage: "arrow.triangle.2.circlepath")
                     Spacer(minLength: Layout.actionSpacing)
                     Image(systemName: "chevron.down")
                         .font(.caption.weight(.semibold))
@@ -255,7 +296,7 @@ struct MenuBarView: View {
     }
 
     private var skipNextBreakButton: some View {
-        Button { confirmSkipNextBreak() } label: {
+        Button { requestConfirmation(.skipNextBreak) } label: {
             Label("Skip Next Break", systemImage: "forward.end.fill")
                 .frame(maxWidth: .infinity)
                 .lineLimit(1)
@@ -269,7 +310,7 @@ struct MenuBarView: View {
 
     private var skipActions: some View {
         HStack(spacing: Layout.actionSpacing) {
-            Button { confirmSkipFocus() } label: {
+            Button { requestConfirmation(.skipFocus) } label: {
                 Label("Skip Focus", systemImage: "forward.fill")
                     .frame(maxWidth: .infinity)
                     .lineLimit(1)
@@ -284,52 +325,78 @@ struct MenuBarView: View {
         }
     }
 
-    private func confirmSkipFocus() {
-        presentConfirmation(
-            title: "Skip Focus?",
-            message: "The current Focus will be marked as skipped. Queued Focus sessions will be cleared, and the next Break will start immediately.",
-            confirmTitle: "Skip Focus"
-        ) {
+    @ViewBuilder
+    private var focusSecondaryActions: some View {
+        if let pendingConfirmation {
+            inlineConfirmation(pendingConfirmation)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+        } else {
+            skipActions
+            switchModeMenu
+        }
+    }
+
+    private func inlineConfirmation(_ confirmation: PendingConfirmation) -> some View {
+        VStack(alignment: .leading, spacing: Layout.contentSpacing) {
+            Label {
+                Text(confirmation.title)
+            } icon: {
+                Image(systemName: "questionmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.headline)
+
+            Text(confirmation.message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: Layout.actionSpacing) {
+                Button("Cancel") {
+                    pendingConfirmation = nil
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+
+                Button {
+                    performConfirmation(confirmation)
+                } label: {
+                    Text(confirmation.confirmTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(12)
+        .background {
+            RoundedRectangle(cornerRadius: Layout.controlCornerRadius, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: Layout.controlCornerRadius, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func requestConfirmation(_ confirmation: PendingConfirmation) {
+        pendingConfirmation = confirmation
+    }
+
+    private func performConfirmation(_ confirmation: PendingConfirmation) {
+        pendingConfirmation = nil
+
+        switch confirmation {
+        case .skipFocus:
             controller.skipCurrentFocus()
-        }
-    }
-
-    private func confirmSkipNextBreak() {
-        presentConfirmation(
-            title: "Skip Next Break?",
-            message: "Adds one Focus duration to the timer.",
-            confirmTitle: "Skip Next Break"
-        ) {
+        case .skipNextBreak:
             controller.skipNextBreak()
-        }
-    }
-
-    private func confirmModeSwitch(to mode: SessionMode) {
-        presentConfirmation(
-            title: "Switch Mode?",
-            message: "The current Focus session will be marked as interrupted.",
-            confirmTitle: "Switch"
-        ) {
+        case .switchMode(let mode):
             controller.switchMode(to: mode)
         }
-    }
-
-    private func presentConfirmation(
-        title: LocalizedStringResource,
-        message: LocalizedStringResource,
-        confirmTitle: LocalizedStringResource,
-        onConfirm: () -> Void
-    ) {
-        let alert = NSAlert()
-        alert.alertStyle = .informational
-        alert.messageText = LocalizationText.string(title, locale: locale)
-        alert.informativeText = LocalizationText.string(message, locale: locale)
-        alert.addButton(withTitle: LocalizationText.string(confirmTitle, locale: locale))
-        alert.addButton(withTitle: LocalizationText.string("Cancel", locale: locale))
-
-        NSApp.activate(ignoringOtherApps: true)
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        onConfirm()
     }
 
     private var commonActions: some View {
@@ -419,7 +486,7 @@ struct MenuBarView: View {
 
             if let progress {
                 ProgressView(value: progress)
-                    .tint(BreatherTheme.Colors.terracotta)
+                    .tint(BreatherTheme.Colors.pumpkin)
                     .accessibilityLabel("Session progress")
                     .accessibilityValue(
                         progress.formatted(.percent.precision(.fractionLength(0)).locale(locale))
