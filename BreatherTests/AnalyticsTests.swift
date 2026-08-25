@@ -202,14 +202,12 @@ final class AnalyticsTests: XCTestCase {
 
         let skipped = ControllerHarness()
         skipped.startFocus()
-        skipped.controller.requestSkipFocus()
-        skipped.controller.confirmSkipFocus()
+        skipped.controller.skipCurrentFocus()
         XCTAssertEqual(skipped.recorder.records.map(\.outcome), [.skipped])
 
         let switched = ControllerHarness()
         switched.startFocus()
-        switched.controller.requestModeSwitch(to: .shortBreak)
-        switched.controller.confirmModeSwitch()
+        switched.controller.switchMode(to: .shortBreak)
         XCTAssertEqual(switched.recorder.records.map(\.outcome), [.switchedMode])
 
         let emergency = ControllerHarness()

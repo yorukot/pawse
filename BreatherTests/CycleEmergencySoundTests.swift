@@ -11,8 +11,7 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertEqual(harness.settings.focusCycleCount, 0)
 
         harness.startFocus()
-        harness.controller.requestModeSwitch(to: .shortBreak)
-        harness.controller.confirmModeSwitch()
+        harness.controller.switchMode(to: .shortBreak)
         XCTAssertEqual(harness.settings.focusCycleCount, 0)
     }
 

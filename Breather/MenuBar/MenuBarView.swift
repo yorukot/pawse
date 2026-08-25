@@ -24,8 +24,6 @@ struct MenuBarView: View {
     }
 
     var body: some View {
-        @Bindable var controller = controller
-
         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
             stateContent
             upNextContent
@@ -34,45 +32,6 @@ struct MenuBarView: View {
         }
         .padding(Layout.outerPadding)
         .frame(width: Layout.panelWidth)
-        .alert(
-            "Switch Mode?",
-            isPresented: Binding(
-                get: { controller.modeSwitchTarget != nil },
-                set: { if !$0 { controller.cancelModeSwitch() } }
-            ),
-            presenting: controller.modeSwitchTarget
-        ) { target in
-            Button("Cancel", role: .cancel) { controller.cancelModeSwitch() }
-            Button("Switch") { controller.confirmModeSwitch(to: target) }
-        } message: { _ in
-            Text("The current Focus session will be marked as interrupted.")
-        }
-        .alert(
-            "Skip Focus?",
-            isPresented: Binding(
-                get: { controller.isSkipFocusConfirmationPresented },
-                set: { if !$0 { controller.cancelSkipFocus() } }
-            )
-        ) {
-            Button("Cancel", role: .cancel) { controller.cancelSkipFocus() }
-            Button("Skip Focus", role: .destructive) { controller.confirmSkipFocus() }
-        } message: {
-            Text(
-                "The current Focus will be marked as skipped. Queued Focus sessions will be cleared, and the next Break will start immediately."
-            )
-        }
-        .alert(
-            "Skip Next Break?",
-            isPresented: Binding(
-                get: { controller.isSkipNextBreakConfirmationPresented },
-                set: { if !$0 { controller.cancelSkipNextBreak() } }
-            )
-        ) {
-            Button("Cancel", role: .cancel) { controller.cancelSkipNextBreak() }
-            Button("Skip Next Break") { controller.confirmSkipNextBreak() }
-        } message: {
-            Text("Adds one Focus duration to the timer.")
-        }
     }
 
     @ViewBuilder
@@ -274,8 +233,8 @@ struct MenuBarView: View {
             }
 
             Menu {
-                Button("Short Break") { controller.requestModeSwitch(to: .shortBreak) }
-                Button("Long Break") { controller.requestModeSwitch(to: .longBreak) }
+                Button("Short Break") { confirmModeSwitch(to: .shortBreak) }
+                Button("Long Break") { confirmModeSwitch(to: .longBreak) }
             } label: {
                 HStack {
                     Label("Switch Mode…", systemImage: "arrow.triangle.2.circlepath")
@@ -296,7 +255,7 @@ struct MenuBarView: View {
     }
 
     private var skipNextBreakButton: some View {
-        Button { controller.requestSkipNextBreak() } label: {
+        Button { confirmSkipNextBreak() } label: {
             Label("Skip Next Break", systemImage: "forward.end.fill")
                 .frame(maxWidth: .infinity)
                 .lineLimit(1)
@@ -310,7 +269,7 @@ struct MenuBarView: View {
 
     private var skipActions: some View {
         HStack(spacing: Layout.actionSpacing) {
-            Button(role: .destructive) { controller.requestSkipFocus() } label: {
+            Button { confirmSkipFocus() } label: {
                 Label("Skip Focus", systemImage: "forward.fill")
                     .frame(maxWidth: .infinity)
                     .lineLimit(1)
@@ -323,6 +282,54 @@ struct MenuBarView: View {
 
             skipNextBreakButton
         }
+    }
+
+    private func confirmSkipFocus() {
+        presentConfirmation(
+            title: "Skip Focus?",
+            message: "The current Focus will be marked as skipped. Queued Focus sessions will be cleared, and the next Break will start immediately.",
+            confirmTitle: "Skip Focus"
+        ) {
+            controller.skipCurrentFocus()
+        }
+    }
+
+    private func confirmSkipNextBreak() {
+        presentConfirmation(
+            title: "Skip Next Break?",
+            message: "Adds one Focus duration to the timer.",
+            confirmTitle: "Skip Next Break"
+        ) {
+            controller.skipNextBreak()
+        }
+    }
+
+    private func confirmModeSwitch(to mode: SessionMode) {
+        presentConfirmation(
+            title: "Switch Mode?",
+            message: "The current Focus session will be marked as interrupted.",
+            confirmTitle: "Switch"
+        ) {
+            controller.switchMode(to: mode)
+        }
+    }
+
+    private func presentConfirmation(
+        title: LocalizedStringResource,
+        message: LocalizedStringResource,
+        confirmTitle: LocalizedStringResource,
+        onConfirm: () -> Void
+    ) {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = LocalizationText.string(title, locale: locale)
+        alert.informativeText = LocalizationText.string(message, locale: locale)
+        alert.addButton(withTitle: LocalizationText.string(confirmTitle, locale: locale))
+        alert.addButton(withTitle: LocalizationText.string("Cancel", locale: locale))
+
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        onConfirm()
     }
 
     private var commonActions: some View {

@@ -8,9 +8,6 @@ final class SessionController {
 
     private(set) var state: SessionState = .idle(selectedMode: .focus)
     private(set) var nowSnapshot: Date
-    private(set) var modeSwitchTarget: SessionMode?
-    private(set) var isSkipFocusConfirmationPresented = false
-    private(set) var isSkipNextBreakConfirmationPresented = false
     private(set) var isEmergencyExitConfirmationPresented = false
     private(set) var lastError: LocalizedStringResource?
 
@@ -172,34 +169,7 @@ final class SessionController {
         hideBreakReminder()
     }
 
-    func requestSkipNextBreak() {
-        guard isFocusRunningOrPaused else { return }
-        modeSwitchTarget = nil
-        isSkipFocusConfirmationPresented = false
-        isSkipNextBreakConfirmationPresented = true
-    }
-
-    func cancelSkipNextBreak() {
-        isSkipNextBreakConfirmationPresented = false
-    }
-
-    func confirmSkipNextBreak() {
-        isSkipNextBreakConfirmationPresented = false
-        skipNextBreak()
-    }
-
-    func requestSkipFocus() {
-        guard isFocusRunningOrPaused else { return }
-        modeSwitchTarget = nil
-        isSkipNextBreakConfirmationPresented = false
-        isSkipFocusConfirmationPresented = true
-    }
-
-    func cancelSkipFocus() {
-        isSkipFocusConfirmationPresented = false
-    }
-
-    func confirmSkipFocus() {
+    func skipCurrentFocus() {
         let now = clock.now
 
         switch state {
@@ -218,15 +188,12 @@ final class SessionController {
                 activeDuration: session.accumulatedActiveDuration
             )
         default:
-            isSkipFocusConfirmationPresented = false
             return
         }
 
         scheduler.cancel()
         hideBreakReminder()
         resetFocusSequence()
-        isSkipFocusConfirmationPresented = false
-        isSkipNextBreakConfirmationPresented = false
         let breakMode = completeFocusCycleStep(skippingBreak: false)
         state = .idle(selectedMode: breakMode)
         startSession(
@@ -245,16 +212,12 @@ final class SessionController {
             scheduler.cancel()
             hideBreakReminder()
             resetFocusSequence()
-            isSkipFocusConfirmationPresented = false
-            isSkipNextBreakConfirmationPresented = false
             state = .idle(selectedMode: .focus)
             nowSnapshot = now
         case .paused(let session):
             finalize(session, outcome: .stopped, endedAt: now, activeDuration: session.accumulatedActiveDuration)
             scheduler.cancel()
             resetFocusSequence()
-            isSkipFocusConfirmationPresented = false
-            isSkipNextBreakConfirmationPresented = false
             state = .idle(selectedMode: .focus)
             nowSnapshot = now
         default:
@@ -262,19 +225,8 @@ final class SessionController {
         }
     }
 
-    func requestModeSwitch(to mode: SessionMode) {
-        guard isFocusRunningOrPaused, mode != .focus else { return }
-        isSkipFocusConfirmationPresented = false
-        isSkipNextBreakConfirmationPresented = false
-        modeSwitchTarget = mode
-    }
-
-    func cancelModeSwitch() {
-        modeSwitchTarget = nil
-    }
-
-    func confirmModeSwitch(to confirmedTarget: SessionMode? = nil) {
-        guard let target = confirmedTarget ?? modeSwitchTarget else { return }
+    func switchMode(to target: SessionMode) {
+        guard isFocusRunningOrPaused, target != .focus else { return }
         let now = clock.now
         switch state {
         case .running(let session) where session.mode == .focus:
@@ -282,15 +234,11 @@ final class SessionController {
         case .paused(let session):
             finalize(session, outcome: .switchedMode, endedAt: now, activeDuration: session.accumulatedActiveDuration)
         default:
-            modeSwitchTarget = nil
             return
         }
         scheduler.cancel()
         hideBreakReminder()
         resetFocusSequence()
-        isSkipFocusConfirmationPresented = false
-        isSkipNextBreakConfirmationPresented = false
-        modeSwitchTarget = nil
         state = .idle(selectedMode: target)
         startSession(mode: target, origin: .manual, scheduledAt: nil, cyclePosition: nil)
     }
@@ -384,8 +332,6 @@ final class SessionController {
         soundPlayer.stopAll()
         entryActivityBaseline = nil
         activeReminderPresentation = nil
-        isSkipFocusConfirmationPresented = false
-        isSkipNextBreakConfirmationPresented = false
         isEmergencyExitConfirmationPresented = false
     }
 
