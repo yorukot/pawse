@@ -56,115 +56,117 @@ struct BreatherWindowView: View {
     @State private var isChoosingWallpaperFolder = false
 
     var body: some View {
-        Group {
-            if #available(macOS 15.0, *) {
-                modernSidebar
-            } else {
-                legacySidebar
+        sidebarNavigation
+            .formStyle(.grouped)
+            .frame(minWidth: 760, minHeight: 520)
+            .confirmationDialog(
+                "Reset Break Cycle?",
+                isPresented: $confirmsCycleReset,
+                titleVisibility: .visible
+            ) {
+                Button("Reset Break Cycle", role: .destructive) {
+                    settings.resetBreakCycle()
+                }
+            } message: {
+                Text("Session history will not be changed.")
             }
-        }
-        .formStyle(.grouped)
-        .frame(minWidth: 760, minHeight: 520)
-        .confirmationDialog(
-            "Reset Break Cycle?",
-            isPresented: $confirmsCycleReset,
-            titleVisibility: .visible
-        ) {
-            Button("Reset Break Cycle", role: .destructive) {
-                settings.resetBreakCycle()
+            .confirmationDialog(
+                "Reset Settings to Defaults?",
+                isPresented: $confirmsSettingsReset,
+                titleVisibility: .visible
+            ) {
+                Button("Reset Settings", role: .destructive) {
+                    settings.resetToDefaults()
+                    breakBackgroundService.resetCache()
+                    soundService.validateSelections()
+                    launchAtLoginService.setEnabled(false)
+                }
+            } message: {
+                Text("Session history will not be deleted.")
             }
-        } message: {
-            Text("Session history will not be changed.")
-        }
-        .confirmationDialog(
-            "Reset Settings to Defaults?",
-            isPresented: $confirmsSettingsReset,
-            titleVisibility: .visible
-        ) {
-            Button("Reset Settings", role: .destructive) {
-                settings.resetToDefaults()
-                breakBackgroundService.resetCache()
-                soundService.validateSelections()
-                launchAtLoginService.setEnabled(false)
+            .confirmationDialog(
+                "Clear Analytics Data?",
+                isPresented: $confirmsAnalyticsClear,
+                titleVisibility: .visible
+            ) {
+                Button("Clear Analytics Data", role: .destructive) {
+                    analyticsStore.clear()
+                }
+            } message: {
+                Text("Settings and the Focus cycle will not change.")
             }
-        } message: {
-            Text("Session history will not be deleted.")
-        }
-        .confirmationDialog(
-            "Clear Analytics Data?",
-            isPresented: $confirmsAnalyticsClear,
-            titleVisibility: .visible
-        ) {
-            Button("Clear Analytics Data", role: .destructive) {
-                analyticsStore.clear()
+            .fileImporter(
+                isPresented: $isChoosingBreakImage,
+                allowedContentTypes: [.image],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    breakBackgroundService.selectCustomImage(at: url)
+                }
             }
-        } message: {
-            Text("Settings and the Focus cycle will not change.")
-        }
-        .fileImporter(
-            isPresented: $isChoosingBreakImage,
-            allowedContentTypes: [.image],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                breakBackgroundService.selectCustomImage(at: url)
+            .fileImporter(
+                isPresented: $isChoosingWallpaperFolder,
+                allowedContentTypes: [.folder],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    breakBackgroundService.selectWallpaperFolder(at: url)
+                }
             }
-        }
-        .fileImporter(
-            isPresented: $isChoosingWallpaperFolder,
-            allowedContentTypes: [.folder],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                breakBackgroundService.selectWallpaperFolder(at: url)
-            }
-        }
     }
 
-    @available(macOS 15.0, *)
-    private var modernSidebar: some View {
-        TabView(selection: $selectedSection) {
-            Tab("Analytics", systemImage: "chart.bar", value: .analytics) {
-                sectionContent(.analytics)
-            }
-            Tab("Timers", systemImage: "timer", value: .timers) {
-                sectionContent(.timers)
-            }
-            Tab("Cycle", systemImage: "repeat", value: .cycle) {
-                sectionContent(.cycle)
-            }
-            Tab("Break Behavior", systemImage: "hand.raised", value: .breaks) {
-                sectionContent(.breaks)
-            }
-            Tab("Sounds", systemImage: "speaker.wave.2", value: .sounds) {
-                sectionContent(.sounds)
-            }
-            Tab("Appearance", systemImage: "photo", value: .appearance) {
-                sectionContent(.appearance)
-            }
-            Tab("General", systemImage: "gearshape", value: .general) {
-                sectionContent(.general)
-            }
-            Tab("Privacy", systemImage: "lock.shield", value: .privacy) {
-                sectionContent(.privacy)
-            }
-        }
-        .tabViewStyle(.sidebarAdaptable)
-    }
-
-    private var legacySidebar: some View {
+    private var sidebarNavigation: some View {
         NavigationSplitView {
-            List(BreatherWindowSection.allCases, selection: $selectedSection) { section in
-                Label(section.title, systemImage: section.symbolName)
-                    .tag(section)
+            VStack(spacing: 0) {
+                sidebarBrandHeader
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                List(BreatherWindowSection.allCases, selection: $selectedSection) { section in
+                    Label(section.title, systemImage: section.symbolName)
+                        .tag(section)
+                }
+                .listStyle(.sidebar)
             }
-            .listStyle(.sidebar)
-            .navigationTitle("Breather")
-            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+            .navigationSplitViewColumnWidth(
+                min: BreatherTheme.Metrics.sidebarMinimumWidth,
+                ideal: BreatherTheme.Metrics.sidebarIdealWidth,
+                max: BreatherTheme.Metrics.sidebarMaximumWidth
+            )
         } detail: {
             sectionContent(selectedSection)
         }
         .navigationSplitViewStyle(.balanced)
+    }
+
+    private var sidebarBrandHeader: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(BreatherTheme.Colors.cream)
+
+                Image("BreatherLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(2)
+            }
+            .frame(
+                width: BreatherTheme.Metrics.sidebarLogoSize,
+                height: BreatherTheme.Metrics.sidebarLogoSize
+            )
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Breather")
+                    .font(.headline)
+                Text("Focus deeply. Rest naturally.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Breather. Focus deeply. Rest naturally.")
     }
 
     @ViewBuilder

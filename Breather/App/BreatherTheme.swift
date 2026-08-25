@@ -13,5 +13,9 @@ enum BreatherTheme {
         static let brandBannerCornerRadius: CGFloat = 12
         static let reminderCornerRadius: CGFloat = 16
         static let reminderLogoSize: CGFloat = 44
+        static let sidebarLogoSize: CGFloat = 44
+        static let sidebarMinimumWidth: CGFloat = 220
+        static let sidebarIdealWidth: CGFloat = 240
+        static let sidebarMaximumWidth: CGFloat = 280
     }
 }
