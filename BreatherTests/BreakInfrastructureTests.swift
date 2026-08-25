@@ -12,10 +12,17 @@ final class BreakInfrastructureTests: XCTestCase {
         coordinator.show(for: .shortBreak)
         XCTAssertTrue(coordinator.isVisible)
         XCTAssertFalse(coordinator.isKeyWindow)
+        XCTAssertEqual(coordinator.panelSize, BreakReminderPanel.reminderSize)
+        XCTAssertTrue(coordinator.usesHUDMaterial)
+        XCTAssertEqual(coordinator.hostedContentViewCount, 1)
         XCTAssertFalse(clicked)
+
+        coordinator.show(for: .longBreak)
+        XCTAssertEqual(coordinator.hostedContentViewCount, 1)
 
         coordinator.hide()
         XCTAssertFalse(coordinator.isVisible)
+        XCTAssertEqual(coordinator.hostedContentViewCount, 0)
     }
 
     func testOverlayCoordinatorCreatesOnePanelPerConnectedDisplayAndCleansReferences() throws {

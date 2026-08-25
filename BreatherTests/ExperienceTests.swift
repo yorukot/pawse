@@ -68,7 +68,7 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(summary.focusSessionsUntilLongBreak, 0)
     }
 
-    func testBreakReminderAttentionProgressBecomesUrgentWithoutForcingTransition() {
+    func testBreakReminderAttentionProgressBecomesReadyWithoutForcingTransition() {
         let scheduledAt = Date(timeIntervalSince1970: 100)
 
         XCTAssertEqual(
@@ -84,13 +84,13 @@ final class ExperienceTests: XCTestCase {
             accuracy: 0.001
         )
         XCTAssertFalse(
-            BreakReminderView.isUrgent(
+            BreakReminderView.isAttentionState(
                 scheduledAt: scheduledAt,
                 now: scheduledAt.addingTimeInterval(14.9)
             )
         )
         XCTAssertTrue(
-            BreakReminderView.isUrgent(
+            BreakReminderView.isAttentionState(
                 scheduledAt: scheduledAt,
                 now: scheduledAt.addingTimeInterval(15)
             )
@@ -99,6 +99,71 @@ final class ExperienceTests: XCTestCase {
             BreakReminderView.attentionProgress(
                 scheduledAt: scheduledAt,
                 now: scheduledAt.addingTimeInterval(120)
+            ),
+            1
+        )
+    }
+
+    func testBreakReminderCopyUsesSentenceCaseAndNamesLongBreak() {
+        XCTAssertEqual(
+            BreakReminderView.title(for: .shortBreak, isAttentionState: false),
+            "Break soon"
+        )
+        XCTAssertEqual(
+            BreakReminderView.title(for: .shortBreak, isAttentionState: true),
+            "Break ready"
+        )
+        XCTAssertEqual(
+            BreakReminderView.title(for: .longBreak, isAttentionState: false),
+            "Long break soon"
+        )
+        XCTAssertEqual(
+            BreakReminderView.title(for: .longBreak, isAttentionState: true),
+            "Long break ready"
+        )
+        XCTAssertEqual(
+            BreakReminderView.accessibilityLabel(for: .shortBreak, isAttentionState: true),
+            "Short break ready. Click to start."
+        )
+        XCTAssertEqual(
+            BreakReminderView.accessibilityLabel(for: .longBreak, isAttentionState: false),
+            "Long break soon. Click to start."
+        )
+    }
+
+    func testBreakReminderPulseAndReduceMotionBehavior() {
+        let pulse = BreakReminderView.attentionPulse(
+            at: Date(timeIntervalSinceReferenceDate: 0.6),
+            isAttentionState: true
+        )
+
+        XCTAssertEqual(
+            BreakReminderView.attentionPulse(at: .now, isAttentionState: false),
+            0
+        )
+        XCTAssertGreaterThanOrEqual(pulse, 0)
+        XCTAssertLessThanOrEqual(pulse, 1)
+        XCTAssertGreaterThan(
+            BreakReminderView.logoScale(
+                pulse: 1,
+                isAttentionState: true,
+                reduceMotion: false
+            ),
+            1
+        )
+        XCTAssertEqual(
+            BreakReminderView.logoScale(
+                pulse: 1,
+                isAttentionState: true,
+                reduceMotion: true
+            ),
+            1
+        )
+        XCTAssertEqual(
+            BreakReminderView.logoScale(
+                pulse: 1,
+                isAttentionState: false,
+                reduceMotion: false
             ),
             1
         )
