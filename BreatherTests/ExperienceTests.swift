@@ -4,6 +4,12 @@ import XCTest
 
 @MainActor
 final class ExperienceTests: XCTestCase {
+    func testBrandImagesAreAvailableInApplicationBundle() {
+        XCTAssertNotNil(NSImage(named: "BreatherLogo"))
+        XCTAssertNotNil(NSImage(named: "BreatherBanner"))
+        XCTAssertNotNil(NSImage(named: NSImage.applicationIconName))
+    }
+
     func testNewDefaultsMatchAutomaticCycleExperience() {
         let (defaults, suiteName) = isolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }

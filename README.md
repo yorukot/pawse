@@ -13,6 +13,7 @@ It lives in the menu bar and starts a Focus session when it opens. The default c
 ## Features
 
 - Native SwiftUI menu bar app with no normal Dock icon
+- Simple comic-style sleeping-cat app icon and in-app banner
 - Focus, Short Break, and Long Break modes with absolute-deadline timers
 - Pause/resume for Focus with paused time excluded from analytics
 - Confirmation-gated switching from an active Focus session
@@ -28,6 +29,7 @@ It lives in the menu bar and starts a Focus session when it opens. The default c
 - In-overlay Emergency Exit confirmation on every display
 - Exact restoration of the app’s previous macOS presentation options
 - Native system sounds, runtime availability filtering, volume, and previews
+- Native sliders with discrete, readable values for timer, cycle, idle, grace-period, and volume settings
 - One native macOS sidebar window for Analytics, timers, cycle, break behavior, sounds, appearance, general settings, and privacy
 - Local SwiftData session history in the same window, with a Swift Charts daily Focus chart, recent-session Table, toolbar date ranges, and clear-history controls
 - Accessibility labels, monospaced countdowns, keyboard-accessible native controls, and no decorative continuous animation
