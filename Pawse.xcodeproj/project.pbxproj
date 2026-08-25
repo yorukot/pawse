@@ -347,7 +347,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.breather.Breather;
 				PRODUCT_MODULE_NAME = Breather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -355,6 +355,7 @@
 				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
 		};
 			name = Debug;
 		};
@@ -379,7 +380,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.breather.Breather;
 				PRODUCT_MODULE_NAME = Breather;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -387,6 +388,7 @@
 				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
 		};

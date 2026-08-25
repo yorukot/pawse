@@ -26,6 +26,7 @@ xcuserdata/
 # Swift Package Manager caches (keep Package.resolved when one is added)
 .build/
 .swiftpm/
+dist/
 
 # Local environment and editor files
 .env

@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v6
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Validate release metadata
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          make release-check VERSION="$version"
+
+      - name: Run tests
+        run: make test DERIVED_DATA="$RUNNER_TEMP/PawseTestsDerivedData"
+
+      - name: Build universal DMG
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          make package \
+            VERSION="$version" \
+            DERIVED_DATA="$RUNNER_TEMP/PawseReleaseDerivedData" \
+            DIST_DIR="$GITHUB_WORKSPACE/dist"
+
+      - name: Prepare release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          make release-notes VERSION="$version" DIST_DIR="$GITHUB_WORKSPACE/dist"
+          if [[ "$version" == 0.* ]]; then
+            notes="$RUNNER_TEMP/release-notes.md"
+            {
+              echo "> [!IMPORTANT]"
+              echo "> Pawse 0.x is an early-access build. This download is ad-hoc signed and is not Apple-notarized yet, so macOS may require Control-click → Open on first launch."
+              echo
+              cat "$GITHUB_WORKSPACE/dist/release-notes.md"
+            } > "$notes"
+            mv "$notes" "$GITHUB_WORKSPACE/dist/release-notes.md"
+          fi
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          flags=()
+          if [[ "$version" == 0.* ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg" \
+            "$GITHUB_WORKSPACE/dist/Pawse-$version.dmg.sha256" \
+            --verify-tag \
+            --title "Pawse $version" \
+            --notes-file "$GITHUB_WORKSPACE/dist/release-notes.md" \
+            "${flags[@]}"

@@ -104,7 +104,19 @@ Manual Short and Long Breaks begin immediately because selecting one is already 
 
 ## Install and run
 
-Pawse currently ships as a source-built macOS app. A signed and notarized public download has not been published yet.
+### Download Pawse 0.1.0
+
+Download the early-access macOS disk image from the [v0.1.0 release](https://github.com/yorukot/pawse/releases/tag/v0.1.0), open it, and drag **Pawse** to **Applications**.
+
+Pawse 0.1.0 is an ad-hoc signed open-source preview and is not Apple-notarized yet. macOS may require Control-clicking Pawse and choosing **Open** on first launch. Verify the download with the attached checksum:
+
+```bash
+shasum -a 256 -c Pawse-0.1.0.dmg.sha256
+```
+
+The release page includes both `Pawse-0.1.0.dmg` and `Pawse-0.1.0.dmg.sha256`. Pawse appears in the menu bar and intentionally has no normal Dock icon.
+
+### Build from source
 
 ### Requirements
 

@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-25
+
 ### Changed
 
 - Renamed the application and open-source project from Breather to Pawse while preserving the existing application identifier for local settings and analytics compatibility.
@@ -28,3 +30,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Fixed
 
 - Persist custom break images with read-only security-scoped bookmarks and migrate readable legacy bookmarks.
+
+[Unreleased]: https://github.com/yorukot/pawse/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/yorukot/pawse/releases/tag/v0.1.0
