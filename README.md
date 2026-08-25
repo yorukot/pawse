@@ -1,7 +1,8 @@
+<p align="center">
+  <img src="docs/assets/pawse-hero.png" width="100%" alt="Pawse — Focus deeply. Rest naturally. A sleeping white shepherd above an illustrated mountain landscape.">
+</p>
+
 <div align="center">
-  <img src="Pawse/Resources/Assets.xcassets/PawseLogo.imageset/PawseLogo.png" width="128" alt="Pawse sleeping dog logo">
-  <h1>Pawse</h1>
-  <p><strong>Focus deeply. Rest naturally.</strong></p>
   <p>A native macOS focus timer that waits for a natural stopping point before starting your break.</p>
 
   <p>
@@ -19,10 +20,6 @@
     <a href="CONTRIBUTING.md">Contributing</a>
   </p>
 </div>
-
-<p align="center">
-  <img src="Pawse/Resources/Assets.xcassets/PawseBanner.imageset/PawseBanner.png" width="900" alt="Pawse mountain and lake banner">
-</p>
 
 Pawse lives quietly in the menu bar and guides you through Focus, Short Break, and Long Break sessions. Unlike a conventional Pomodoro timer, it does not immediately cover your screen when Focus reaches zero. It shows a compact **Break soon** reminder, then waits for a click or a brief period without keyboard and pointer activity.
 
