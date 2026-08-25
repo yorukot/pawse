@@ -279,6 +279,7 @@ struct PawseWindowView: View {
                 Button("Reset Break Cycle…", role: .destructive) {
                     confirmsCycleReset = true
                 }
+                .settingsActionStyle()
             }
         }
     }
@@ -375,15 +376,18 @@ struct PawseWindowView: View {
                             Button("Choose…") {
                                 isChoosingWallpaperFolder = true
                             }
+                            .settingsActionStyle()
                         } else {
                             Button("Change…") {
                                 isChoosingWallpaperFolder = true
                             }
+                            .settingsActionStyle()
                         }
                         if settings.systemWallpaperFolderName != nil {
                             Button("Remove", role: .destructive) {
                                 breakBackgroundService.removeWallpaperFolder()
                             }
+                            .settingsActionStyle()
                         }
                     }
                 }
@@ -398,15 +402,18 @@ struct PawseWindowView: View {
                             Button("Choose…") {
                                 isChoosingBreakImage = true
                             }
+                            .settingsActionStyle()
                         } else {
                             Button("Change…") {
                                 isChoosingBreakImage = true
                             }
+                            .settingsActionStyle()
                         }
                         if settings.customBreakImageName != nil {
                             Button("Remove", role: .destructive) {
                                 breakBackgroundService.removeCustomImage()
                             }
+                            .settingsActionStyle()
                         }
                     }
                 }
@@ -482,6 +489,7 @@ struct PawseWindowView: View {
                 Button("Reset Settings to Defaults…", role: .destructive) {
                     confirmsSettingsReset = true
                 }
+                .settingsActionStyle()
             }
         }
         .onAppear { launchAtLoginService.refresh() }
@@ -537,6 +545,7 @@ struct PawseWindowView: View {
                 Button("Clear Analytics Data…", role: .destructive) {
                     confirmsAnalyticsClear = true
                 }
+                .settingsActionStyle()
                 .disabled(analyticsStore.records.isEmpty)
             }
         }
@@ -564,6 +573,7 @@ struct PawseWindowView: View {
                     let sound = soundService.availableSounds.first(where: { $0.name == selection.wrappedValue }) ?? .none
                     soundService.preview(sound)
                 }
+                .settingsActionStyle()
                 .disabled(selection.wrappedValue == AppSound.none.name)
             }
         } label: {
@@ -604,6 +614,13 @@ struct PawseWindowView: View {
         ))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Pawse. Focus deeply. Rest naturally.")
+    }
+}
+
+private extension View {
+    func settingsActionStyle() -> some View {
+        buttonStyle(.bordered)
+            .controlSize(.regular)
     }
 }
 

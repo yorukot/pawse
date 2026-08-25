@@ -5,7 +5,6 @@ struct MenuBarView: View {
     let model: AppModel
     @Environment(\.openWindow) private var openWindow
     @Environment(\.locale) private var locale
-    @State private var isSwitchModeHovered = false
     @State private var pendingConfirmation: PendingConfirmation?
 
     private var controller: SessionController { model.controller }
@@ -16,8 +15,8 @@ struct MenuBarView: View {
         static let sectionSpacing: CGFloat = 16
         static let contentSpacing: CGFloat = 12
         static let actionSpacing: CGFloat = 8
-        static let controlHeight: CGFloat = 34
-        static let controlCornerRadius: CGFloat = 8
+        static let actionLabelHeight: CGFloat = 20
+        static let surfaceCornerRadius: CGFloat = 8
         static let bannerHeight: CGFloat = 44
 
         static var contentWidth: CGFloat {
@@ -105,7 +104,7 @@ struct MenuBarView: View {
         }
         .frame(width: Layout.contentWidth, height: Layout.bannerHeight)
         .clipShape(RoundedRectangle(
-            cornerRadius: Layout.controlCornerRadius,
+            cornerRadius: Layout.surfaceCornerRadius,
             style: .continuous
         ))
         .accessibilityElement(children: .ignore)
@@ -294,46 +293,23 @@ struct MenuBarView: View {
     }
 
     private var switchModeMenu: some View {
-        ZStack {
-            RoundedRectangle(
-                cornerRadius: Layout.controlCornerRadius,
-                style: .continuous
-            )
-            .fill(Color.primary.opacity(isSwitchModeHovered ? 0.16 : 0.10))
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: Layout.controlCornerRadius,
-                    style: .continuous
-                )
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-            }
-
-            Menu {
-                Button("Short Break") { requestConfirmation(.switchMode(.shortBreak)) }
-                Button("Long Break") { requestConfirmation(.switchMode(.longBreak)) }
-            } label: {
-                HStack {
-                    Label("Switch Mode", systemImage: "arrow.triangle.2.circlepath")
-                    Spacer(minLength: Layout.actionSpacing)
-                    Image(systemName: "chevron.down")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .frame(width: Layout.contentWidth, height: Layout.controlHeight)
-                .foregroundStyle(.primary)
-                .contentShape(Rectangle())
-            }
-            .menuStyle(.borderlessButton)
+        Menu {
+            Button("Short Break") { requestConfirmation(.switchMode(.shortBreak)) }
+            Button("Long Break") { requestConfirmation(.switchMode(.longBreak)) }
+        } label: {
+            Label("Switch Mode", systemImage: "arrow.triangle.2.circlepath")
+                .frame(maxWidth: .infinity)
         }
-        .frame(width: Layout.contentWidth, height: Layout.controlHeight)
-        .onHover { isSwitchModeHovered = $0 }
+        .menuStyle(.button)
+        .buttonStyle(.bordered)
+        .controlSize(.large)
+        .frame(maxWidth: .infinity)
     }
 
     private var skipNextBreakButton: some View {
         Button { requestConfirmation(.skipNextBreak) } label: {
             Label("Skip Next Break", systemImage: "forward.end.fill")
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, minHeight: Layout.actionLabelHeight)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -347,7 +323,7 @@ struct MenuBarView: View {
         HStack(spacing: Layout.actionSpacing) {
             Button { requestConfirmation(.skipFocus) } label: {
                 Label("Skip Focus", systemImage: "forward.fill")
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, minHeight: Layout.actionLabelHeight)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
@@ -407,11 +383,11 @@ struct MenuBarView: View {
         }
         .padding(12)
         .background {
-            RoundedRectangle(cornerRadius: Layout.controlCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: Layout.surfaceCornerRadius, style: .continuous)
                 .fill(Color.primary.opacity(0.06))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: Layout.controlCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: Layout.surfaceCornerRadius, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
         }
         .accessibilityElement(children: .contain)
@@ -444,6 +420,7 @@ struct MenuBarView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .controlSize(.large)
             .frame(maxWidth: .infinity)
 
             Button { NSApp.terminate(nil) } label: {
@@ -451,6 +428,7 @@ struct MenuBarView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .controlSize(.large)
             .frame(maxWidth: .infinity)
         }
     }
