@@ -38,11 +38,9 @@
       --pumpkin: #ff7a17;
       --mountain: #9cc9d9;
       --page: #fffaf2;
-      --surface: #ffffff;
       --text: #142a55;
       --muted: #5b6a80;
       --line: #d8e1e3;
-      --shadow: rgba(13, 43, 109, 0.13);
       --content: 920px;
     }
 
@@ -117,14 +115,6 @@
       display: grid;
       place-items: center;
       padding-block: 70px;
-    }
-
-    .download-panel {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--surface);
-      box-shadow: 0 24px 70px var(--shadow);
     }
 
     .panel-content {
@@ -207,12 +197,6 @@
       font-weight: 700;
     }
 
-    .details {
-      margin: 30px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
     .site-footer {
       padding-block: 26px;
       border-top: 1px solid var(--line);
@@ -232,11 +216,9 @@
     @media (prefers-color-scheme: dark) {
       :root {
         --page: #10151c;
-        --surface: #181f29;
         --text: #fff5e3;
         --muted: #b8c5d4;
         --line: #344152;
-        --shadow: rgba(0, 0, 0, 0.32);
       }
 
       .choice { background: #121923; }
@@ -286,7 +268,6 @@
           </a>
         </div>
 
-        <p class="details">Requires macOS 14 or later. Version 0.1.1 is not Apple-notarized yet, so the first launch may require Control-clicking Pawse and choosing Open.</p>
       </div>
     </section>
   </main>
