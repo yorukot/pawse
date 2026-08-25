@@ -1597,6 +1597,34 @@
         }
       }
     },
+    "Clockwise": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sentido horario"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時計回り"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "順時針"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顺时针"
+          }
+        }
+      }
+    },
     "Completed": {
       "localizations": {
         "es": {
@@ -1845,6 +1873,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "继续休息"
+          }
+        }
+      }
+    },
+    "Counterclockwise": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sentido antihorario"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "反時計回り"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "逆時針"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "逆时针"
           }
         }
       }
@@ -3865,6 +3921,34 @@
         }
       }
     },
+    "Ring Direction": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dirección del anillo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リングの方向"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圓環方向"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圆环方向"
+          }
+        }
+      }
+    },
     "Resume": {
       "localizations": {
         "es": {
@@ -4621,30 +4705,30 @@
         }
       }
     },
-    "Sleeping Cat": {
+    "Sleeping Dog": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gato durmiendo"
+            "value": "Perro durmiendo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "眠る猫"
+            "value": "眠る犬"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "睡覺的貓"
+            "value": "睡覺的狗"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "睡觉的猫"
+            "value": "睡觉的狗"
           }
         }
       }

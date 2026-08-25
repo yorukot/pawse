@@ -13,6 +13,7 @@ struct MenuBarLabel: View {
             symbolName: controller.currentMode.symbolName,
             fractionRemaining: controller.countdownFractionRemaining,
             showsRing: model.settings.showSessionProgressInMenuBar,
+            ringDirection: model.settings.menuBarRingDirection,
             colorScheme: colorScheme
         )
         .accessibilityLabel(accessibilityText)
@@ -40,6 +41,7 @@ private struct CountdownRingIcon: View {
     let symbolName: String
     let fractionRemaining: Double?
     let showsRing: Bool
+    let ringDirection: MenuBarRingDirection
     let colorScheme: ColorScheme
 
     var body: some View {
@@ -49,6 +51,7 @@ private struct CountdownRingIcon: View {
                 symbolName: symbolName,
                 fractionRemaining: fractionRemaining,
                 showsRing: showsRing,
+                ringDirection: ringDirection,
                 colorScheme: colorScheme
             ) {
                 Image(nsImage: image)
@@ -71,8 +74,8 @@ private struct CountdownRingIcon: View {
                 .symbolRenderingMode(.monochrome)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
-        case .sleepingCat:
-            Image("MenuBarSleepingCat")
+        case .sleepingDog:
+            Image("MenuBarSleepingDog")
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
@@ -92,6 +95,7 @@ enum MenuBarIconRenderer {
         symbolName: String,
         fractionRemaining: Double?,
         showsRing: Bool,
+        ringDirection: MenuBarRingDirection,
         colorScheme: ColorScheme,
         scale: CGFloat = NSScreen.main?.backingScaleFactor ?? 2
     ) -> NSImage? {
@@ -100,6 +104,7 @@ enum MenuBarIconRenderer {
             symbolName: symbolName,
             fractionRemaining: fractionRemaining,
             showsRing: showsRing,
+            ringDirection: ringDirection,
             colorScheme: colorScheme
         )
         let renderer = ImageRenderer(content: artwork)
@@ -117,6 +122,7 @@ private struct MenuBarIconArtwork: View {
     let symbolName: String
     let fractionRemaining: Double?
     let showsRing: Bool
+    let ringDirection: MenuBarRingDirection
     let colorScheme: ColorScheme
 
     private var foregroundColor: Color {
@@ -138,8 +144,11 @@ private struct MenuBarIconArtwork: View {
                     .padding(1.6)
 
                 if let fraction = clampedFractionRemaining, fraction > 0 {
+                    let trimStart = ringDirection == .clockwise ? 1 - fraction : 0
+                    let trimEnd = ringDirection == .clockwise ? 1 : fraction
+
                     Circle()
-                        .trim(from: 0, to: fraction)
+                        .trim(from: trimStart, to: trimEnd)
                         .stroke(
                             foregroundColor,
                             style: StrokeStyle(lineWidth: 2.2, lineCap: .round)
@@ -162,8 +171,8 @@ private struct MenuBarIconArtwork: View {
                 .symbolRenderingMode(.monochrome)
                 .font(.system(size: 8.5, weight: .bold))
                 .foregroundStyle(foregroundColor)
-        case .sleepingCat:
-            Image("MenuBarSleepingCat")
+        case .sleepingDog:
+            Image("MenuBarSleepingDog")
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()

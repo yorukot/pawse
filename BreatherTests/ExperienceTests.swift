@@ -7,9 +7,10 @@ final class ExperienceTests: XCTestCase {
     func testBrandImagesAreAvailableInApplicationBundle() {
         XCTAssertNotNil(NSImage(named: "BreatherLogo"))
         XCTAssertNotNil(NSImage(named: "BreatherBanner"))
-        let menuBarCat = NSImage(named: "MenuBarSleepingCat")
-        XCTAssertNotNil(menuBarCat)
-        XCTAssertTrue(menuBarCat?.isTemplate == true)
+        XCTAssertNotNil(NSImage(named: "BreatherHUDMascot"))
+        let menuBarDog = NSImage(named: "MenuBarSleepingDog")
+        XCTAssertNotNil(menuBarDog)
+        XCTAssertTrue(menuBarDog?.isTemplate == true)
         XCTAssertNotNil(NSImage(named: NSImage.applicationIconName))
     }
 
@@ -26,7 +27,8 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.idleBeforeBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
-        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingDog)
+        XCTAssertEqual(settings.menuBarRingDirection, .clockwise)
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
         XCTAssertNil(settings.customBreakImageBookmark)
         XCTAssertNil(settings.systemWallpaperFolderBookmark)
@@ -69,11 +71,44 @@ final class ExperienceTests: XCTestCase {
 
         defaults.set("unsupported", forKey: SettingsStore.Key.menuBarIconStyle)
         settings = SettingsStore(defaults: defaults)
-        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingDog)
 
         settings.menuBarIconStyle = .timer
         settings.resetToDefaults()
-        XCTAssertEqual(settings.menuBarIconStyle, .sleepingCat)
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingDog)
+    }
+
+    func testLegacySleepingCatIconPreferenceMigratesToSleepingDog() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("sleepingCat", forKey: SettingsStore.Key.menuBarIconStyle)
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertEqual(settings.menuBarIconStyle, .sleepingDog)
+        XCTAssertEqual(
+            defaults.string(forKey: SettingsStore.Key.menuBarIconStyle),
+            MenuBarIconStyle.sleepingDog.rawValue
+        )
+    }
+
+    func testMenuBarRingDirectionPersistsFallsBackAndResets() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.menuBarRingDirection = .counterclockwise
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertEqual(settings.menuBarRingDirection, .counterclockwise)
+
+        defaults.set("unsupported", forKey: SettingsStore.Key.menuBarRingDirection)
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertEqual(settings.menuBarRingDirection, .clockwise)
+
+        settings.menuBarRingDirection = .counterclockwise
+        settings.resetToDefaults()
+        XCTAssertEqual(settings.menuBarRingDirection, .clockwise)
     }
 
     func testCustomBackgroundSelectionPersistsAndSettingsResetClearsIt() {

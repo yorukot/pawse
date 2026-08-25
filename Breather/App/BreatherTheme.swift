@@ -2,17 +2,18 @@ import SwiftUI
 
 enum BreatherTheme {
     enum Colors {
-        static let ink = Color(red: 0.06, green: 0.10, blue: 0.32)
-        static let cream = Color(red: 1.00, green: 0.94, blue: 0.86)
-        static let terracotta = Color(red: 0.85, green: 0.44, blue: 0.29)
-        static let coral = Color(red: 0.95, green: 0.55, blue: 0.47)
-        static let lavender = Color(red: 0.65, green: 0.58, blue: 0.68)
+        static let ink = Color(red: 0.05, green: 0.17, blue: 0.43)
+        static let cream = Color(red: 1.00, green: 0.96, blue: 0.89)
+        static let pumpkin = Color(red: 1.00, green: 0.48, blue: 0.09)
+        static let lake = Color(red: 0.38, green: 0.81, blue: 0.84)
+        static let mountain = Color(red: 0.61, green: 0.79, blue: 0.85)
     }
 
     enum Metrics {
         static let brandBannerCornerRadius: CGFloat = 12
         static let reminderCornerRadius: CGFloat = 16
-        static let reminderLogoSize: CGFloat = 44
+        static let reminderMascotWidth: CGFloat = 58
+        static let reminderMascotHeight: CGFloat = 38
         static let sidebarLogoSize: CGFloat = 44
         static let sidebarMinimumWidth: CGFloat = 220
         static let sidebarIdealWidth: CGFloat = 240

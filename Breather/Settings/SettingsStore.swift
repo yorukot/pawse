@@ -24,6 +24,7 @@ final class SettingsStore {
         static let showCountdownDuringBreak = "showCountdownDuringBreak"
         static let showSessionProgressInMenuBar = "showSessionProgressInMenuBar"
         static let menuBarIconStyle = "menuBarIconStyle"
+        static let menuBarRingDirection = "menuBarRingDirection"
         static let breakBackgroundMode = "breakBackgroundMode"
         static let customBreakImageBookmark = "customBreakImageBookmark"
         static let customBreakImageName = "customBreakImageName"
@@ -107,8 +108,11 @@ final class SettingsStore {
     }
     var showCountdownDuringBreak = true { didSet { persist(Key.showCountdownDuringBreak, showCountdownDuringBreak) } }
     var showSessionProgressInMenuBar = true { didSet { persist(Key.showSessionProgressInMenuBar, showSessionProgressInMenuBar) } }
-    var menuBarIconStyle: MenuBarIconStyle = .sleepingCat {
+    var menuBarIconStyle: MenuBarIconStyle = .sleepingDog {
         didSet { persist(Key.menuBarIconStyle, menuBarIconStyle.rawValue) }
+    }
+    var menuBarRingDirection: MenuBarRingDirection = .clockwise {
+        didSet { persist(Key.menuBarRingDirection, menuBarRingDirection.rawValue) }
     }
     var breakBackgroundMode: BreakBackgroundMode = .systemWallpaper {
         didSet { persist(Key.breakBackgroundMode, breakBackgroundMode.rawValue) }
@@ -196,7 +200,8 @@ final class SettingsStore {
         soundVolume = 0.7
         showCountdownDuringBreak = true
         showSessionProgressInMenuBar = true
-        menuBarIconStyle = .sleepingCat
+        menuBarIconStyle = .sleepingDog
+        menuBarRingDirection = .clockwise
         clearCustomBreakImage()
         clearSystemWallpaperFolder()
         breakBackgroundMode = .systemWallpaper
@@ -219,9 +224,18 @@ final class SettingsStore {
         soundVolume = defaults.double(forKey: Key.soundVolume)
         showCountdownDuringBreak = defaults.bool(forKey: Key.showCountdownDuringBreak)
         showSessionProgressInMenuBar = defaults.bool(forKey: Key.showSessionProgressInMenuBar)
-        menuBarIconStyle = MenuBarIconStyle(
-            rawValue: defaults.string(forKey: Key.menuBarIconStyle) ?? ""
-        ) ?? .sleepingCat
+        let storedMenuBarIconStyle = defaults.string(forKey: Key.menuBarIconStyle) ?? ""
+        if storedMenuBarIconStyle == "sleepingCat" {
+            menuBarIconStyle = .sleepingDog
+            defaults.set(MenuBarIconStyle.sleepingDog.rawValue, forKey: Key.menuBarIconStyle)
+        } else {
+            menuBarIconStyle = MenuBarIconStyle(
+                rawValue: storedMenuBarIconStyle
+            ) ?? .sleepingDog
+        }
+        menuBarRingDirection = MenuBarRingDirection(
+            rawValue: defaults.string(forKey: Key.menuBarRingDirection) ?? ""
+        ) ?? .clockwise
         breakBackgroundMode = BreakBackgroundMode(
             rawValue: defaults.string(forKey: Key.breakBackgroundMode) ?? ""
         ) ?? .systemWallpaper
@@ -278,7 +292,8 @@ final class SettingsStore {
         Key.soundVolume: 0.7,
         Key.showCountdownDuringBreak: true,
         Key.showSessionProgressInMenuBar: true,
-        Key.menuBarIconStyle: MenuBarIconStyle.sleepingCat.rawValue,
+        Key.menuBarIconStyle: MenuBarIconStyle.sleepingDog.rawValue,
+        Key.menuBarRingDirection: MenuBarRingDirection.clockwise.rawValue,
         Key.breakBackgroundMode: BreakBackgroundMode.systemWallpaper.rawValue,
         Key.focusCycleCount: 0
     ]

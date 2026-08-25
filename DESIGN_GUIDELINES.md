@@ -1,6 +1,6 @@
 # Breather Design Guidelines
 
-Breather should feel like a considerate macOS companion: calm while the user is focused, clear when rest is ready, and never punitive. The sleeping cat represents permission to pause rather than an alarm demanding attention.
+Breather should feel like a considerate macOS companion: calm while the user is focused, clear when rest is ready, and never punitive. The sleeping white spitz represents permission to pause rather than an alarm demanding attention.
 
 ## Principles
 
@@ -12,13 +12,17 @@ Breather should feel like a considerate macOS companion: calm while the user is 
 
 ## Brand Assets
 
-`BreatherLogo` is the curled, sleeping cat. `BreatherBanner` is the wider night-window illustration.
+`BreatherLogo` is the sleeping dog head resting on its paws. `BreatherHUDMascot` is a wider crop of the same pose. `BreatherBanner` is a calm mountain-and-lake background with no baked-in character; the UI places the separate logo and typography over it.
 
 - Show the logo at no less than 36 pt; 44 pt is the standard reminder size.
 - Preserve its aspect ratio and transparent background. Do not crop, recolor, stretch, rotate, or place text over it.
 - A cream circle is the preferred small-format backing when the surrounding material is variable.
-- Use the banner only where a wide illustrative surface is appropriate, such as the Timers introduction. Use a 12 pt continuous corner radius.
-- Keep the menu-bar mark monochrome and template-compatible. Use the dedicated simplified sleeping-cat template asset when the cat style is selected; never shrink the full-color cat illustration into the status item. Keep either center mark legible inside the progress ring.
+- Use the banner only where a wide illustrative surface is appropriate, such as the Timers introduction. Use a 12 pt continuous corner radius. Never place a second mascot, text, or logo directly inside the banner bitmap.
+- Keep the menu-bar mark monochrome and template-compatible. It is a dog head only: use the dedicated simplified side-profile template asset when the dog style is selected; never add a body or tail, and never shrink the full-color illustration into the status item. Keep either center mark legible inside the progress ring.
+
+The dog is one fixed character across every surface: white fluffy spitz coat, two triangular upright ears, a visibly forward-projecting canine muzzle, prominent black rounded-triangle nose, closed curved eyes, deep-navy outlines, sparse cream fur marks, and pumpkin-orange inner-ear accents. The full-color mark shows only the head and two resting paws. Do not change the breed, ear shape, muzzle length, nose color, line weight, or rendering technique between assets. Use flat comic shapes only—never realistic fur, gradients, glow, or 3D shading.
+
+The silhouette must read as a dog before decoration is added. Never use a flat round feline muzzle, orange or pink nose, whiskers, curled tail, or a circular sleeping-body pose. At menu-bar size, prefer the long-muzzled side profile over facial details.
 
 ## Color
 
@@ -26,13 +30,13 @@ Brand colors are accents. Normal app content continues to use semantic macOS col
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| Ink | `#0F1A52` | Text over the illustrated banner and dark brand linework |
-| Cream | `#FFF0DC` | Logo backing and warm resting surfaces |
-| Terracotta | `#D96F49` | Primary brand accent and attention state |
-| Coral | `#F28D79` | Secondary illustration accent |
-| Lavender | `#A795AC` | Quiet supporting accent |
+| Ink | `#0D2B6D` | Text over the illustrated banner and dark brand linework |
+| Cream | `#FFF5E3` | Logo backing and warm resting surfaces |
+| Pumpkin | `#FF7A17` | Ear, breathing, progress, and attention accents |
+| Lake | `#61CFD6` | Calm illustrative water surfaces |
+| Mountain | `#9CC9D9` | Quiet illustrative depth |
 
-Do not use red for a normal break reminder. Reserve system red and destructive roles for genuinely destructive actions such as confirming Emergency Exit or deleting data. Do not use heavy gradients as chrome.
+Do not use red for a normal break reminder. Reserve system red and destructive roles for genuinely destructive actions such as confirming Emergency Exit or deleting data. Pumpkin is a restrained brand accent, not an alarm color. Do not use gradients as chrome or inside brand illustrations.
 
 ## Typography and Copy
 
@@ -63,16 +67,16 @@ The HUD is one large pointer target with one purpose: start the scheduled break.
 
 ### Waiting (0–15 seconds)
 
-- 44 pt sleeping-cat logo on a cream circle.
+- 58 × 38 pt horizontal sleeping-dog mascot.
 - “Break soon” or “Long break soon,” plus “Click to start.”
 - A native play symbol on the trailing edge.
-- A thin neutral border and a terracotta progress bar.
+- A thin neutral border and a pumpkin progress bar.
 
 ### Ready (after 15 seconds)
 
 - Change the title to “Break ready” or “Long break ready.”
-- Use a 2 pt terracotta border, a light warm inner tint, and a slow 1.2-second pulse.
-- Let the cat breathe between 100% and 106% scale.
+- Use a 2 pt pumpkin border, a light warm inner tint, and a slow 1.2-second pulse.
+- Let the dog breathe between 100% and 106% scale.
 - Do not force the break. Continued input can defer it indefinitely.
 - With Reduce Motion enabled, keep the warm border and tint static and do not scale the logo.
 
@@ -87,6 +91,6 @@ The HUD is one large pointer target with one purpose: start the scheduled break.
 
 ## Do / Do Not
 
-Do use native materials, semantic color, sentence case, a single clear action, and the sleeping cat as a gentle brand cue.
+Do use native materials, semantic color, sentence case, a single clear action, and the sleeping dog as a gentle brand cue.
 
 Do not use red warnings for expected states, all-caps banners, warning icons, thick orange outlines, dark alarm gradients, oversized marketing text, or a row of competing pill buttons in a compact utility HUD.

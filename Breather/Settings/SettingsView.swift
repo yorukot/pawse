@@ -426,6 +426,13 @@ struct BreatherWindowView: View {
                 .pickerStyle(.segmented)
                 Toggle("Show Countdown During Break", isOn: $settings.showCountdownDuringBreak)
                 Toggle("Show Progress in Menu Bar Ring", isOn: $settings.showSessionProgressInMenuBar)
+                Picker("Ring Direction", selection: $settings.menuBarRingDirection) {
+                    ForEach(MenuBarRingDirection.allCases) { direction in
+                        Text(direction.displayName).tag(direction)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(!settings.showSessionProgressInMenuBar)
             }
             Text(
                 "Wallpaper folder access is only needed when the current wallpaper is outside Breather's sandbox. Images fill each display and receive a dark scrim for legibility. Solid Color uses a plain dark background."
@@ -606,8 +613,8 @@ private struct MenuBarIconStylePreview: View {
             Image(systemName: "timer")
                 .symbolRenderingMode(.monochrome)
                 .frame(width: 13, height: 13)
-        case .sleepingCat:
-            Image("MenuBarSleepingCat")
+        case .sleepingDog:
+            Image("MenuBarSleepingDog")
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()

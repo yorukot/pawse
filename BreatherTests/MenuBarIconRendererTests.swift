@@ -29,6 +29,25 @@ final class MenuBarIconRendererTests: XCTestCase {
         XCTAssertEqual(chromaticPixelCount(in: half), 0)
     }
 
+    func testCountdownDirectionControlsWhichSideDrains() throws {
+        let clockwise = try renderedImage(
+            fractionRemaining: 0.75,
+            showsRing: true,
+            ringDirection: .clockwise
+        )
+        let counterclockwise = try renderedImage(
+            fractionRemaining: 0.75,
+            showsRing: true,
+            ringDirection: .counterclockwise
+        )
+
+        let clockwiseCounts = solidRingPixelCounts(in: clockwise)
+        let counterclockwiseCounts = solidRingPixelCounts(in: counterclockwise)
+
+        XCTAssertGreaterThan(clockwiseCounts.left, clockwiseCounts.right)
+        XCTAssertGreaterThan(counterclockwiseCounts.right, counterclockwiseCounts.left)
+    }
+
     func testInactiveStateKeepsOnlyTheNeutralTrack() throws {
         let inactive = try renderedImage(fractionRemaining: nil, showsRing: true)
         let ringDisabled = try renderedImage(fractionRemaining: nil, showsRing: false)
@@ -41,27 +60,28 @@ final class MenuBarIconRendererTests: XCTestCase {
         )
     }
 
-    func testTimerAndSleepingCatProduceDistinctVisibleMarks() throws {
+    func testTimerAndSleepingDogProduceDistinctVisibleMarks() throws {
         let timer = try renderedImage(
             iconStyle: .timer,
             fractionRemaining: nil,
             showsRing: false
         )
-        let sleepingCat = try renderedImage(
-            iconStyle: .sleepingCat,
+        let sleepingDog = try renderedImage(
+            iconStyle: .sleepingDog,
             fractionRemaining: nil,
             showsRing: false
         )
 
-        XCTAssertGreaterThan(visiblePixelCount(in: sleepingCat), 0)
-        XCTAssertGreaterThan(pixelDifferenceCount(timer, sleepingCat), 20)
-        XCTAssertEqual(chromaticPixelCount(in: sleepingCat), 0)
+        XCTAssertGreaterThan(visiblePixelCount(in: sleepingDog), 0)
+        XCTAssertGreaterThan(pixelDifferenceCount(timer, sleepingDog), 20)
+        XCTAssertEqual(chromaticPixelCount(in: sleepingDog), 0)
     }
 
     private func renderedImage(
         iconStyle: MenuBarIconStyle = .timer,
         fractionRemaining: Double?,
-        showsRing: Bool
+        showsRing: Bool,
+        ringDirection: MenuBarRingDirection = .clockwise
     ) throws -> NSImage {
         try XCTUnwrap(
             MenuBarIconRenderer.image(
@@ -69,6 +89,7 @@ final class MenuBarIconRendererTests: XCTestCase {
                 symbolName: "timer",
                 fractionRemaining: fractionRemaining,
                 showsRing: showsRing,
+                ringDirection: ringDirection,
                 colorScheme: .dark,
                 scale: 2
             )
@@ -89,6 +110,42 @@ final class MenuBarIconRendererTests: XCTestCase {
 
     private func visiblePixelCount(in image: NSImage) -> Int {
         pixels(in: image).count { $0.alphaComponent > 0.1 }
+    }
+
+    private func solidRingPixelCounts(in image: NSImage) -> (left: Int, right: Int) {
+        guard
+            let data = image.tiffRepresentation,
+            let representation = NSBitmapImageRep(data: data)
+        else {
+            return (0, 0)
+        }
+
+        let centerX = Double(representation.pixelsWide - 1) / 2
+        let centerY = Double(representation.pixelsHigh - 1) / 2
+        let minimumRadius = Double(representation.pixelsWide) * 0.32
+        var left = 0
+        var right = 0
+
+        for y in 0 ..< representation.pixelsHigh {
+            for x in 0 ..< representation.pixelsWide {
+                let horizontalOffset = Double(x) - centerX
+                let verticalOffset = Double(y) - centerY
+                let radius = hypot(horizontalOffset, verticalOffset)
+                guard radius >= minimumRadius,
+                      let color = representation.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB),
+                      color.alphaComponent > 0.65 else {
+                    continue
+                }
+
+                if horizontalOffset < 0 {
+                    left += 1
+                } else if horizontalOffset > 0 {
+                    right += 1
+                }
+            }
+        }
+
+        return (left, right)
     }
 
     private func pixelDifferenceCount(_ first: NSImage, _ second: NSImage) -> Int {

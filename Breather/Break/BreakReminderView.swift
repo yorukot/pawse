@@ -37,7 +37,7 @@ struct BreakReminderView: View {
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(
                                 isAttentionState
-                                    ? BreatherTheme.Colors.terracotta
+                                    ? BreatherTheme.Colors.pumpkin
                                     : Color.secondary
                             )
                             .accessibilityHidden(true)
@@ -45,7 +45,7 @@ struct BreakReminderView: View {
 
                     ProgressView(value: progress)
                         .progressViewStyle(.linear)
-                        .tint(BreatherTheme.Colors.terracotta)
+                        .tint(BreatherTheme.Colors.pumpkin)
                         .accessibilityHidden(true)
                 }
                 .padding(.horizontal, 16)
@@ -61,7 +61,7 @@ struct BreakReminderView: View {
                 )
                 .fill(
                     isAttentionState
-                        ? BreatherTheme.Colors.terracotta.opacity(0.05 + pulse * 0.05)
+                        ? BreatherTheme.Colors.pumpkin.opacity(0.05 + pulse * 0.05)
                         : Color.clear
                 )
             }
@@ -72,7 +72,7 @@ struct BreakReminderView: View {
                 )
                 .strokeBorder(
                     isAttentionState
-                        ? BreatherTheme.Colors.terracotta.opacity(0.58 + pulse * 0.34)
+                        ? BreatherTheme.Colors.pumpkin.opacity(0.58 + pulse * 0.34)
                         : Color.primary.opacity(0.13),
                     lineWidth: isAttentionState ? 2 : 1
                 )
@@ -83,25 +83,19 @@ struct BreakReminderView: View {
     }
 
     private func logo(pulse: Double, isAttentionState: Bool) -> some View {
-        ZStack {
-            Circle()
-                .fill(BreatherTheme.Colors.cream.opacity(0.94))
-
-            Image("BreatherLogo")
-                .resizable()
-                .scaledToFit()
-                .padding(4)
-        }
-        .frame(
-            width: BreatherTheme.Metrics.reminderLogoSize,
-            height: BreatherTheme.Metrics.reminderLogoSize
-        )
-        .scaleEffect(Self.logoScale(
-            pulse: pulse,
-            isAttentionState: isAttentionState,
-            reduceMotion: reduceMotion
-        ))
-        .accessibilityHidden(true)
+        Image("BreatherHUDMascot")
+            .resizable()
+            .scaledToFit()
+            .frame(
+                width: BreatherTheme.Metrics.reminderMascotWidth,
+                height: BreatherTheme.Metrics.reminderMascotHeight
+            )
+            .scaleEffect(Self.logoScale(
+                pulse: pulse,
+                isAttentionState: isAttentionState,
+                reduceMotion: reduceMotion
+            ))
+            .accessibilityHidden(true)
     }
 
     static func title(

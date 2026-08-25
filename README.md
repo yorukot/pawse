@@ -26,7 +26,7 @@ Breather is open-source software released under the [MIT License](LICENSE). It h
 ## Features
 
 - Native SwiftUI menu bar app with no normal Dock icon
-- Simple comic-style sleeping-cat app icon and in-app banner
+- Unified comic-style sleeping-dog-head app icon, HUD mascot, dog-head menu-bar mark, and mountain-lake banner
 - A documented native design system for calm branding, materials, motion, and accessibility in [`DESIGN_GUIDELINES.md`](DESIGN_GUIDELINES.md)
 - Focus, Short Break, and Long Break modes with absolute-deadline timers
 - Pause/resume for Focus with paused time excluded from analytics
@@ -37,7 +37,7 @@ Breather is open-source software released under the [MIT License](LICENSE). It h
 - Mode icon with a surrounding menu-bar progress ring that drains from full to empty, with no countdown text
 - Cycle-aware **Up Next** details for the next Break and the number of Focus sessions before the Long Break
 - Privacy-preserving natural-break detection using aggregate Core Graphics idle state
-- Non-activating, top-center native-material **Break soon** HUD with the sleeping-cat mark and a 15-second attention indicator that becomes a warm brand pulse without forcing the break
+- Non-activating, top-center native-material **Break soon** HUD with the sleeping-dog mascot and a 15-second attention indicator that becomes a warm brand pulse without forcing the break
 - Grace-period retreat when keyboard or pointer activity resumes during break entry
 - Full-screen native panels on every connected display, synchronized after display changes, with wallpaper or a user-selected image
 - Public AppKit fade transitions that automatically become immediate when Reduce Motion is enabled
@@ -64,7 +64,7 @@ Focus completes
 
 Pending time is neither Focus time nor Break time. A canceled entry attempt creates no Break record and the next attempt starts with the full configured duration. Ordinary input does not dismiss a committed Break.
 
-The HUD attention bar reaches full after 15 seconds and then changes to a warm terracotta border and gentle sleeping-cat pulse. It never becomes an alarm or a forced timeout: continued keyboard or pointer activity can defer a scheduled break indefinitely. A click or the configured idle threshold can start Break Entry before the bar finishes. Reduce Motion keeps the ready treatment static.
+The HUD attention bar reaches full after 15 seconds and then changes to a warm pumpkin border and gentle sleeping-dog pulse. It never becomes an alarm or a forced timeout: continued keyboard or pointer activity can defer a scheduled break indefinitely. A click or the configured idle threshold can start Break Entry before the bar finishes. Reduce Motion keeps the ready treatment static.
 
 Manual Short and Long Breaks start immediately because selecting one is already an explicit request to rest.
 
