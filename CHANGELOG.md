@@ -10,10 +10,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Added a localized About page with live version and build information, author and project links, and matching sidebar and macOS App menu entry points.
 - Added a standalone Donate action to the Pawse sidebar.
+- Added release-owned website metadata for version, compatibility, download links, file size, checksum, and signing status.
+- Added an option to disable automatic Long Break scheduling while keeping manual Long Breaks available.
 
 ### Changed
 
 - Routed donation links in Pawse, the product website, README, and GitHub Sponsors through `https://yorukot.me/donate`.
+- Reframed the website around Pawse's natural-stopping-point behavior with a quieter independent-project voice.
+- Made Download the only primary action, moved optional support after installation and verification, and documented the current early-access Gatekeeper flow.
+
+### Fixed
+
+- Prevented an Emergency Exit from an automatic Long Break from scheduling another Long Break after the next Focus session.
 
 ## [0.1.1] - 2026-08-25
 

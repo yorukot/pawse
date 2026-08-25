@@ -435,6 +435,8 @@ struct MenuBarView: View {
 
     private func timingLabel(_ timing: UpcomingBreakTiming) -> String {
         switch timing {
+        case .disabled:
+            String(localized: "Off", locale: locale)
         case .readyNow:
             String(localized: "Ready now", locale: locale)
         case .inProgress:

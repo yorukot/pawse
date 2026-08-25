@@ -98,6 +98,17 @@ final class UpcomingBreakSummaryTests: XCTestCase {
         XCTAssertEqual(summary.shortBreak, .estimated(120))
     }
 
+    func testDisabledLongBreakSchedulingShowsShortBreakOnly() {
+        let harness = ControllerHarness { settings in
+            settings.enableLongBreaks = false
+        }
+
+        let summary = harness.controller.upcomingBreakSummary
+
+        XCTAssertEqual(summary.shortBreak, .estimated(60))
+        XCTAssertEqual(summary.longBreak, .disabled)
+    }
+
     func testDurationEstimateUsesReadableHourFormatting() {
         let english = Locale(identifier: "en_US")
         XCTAssertEqual(DurationFormatter.estimate(0, locale: english), "0 sec")

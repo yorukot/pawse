@@ -90,7 +90,7 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertEqual(harness.recorder.records.last?.outcome, .completed)
     }
 
-    func testEmergencyExitAndPendingCancellationDoNotResetLongBreakCycle() {
+    func testPendingLongBreakCancellationDoesNotResetLongBreakCycle() {
         let pendingHarness = ControllerHarness { settings in
             settings.shortBreaksBeforeLongBreak = 2
             settings.focusCycleCount = 2
@@ -98,7 +98,9 @@ final class CycleEmergencySoundTests: XCTestCase {
         pendingHarness.completeFocus()
         pendingHarness.controller.cancelPendingBreak()
         XCTAssertEqual(pendingHarness.settings.focusCycleCount, 3)
+    }
 
+    func testEmergencyExitFromAutomaticLongBreakStartsANewCycle() {
         let activeHarness = ControllerHarness { settings in
             settings.shortBreaksBeforeLongBreak = 2
             settings.focusCycleCount = 2
@@ -109,8 +111,29 @@ final class CycleEmergencySoundTests: XCTestCase {
         activeHarness.advance(3)
         activeHarness.controller.requestEmergencyExit()
         activeHarness.controller.confirmEmergencyExit()
-        XCTAssertEqual(activeHarness.settings.focusCycleCount, 3)
+        XCTAssertEqual(activeHarness.settings.focusCycleCount, 0)
         XCTAssertEqual(activeHarness.recorder.records.last?.outcome, .emergencyExit)
+
+        activeHarness.completeFocus()
+        guard case .breakPending(let pending) = activeHarness.controller.state else {
+            return XCTFail("Expected pending Short Break")
+        }
+        XCTAssertEqual(pending.mode, .shortBreak)
+    }
+
+    func testDisablingLongBreaksAlwaysSchedulesShortBreaksWithoutAdvancingCycle() {
+        let harness = ControllerHarness { settings in
+            settings.focusCycleCount = 2
+            settings.enableLongBreaks = false
+        }
+
+        harness.completeFocus()
+
+        guard case .breakPending(let pending) = harness.controller.state else {
+            return XCTFail("Expected pending Short Break")
+        }
+        XCTAssertEqual(pending.mode, .shortBreak)
+        XCTAssertEqual(harness.settings.focusCycleCount, 0)
     }
 
     func testManualBreaksNeverAffectCycle() {

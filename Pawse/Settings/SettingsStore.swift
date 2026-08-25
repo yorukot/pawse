@@ -10,6 +10,7 @@ final class SettingsStore {
         static let longBreakSeconds = "longBreakSeconds"
         static let legacyFocusMinutes = "focusMinutes"
         static let legacyLongBreakMinutes = "longBreakMinutes"
+        static let enableLongBreaks = "enableLongBreaks"
         static let shortBreaksBeforeLongBreak = "shortBreaksBeforeLongBreak"
         static let automaticallyStartBreaks = "automaticallyStartBreaks"
         static let automaticallyStartNextFocus = "automaticallyStartNextFocus"
@@ -61,6 +62,14 @@ final class SettingsStore {
             let validated = normalizedDuration(longBreakSeconds, in: Self.longBreakDurationRange)
             guard validated == longBreakSeconds else { longBreakSeconds = validated; return }
             persist(Key.longBreakSeconds, longBreakSeconds)
+        }
+    }
+    var enableLongBreaks = true {
+        didSet {
+            persist(Key.enableLongBreaks, enableLongBreaks)
+            if !enableLongBreaks {
+                focusCycleCount = 0
+            }
         }
     }
     var shortBreaksBeforeLongBreak = 2 {
@@ -191,6 +200,7 @@ final class SettingsStore {
         focusSeconds = 1_500
         shortBreakSeconds = 30
         longBreakSeconds = 600
+        enableLongBreaks = true
         shortBreaksBeforeLongBreak = 2
         automaticallyStartBreaks = true
         automaticallyStartNextFocus = true
@@ -250,6 +260,7 @@ final class SettingsStore {
         systemWallpaperFolderBookmark = defaults.data(forKey: Key.systemWallpaperFolderBookmark)
         systemWallpaperFolderName = defaults.string(forKey: Key.systemWallpaperFolderName)
         focusCycleCount = defaults.integer(forKey: Key.focusCycleCount)
+        enableLongBreaks = defaults.bool(forKey: Key.enableLongBreaks)
     }
 
     private func persist(_ key: String, _ value: Any) {
@@ -285,6 +296,7 @@ final class SettingsStore {
         Key.focusSeconds: 1_500,
         Key.shortBreakSeconds: 30,
         Key.longBreakSeconds: 600,
+        Key.enableLongBreaks: true,
         Key.shortBreaksBeforeLongBreak: 2,
         Key.automaticallyStartBreaks: true,
         Key.automaticallyStartNextFocus: true,

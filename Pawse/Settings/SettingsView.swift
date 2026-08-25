@@ -271,6 +271,7 @@ struct PawseWindowView: View {
                     scale: .linear,
                     defaultUnit: .minutes
                 )
+                .disabled(!settings.enableLongBreaks)
             }
             Text("Changes apply to the next session and never move an active session’s deadline.")
                 .font(.caption)
@@ -281,20 +282,25 @@ struct PawseWindowView: View {
     private var cycleSettings: some View {
         Form {
             Section("Focus and Break Cycle") {
+                Toggle("Enable Long Breaks", isOn: $settings.enableLongBreaks)
                 IntegerSliderSetting(
                     title: "Short Breaks Before Long Break",
                     value: $settings.shortBreaksBeforeLongBreak,
                     range: 1...12,
                     valueText: { "\($0)" }
                 )
+                .disabled(!settings.enableLongBreaks)
                 Toggle("Automatically Start Breaks", isOn: $settings.automaticallyStartBreaks)
                 Toggle("Automatically Start Next Focus", isOn: $settings.automaticallyStartNextFocus)
                 Toggle(
                     "Continue Cycle After Emergency Exit",
                     isOn: $settings.continueCycleAfterEmergencyExit
                 )
-                LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
-                if settings.shortBreaksBeforeLongBreak == 1 {
+                if !settings.enableLongBreaks {
+                    Text("Pawse uses Short Breaks after every Focus session. You can still start a Long Break manually.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if settings.shortBreaksBeforeLongBreak == 1 {
                     Text("Pawse schedules one Short Break before each Long Break.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -303,10 +309,13 @@ struct PawseWindowView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Button("Reset Break Cycle…", role: .destructive) {
-                    confirmsCycleReset = true
+                if settings.enableLongBreaks {
+                    LabeledContent("Completed Focus sessions in cycle", value: "\(settings.focusCycleCount)")
+                    Button("Reset Break Cycle…", role: .destructive) {
+                        confirmsCycleReset = true
+                    }
+                    .settingsActionStyle()
                 }
-                .settingsActionStyle()
             }
         }
     }

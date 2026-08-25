@@ -23,6 +23,7 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.focusSeconds, 1_500)
         XCTAssertEqual(settings.shortBreakSeconds, 30)
         XCTAssertEqual(settings.longBreakSeconds, 600)
+        XCTAssertTrue(settings.enableLongBreaks)
         XCTAssertEqual(settings.shortBreaksBeforeLongBreak, 2)
         XCTAssertEqual(settings.idleBeforeBreak, 2)
         XCTAssertTrue(settings.automaticallyStartBreaks)
@@ -38,6 +39,25 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
         XCTAssertNil(settings.customBreakImageBookmark)
         XCTAssertNil(settings.systemWallpaperFolderBookmark)
+    }
+
+    func testLongBreakPreferencePersistsResetsTheCycleAndRestoresItsDefault() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.focusCycleCount = 2
+        settings.enableLongBreaks = false
+
+        XCTAssertFalse(settings.enableLongBreaks)
+        XCTAssertEqual(settings.focusCycleCount, 0)
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertFalse(settings.enableLongBreaks)
+        XCTAssertEqual(settings.focusCycleCount, 0)
+
+        settings.resetToDefaults()
+        XCTAssertTrue(settings.enableLongBreaks)
     }
 
     func testLegacyMinuteDurationsMigrateToSeconds() {

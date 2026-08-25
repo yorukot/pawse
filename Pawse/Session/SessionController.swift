@@ -307,6 +307,7 @@ final class SessionController {
         let now = clock.now
         isEmergencyExitConfirmationPresented = false
         finalize(session, outcome: .emergencyExit, endedAt: now, activeDuration: session.activeDuration(at: now))
+        finishAutomaticLongBreakCycle(for: session)
         cleanupBreakEnvironment(animated: false)
         returnToFocus(
             afterBreakAt: now,
@@ -541,9 +542,7 @@ final class SessionController {
     }
 
     private func completeBreak(_ session: RunningSession, at now: Date) {
-        if session.origin == .automatic && session.mode == .longBreak {
-            settings.focusCycleCount = 0
-        }
+        finishAutomaticLongBreakCycle(for: session)
         cleanupBreakEnvironment()
         playSound(.breakCompleted(session.mode))
         returnToFocus(
@@ -684,10 +683,15 @@ final class SessionController {
     }
 
     private func scheduledBreakMode(afterCompletedFocusCount count: Int) -> SessionMode {
-        count > settings.shortBreaksBeforeLongBreak ? .longBreak : .shortBreak
+        guard settings.enableLongBreaks else { return .shortBreak }
+        return count > settings.shortBreaksBeforeLongBreak ? .longBreak : .shortBreak
     }
 
     private func completeFocusCycleStep(skippingBreak: Bool) -> SessionMode {
+        guard settings.enableLongBreaks else {
+            settings.focusCycleCount = 0
+            return .shortBreak
+        }
         settings.focusCycleCount += 1
         let mode = scheduledBreakMode(afterCompletedFocusCount: settings.focusCycleCount)
         if skippingBreak, mode == .longBreak {
@@ -749,6 +753,10 @@ final class SessionController {
             elapsed += settings.duration(for: .focus)
         }
 
+        if !settings.enableLongBreaks, longBreak == nil {
+            longBreak = .disabled
+        }
+
         for _ in 0..<64 where shortBreak == nil || longBreak == nil {
             focusCycleCount += 1
             let mode = scheduledBreakMode(afterCompletedFocusCount: focusCycleCount)
@@ -771,6 +779,12 @@ final class SessionController {
             shortBreak: shortBreak ?? .estimated(max(0, elapsed)),
             longBreak: longBreak ?? .estimated(max(0, elapsed))
         )
+    }
+
+    private func finishAutomaticLongBreakCycle(for session: RunningSession) {
+        if session.origin == .automatic && session.mode == .longBreak {
+            settings.focusCycleCount = 0
+        }
     }
 
     private func finalize(

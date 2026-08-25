@@ -76,6 +76,7 @@ struct BreakReminderPresentation: Equatable, Sendable {
 }
 
 enum UpcomingBreakTiming: Equatable, Sendable {
+    case disabled
     case readyNow
     case inProgress
     case estimated(TimeInterval)

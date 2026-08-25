@@ -1373,6 +1373,34 @@
         }
       }
     },
+    "Pawse uses Short Breaks after every Focus session. You can still start a Long Break manually.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse usa descansos cortos después de cada sesión de concentración. Aún puedes iniciar un descanso largo manualmente."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawseは集中セッションのたびに短い休憩を設定します。長い休憩は手動で開始できます。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse 會在每次專注後安排短休息。你仍可手動開始長休息。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse 会在每次专注后安排短休息。你仍可手动开始长休息。"
+          }
+        }
+      }
+    },
     "Pawse will restart and begin a new Focus.": {
       "localizations": {
         "es": {
@@ -2549,6 +2577,34 @@
         }
       }
     },
+    "Enable Long Breaks": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar descansos largos"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "長い休憩を有効にする"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "啟用長休息"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启用长休息"
+          }
+        }
+      }
+    },
     "Enable Sounds": {
       "localizations": {
         "es": {
@@ -3637,6 +3693,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "无"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivado"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフ"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
           }
         }
       }
