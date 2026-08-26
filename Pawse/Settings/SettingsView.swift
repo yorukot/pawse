@@ -46,6 +46,18 @@ enum PawseWindowSection: String, CaseIterable, Identifiable {
 }
 
 struct PawseWindowView: View {
+    private enum FileImportRequest: Equatable {
+        case breakImage
+        case wallpaperFolder
+
+        var allowedContentTypes: [UTType] {
+            switch self {
+            case .breakImage: [.image]
+            case .wallpaperFolder: [.folder]
+            }
+        }
+    }
+
     @Binding var selectedSection: PawseWindowSection
     @Bindable var settings: SettingsStore
     @Bindable var soundService: SoundService
@@ -62,8 +74,8 @@ struct PawseWindowView: View {
     @State private var confirmsCycleReset = false
     @State private var confirmsSettingsReset = false
     @State private var confirmsAnalyticsClear = false
-    @State private var isChoosingBreakImage = false
-    @State private var isChoosingWallpaperFolder = false
+    @State private var fileImportRequest: FileImportRequest?
+    @State private var isFileImporterPresented = false
     @State private var pendingLanguage: AppLanguage?
     @State private var confirmsLanguageRestart = false
 
@@ -122,22 +134,11 @@ struct PawseWindowView: View {
                 Text(languageRestartMessage)
             }
             .fileImporter(
-                isPresented: $isChoosingBreakImage,
-                allowedContentTypes: [.image],
+                isPresented: $isFileImporterPresented,
+                allowedContentTypes: fileImportRequest?.allowedContentTypes ?? [.item],
                 allowsMultipleSelection: false
             ) { result in
-                if case .success(let urls) = result, let url = urls.first {
-                    breakBackgroundService.selectCustomImage(at: url)
-                }
-            }
-            .fileImporter(
-                isPresented: $isChoosingWallpaperFolder,
-                allowedContentTypes: [.folder],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result, let url = urls.first {
-                    breakBackgroundService.selectWallpaperFolder(at: url)
-                }
+                handleFileImport(result)
             }
     }
 
@@ -386,7 +387,7 @@ struct PawseWindowView: View {
                                 breakBackgroundService.useSystemWallpaper()
                             case .customImage:
                                 if settings.customBreakImageBookmark == nil {
-                                    isChoosingBreakImage = true
+                                    requestFileImport(.breakImage)
                                 } else {
                                     settings.breakBackgroundMode = .customImage
                                     breakBackgroundService.resetCache()
@@ -410,12 +411,12 @@ struct PawseWindowView: View {
                         }
                         if settings.systemWallpaperFolderName == nil {
                             Button("Choose…") {
-                                isChoosingWallpaperFolder = true
+                                requestFileImport(.wallpaperFolder)
                             }
                             .settingsActionStyle()
                         } else {
                             Button("Change…") {
-                                isChoosingWallpaperFolder = true
+                                requestFileImport(.wallpaperFolder)
                             }
                             .settingsActionStyle()
                         }
@@ -436,12 +437,12 @@ struct PawseWindowView: View {
                         }
                         if settings.customBreakImageName == nil {
                             Button("Choose…") {
-                                isChoosingBreakImage = true
+                                requestFileImport(.breakImage)
                             }
                             .settingsActionStyle()
                         } else {
                             Button("Change…") {
-                                isChoosingBreakImage = true
+                                requestFileImport(.breakImage)
                             }
                             .settingsActionStyle()
                         }
@@ -486,6 +487,29 @@ struct PawseWindowView: View {
             )
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private func requestFileImport(_ request: FileImportRequest) {
+        fileImportRequest = request
+
+        Task { @MainActor in
+            await Task.yield()
+            guard fileImportRequest == request else { return }
+            isFileImporterPresented = true
+        }
+    }
+
+    private func handleFileImport(_ result: Result<[URL], Error>) {
+        guard let request = fileImportRequest else { return }
+        fileImportRequest = nil
+
+        guard case .success(let urls) = result, let url = urls.first else { return }
+        switch request {
+        case .breakImage:
+            breakBackgroundService.selectCustomImage(at: url)
+        case .wallpaperFolder:
+            breakBackgroundService.selectWallpaperFolder(at: url)
         }
     }
 
