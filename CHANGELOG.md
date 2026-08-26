@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-26
+
 ### Added
 
 - Added Discreet Mode, which keeps the desktop visible during a committed break while Pawse continues blocking input, with optional automatic entry and a yellow menu-bar indicator.
@@ -14,8 +16,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
-- Rebuilt the product website with Astro and Starlight while preserving Pawse's dark, calm visual identity and release-owned download metadata.
+- Rebuilt the website with Astro and Starlight while preserving Pawse's dark, calm visual identity and release-owned download metadata.
 - Standardized website development and GitHub Pages builds on pnpm with a frozen lockfile.
+
+### Fixed
+
+- Fixed the custom break image and wallpaper folder pickers so they open reliably from Appearance settings.
 
 ## [0.1.2] - 2026-08-26
 
@@ -81,7 +87,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Persist custom break images with read-only security-scoped bookmarks and migrate readable legacy bookmarks.
 
-[Unreleased]: https://github.com/yorukot/pawse/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/yorukot/pawse/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/yorukot/pawse/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/yorukot/pawse/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/yorukot/pawse/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/yorukot/pawse/releases/tag/v0.1.0
