@@ -60,6 +60,26 @@ struct BreakOverlayView: View {
                 HStack {
                     Spacer()
                     if presentationState.isBreakCommitted {
+                        if settings.enableBreakSkipping {
+                            Button {
+                                controller.skipCurrentBreak()
+                            } label: {
+                                Label {
+                                    if controller.canSkipCurrentBreak {
+                                        Text("End Break Early")
+                                    } else {
+                                        Text(
+                                            "End Break Early in \(DurationFormatter.concise(controller.timeUntilBreakCanBeSkipped ?? 0, locale: locale))"
+                                        )
+                                    }
+                                } icon: {
+                                    Image(systemName: "forward.end")
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .disabled(!controller.canSkipCurrentBreak)
+                        }
                         Button {
                             onEnterDiscreetMode()
                         } label: {

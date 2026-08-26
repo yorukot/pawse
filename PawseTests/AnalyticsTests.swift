@@ -74,6 +74,29 @@ final class AnalyticsTests: XCTestCase {
         XCTAssertEqual(metrics.interruptedSessions, 1)
     }
 
+    func testSkippedBreakKeepsActualTimeWithoutCountingAsCompletedOrInterrupted() {
+        let now = Date(timeIntervalSince1970: 1_720_000_000)
+        let record = makeSnapshot(
+            mode: .shortBreak,
+            outcome: .skipped,
+            startedAt: now.addingTimeInterval(-30),
+            plannedDuration: 300,
+            activeDuration: 30
+        )
+
+        let metrics = AnalyticsAggregator.metrics(
+            records: [record],
+            range: .allTime,
+            now: now,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(metrics.shortBreakTime, 30)
+        XCTAssertEqual(metrics.completedShortBreaks, 0)
+        XCTAssertEqual(metrics.interruptedSessions, 0)
+        XCTAssertEqual(metrics.emergencyExits, 0)
+    }
+
     func testDateRangesUseLocalCalendarBoundaries() {
         let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 25, hour: 12)) ?? Date()
         let today = calendar.date(from: DateComponents(year: 2026, month: 8, day: 25, hour: 1)) ?? now

@@ -106,6 +106,23 @@ final class SessionController {
         }
     }
 
+    var timeUntilBreakCanBeSkipped: TimeInterval? {
+        guard settings.enableBreakSkipping,
+              case .running(let session) = state,
+              session.mode.isBreak else { return nil }
+        let elapsed = max(0, nowSnapshot.timeIntervalSince(session.startedAt))
+        return max(
+            0,
+            TimeInterval(settings.minimumBreakSecondsBeforeSkipping) - elapsed
+        )
+    }
+
+    var canSkipCurrentBreak: Bool {
+        guard let timeUntilBreakCanBeSkipped,
+              case .running(let session) = state else { return false }
+        return timeUntilBreakCanBeSkipped <= 0 && session.remaining(at: nowSnapshot) > 0
+    }
+
     func selectMode(_ mode: SessionMode) {
         guard case .idle = state else { return }
         state = .idle(selectedMode: mode)
@@ -215,6 +232,32 @@ final class SessionController {
             scheduledAt: now,
             cyclePosition: settings.focusCycleCount
         )
+    }
+
+    func skipCurrentBreak() {
+        guard settings.enableBreakSkipping,
+              case .running(let session) = state,
+              session.mode.isBreak else { return }
+        let now = clock.now
+        nowSnapshot = now
+
+        guard now < session.deadline else {
+            completeRunningSession(session, at: now)
+            return
+        }
+
+        let elapsed = max(0, now.timeIntervalSince(session.startedAt))
+        guard elapsed >= TimeInterval(settings.minimumBreakSecondsBeforeSkipping) else {
+            return
+        }
+
+        finalize(
+            session,
+            outcome: .skipped,
+            endedAt: now,
+            activeDuration: session.activeDuration(at: now)
+        )
+        completeBreak(session, at: now)
     }
 
     func stopCurrentSession() {

@@ -148,6 +148,95 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(harness.controller.state, originalState)
     }
 
+    func testBreakSkippingUnlocksAtConfiguredThresholdAndFinishesExactlyOnce() {
+        let harness = ControllerHarness { settings in
+            settings.minimumBreakSecondsBeforeSkipping = 30
+        }
+        harness.controller.selectMode(.shortBreak)
+        harness.controller.startSelectedMode()
+
+        XCTAssertEqual(harness.controller.timeUntilBreakCanBeSkipped ?? -1, 30, accuracy: 0.001)
+        XCTAssertFalse(harness.controller.canSkipCurrentBreak)
+        harness.controller.skipCurrentBreak()
+        XCTAssertTrue(harness.recorder.records.isEmpty)
+
+        harness.advance(29)
+        XCTAssertEqual(harness.controller.timeUntilBreakCanBeSkipped ?? -1, 1, accuracy: 0.001)
+        XCTAssertFalse(harness.controller.canSkipCurrentBreak)
+
+        harness.advance(1)
+        XCTAssertTrue(harness.controller.canSkipCurrentBreak)
+        harness.controller.skipCurrentBreak()
+        harness.controller.skipCurrentBreak()
+
+        XCTAssertEqual(harness.controller.state, .idle(selectedMode: .focus))
+        XCTAssertEqual(harness.recorder.records.count, 1)
+        XCTAssertEqual(harness.recorder.records[0].mode, .shortBreak)
+        XCTAssertEqual(harness.recorder.records[0].outcome, .skipped)
+        XCTAssertEqual(harness.recorder.records[0].plannedDuration, 60)
+        XCTAssertEqual(harness.recorder.records[0].activeDuration, 30, accuracy: 0.001)
+        XCTAssertEqual(harness.environment.cleanupCount, 1)
+        XCTAssertEqual(
+            harness.sound.events,
+            [.sessionStarted(.shortBreak), .breakCompleted(.shortBreak)]
+        )
+        XCTAssertFalse(harness.scheduler.isScheduled)
+    }
+
+    func testBreakSkippingCanBeDisabled() {
+        let harness = ControllerHarness { settings in
+            settings.enableBreakSkipping = false
+            settings.minimumBreakSecondsBeforeSkipping = 10
+        }
+        harness.controller.selectMode(.longBreak)
+        harness.controller.startSelectedMode()
+        harness.advance(30)
+
+        XCTAssertNil(harness.controller.timeUntilBreakCanBeSkipped)
+        XCTAssertFalse(harness.controller.canSkipCurrentBreak)
+        harness.controller.skipCurrentBreak()
+
+        guard case .running(let session) = harness.controller.state else {
+            return XCTFail("Expected the Long Break to continue")
+        }
+        XCTAssertEqual(session.mode, .longBreak)
+        XCTAssertTrue(harness.recorder.records.isEmpty)
+    }
+
+    func testNaturalCompletionWinsWhenSkipThresholdIsNotReached() {
+        let harness = ControllerHarness { settings in
+            settings.minimumBreakSecondsBeforeSkipping = 120
+        }
+        harness.controller.selectMode(.shortBreak)
+        harness.controller.startSelectedMode()
+        harness.clock.advance(60)
+
+        harness.controller.skipCurrentBreak()
+
+        XCTAssertEqual(harness.controller.state, .idle(selectedMode: .focus))
+        XCTAssertEqual(harness.recorder.records.map(\.outcome), [.completed])
+        XCTAssertEqual(harness.recorder.records[0].activeDuration, 60, accuracy: 0.001)
+    }
+
+    func testSuccessfulBreakEntryGracePeriodCountsTowardSkipThreshold() {
+        let harness = ControllerHarness { settings in
+            settings.minimumBreakSecondsBeforeSkipping = 30
+        }
+        harness.completeFocus()
+        harness.activity.current = UserActivitySample(secondsSinceLastInput: 5, activityToken: 1)
+        harness.controller.handleTick()
+
+        harness.advance(3)
+        XCTAssertEqual(harness.controller.timeUntilBreakCanBeSkipped ?? -1, 27, accuracy: 0.001)
+
+        harness.advance(27)
+        XCTAssertTrue(harness.controller.canSkipCurrentBreak)
+        harness.controller.skipCurrentBreak()
+
+        XCTAssertEqual(harness.recorder.records.map(\.outcome), [.completed, .skipped])
+        XCTAssertEqual(harness.recorder.records.last?.activeDuration ?? -1, 30, accuracy: 0.001)
+    }
+
     func testRemainingTimeNeverBecomesNegative() {
         let harness = ControllerHarness { settings in
             settings.automaticallyStartBreaks = false
@@ -422,6 +511,7 @@ final class SessionControllerTests: XCTestCase {
         harness.settings.shortBreaksBeforeLongBreak = 0
         harness.settings.idleBeforeBreak = 8
         harness.settings.breakEntryGracePeriod = 99
+        harness.settings.minimumBreakSecondsBeforeSkipping = 99_999
         harness.settings.soundVolume = -2
 
         XCTAssertEqual(harness.settings.focusSeconds, 10_800)
@@ -430,10 +520,13 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(harness.settings.shortBreaksBeforeLongBreak, 1)
         XCTAssertEqual(harness.settings.idleBeforeBreak, 10)
         XCTAssertEqual(harness.settings.breakEntryGracePeriod, 10)
+        XCTAssertEqual(harness.settings.minimumBreakSecondsBeforeSkipping, 7_200)
         XCTAssertEqual(harness.settings.soundVolume, 0)
 
         harness.settings.focusSeconds = 1_505
         XCTAssertEqual(harness.settings.focusSeconds, 1_510)
+        harness.settings.minimumBreakSecondsBeforeSkipping = 5
+        XCTAssertEqual(harness.settings.minimumBreakSecondsBeforeSkipping, 10)
     }
 
     func testProductDefaultsMatchAutomaticTwentyFiveMinuteCycle() {
@@ -451,5 +544,7 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
         XCTAssertTrue(settings.continueCycleAfterEmergencyExit)
+        XCTAssertTrue(settings.enableBreakSkipping)
+        XCTAssertEqual(settings.minimumBreakSecondsBeforeSkipping, 30)
     }
 }

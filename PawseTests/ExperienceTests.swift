@@ -29,6 +29,8 @@ final class ExperienceTests: XCTestCase {
         XCTAssertTrue(settings.automaticallyStartBreaks)
         XCTAssertTrue(settings.automaticallyStartNextFocus)
         XCTAssertTrue(settings.continueCycleAfterEmergencyExit)
+        XCTAssertTrue(settings.enableBreakSkipping)
+        XCTAssertEqual(settings.minimumBreakSecondsBeforeSkipping, 30)
         XCTAssertTrue(settings.enableSounds)
         XCTAssertEqual(settings.sessionStartSound, "Submarine")
         XCTAssertEqual(settings.breakReadySound, "None")
@@ -58,6 +60,23 @@ final class ExperienceTests: XCTestCase {
         settings.resetToDefaults()
         XCTAssertFalse(settings.startBreaksInDiscreetMode)
         XCTAssertTrue(settings.showDiscreetBreakRing)
+    }
+
+    func testBreakSkippingPreferencesPersistAndRestoreTheirDefaults() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.enableBreakSkipping = false
+        settings.minimumBreakSecondsBeforeSkipping = 120
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertFalse(settings.enableBreakSkipping)
+        XCTAssertEqual(settings.minimumBreakSecondsBeforeSkipping, 120)
+
+        settings.resetToDefaults()
+        XCTAssertTrue(settings.enableBreakSkipping)
+        XCTAssertEqual(settings.minimumBreakSecondsBeforeSkipping, 30)
     }
 
     func testLongBreakPreferencePersistsResetsTheCycleAndRestoresItsDefault() {

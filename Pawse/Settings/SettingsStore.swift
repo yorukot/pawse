@@ -18,6 +18,8 @@ final class SettingsStore {
         static let waitForNaturalBreak = "waitForNaturalBreak"
         static let idleBeforeBreak = "idleBeforeBreak"
         static let breakEntryGracePeriod = "breakEntryGracePeriod"
+        static let enableBreakSkipping = "enableBreakSkipping"
+        static let minimumBreakSecondsBeforeSkipping = "minimumBreakSecondsBeforeSkipping"
         static let startBreaksInDiscreetMode = "startBreaksInDiscreetMode"
         static let showDiscreetBreakRing = "showDiscreetBreakRing"
         static let enableSounds = "enableSounds"
@@ -43,6 +45,7 @@ final class SettingsStore {
     static let focusDurationRange = 10...10_800
     static let shortBreakDurationRange = 10...3_600
     static let longBreakDurationRange = 10...7_200
+    static let breakSkipDelayRange = 10...7_200
     static let durationStep = 10
 
     var focusSeconds = 1_500 {
@@ -105,6 +108,25 @@ final class SettingsStore {
                 return
             }
             persist(Key.breakEntryGracePeriod, breakEntryGracePeriod)
+        }
+    }
+    var enableBreakSkipping = true {
+        didSet { persist(Key.enableBreakSkipping, enableBreakSkipping) }
+    }
+    var minimumBreakSecondsBeforeSkipping = 30 {
+        didSet {
+            let validated = normalizedDuration(
+                minimumBreakSecondsBeforeSkipping,
+                in: Self.breakSkipDelayRange
+            )
+            guard validated == minimumBreakSecondsBeforeSkipping else {
+                minimumBreakSecondsBeforeSkipping = validated
+                return
+            }
+            persist(
+                Key.minimumBreakSecondsBeforeSkipping,
+                minimumBreakSecondsBeforeSkipping
+            )
         }
     }
     var startBreaksInDiscreetMode = false {
@@ -216,6 +238,8 @@ final class SettingsStore {
         waitForNaturalBreak = true
         idleBeforeBreak = 2
         breakEntryGracePeriod = 3
+        enableBreakSkipping = true
+        minimumBreakSecondsBeforeSkipping = 30
         startBreaksInDiscreetMode = false
         showDiscreetBreakRing = true
         enableSounds = true
@@ -243,6 +267,10 @@ final class SettingsStore {
         waitForNaturalBreak = defaults.bool(forKey: Key.waitForNaturalBreak)
         idleBeforeBreak = defaults.double(forKey: Key.idleBeforeBreak)
         breakEntryGracePeriod = defaults.double(forKey: Key.breakEntryGracePeriod)
+        enableBreakSkipping = defaults.bool(forKey: Key.enableBreakSkipping)
+        minimumBreakSecondsBeforeSkipping = defaults.integer(
+            forKey: Key.minimumBreakSecondsBeforeSkipping
+        )
         startBreaksInDiscreetMode = defaults.bool(forKey: Key.startBreaksInDiscreetMode)
         showDiscreetBreakRing = defaults.bool(forKey: Key.showDiscreetBreakRing)
         enableSounds = defaults.bool(forKey: Key.enableSounds)
@@ -316,6 +344,8 @@ final class SettingsStore {
         Key.waitForNaturalBreak: true,
         Key.idleBeforeBreak: 2.0,
         Key.breakEntryGracePeriod: 3.0,
+        Key.enableBreakSkipping: true,
+        Key.minimumBreakSecondsBeforeSkipping: 30,
         Key.startBreaksInDiscreetMode: false,
         Key.showDiscreetBreakRing: true,
         Key.enableSounds: true,

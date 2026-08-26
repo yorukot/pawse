@@ -177,6 +177,54 @@ final class CycleEmergencySoundTests: XCTestCase {
         XCTAssertEqual(harness.recorder.records.count, 1)
     }
 
+    func testSkippedBreakUsesAutomaticNextFocusPreference() {
+        let automatic = ControllerHarness { settings in
+            settings.automaticallyStartNextFocus = true
+            settings.minimumBreakSecondsBeforeSkipping = 10
+        }
+        automatic.controller.selectMode(.shortBreak)
+        automatic.controller.startSelectedMode()
+        automatic.advance(10)
+        automatic.controller.skipCurrentBreak()
+
+        guard case .running(let nextFocus) = automatic.controller.state else {
+            return XCTFail("Expected automatic Focus after skipping the Break")
+        }
+        XCTAssertEqual(nextFocus.mode, .focus)
+        XCTAssertEqual(nextFocus.origin, .automatic)
+        XCTAssertEqual(automatic.recorder.records.map(\.outcome), [.skipped])
+
+        let manual = ControllerHarness { settings in
+            settings.automaticallyStartNextFocus = false
+            settings.minimumBreakSecondsBeforeSkipping = 10
+        }
+        manual.controller.selectMode(.shortBreak)
+        manual.controller.startSelectedMode()
+        manual.advance(10)
+        manual.controller.skipCurrentBreak()
+
+        XCTAssertEqual(manual.controller.state, .idle(selectedMode: .focus))
+    }
+
+    func testSkippedAutomaticLongBreakStartsANewCycle() {
+        let harness = ControllerHarness { settings in
+            settings.shortBreaksBeforeLongBreak = 2
+            settings.focusCycleCount = 2
+            settings.minimumBreakSecondsBeforeSkipping = 10
+        }
+        harness.completeFocus()
+        harness.activity.current = UserActivitySample(secondsSinceLastInput: 5, activityToken: 1)
+        harness.controller.handleTick()
+        harness.advance(3)
+        harness.advance(7)
+
+        harness.controller.skipCurrentBreak()
+
+        XCTAssertEqual(harness.settings.focusCycleCount, 0)
+        XCTAssertEqual(harness.recorder.records.map(\.mode), [.focus, .longBreak])
+        XCTAssertEqual(harness.recorder.records.last?.outcome, .skipped)
+    }
+
     func testEmergencyExitRequiresConfirmationAndCancelKeepsBreakActive() {
         let harness = ControllerHarness()
         harness.controller.selectMode(.shortBreak)

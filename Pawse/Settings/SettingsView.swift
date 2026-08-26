@@ -345,6 +345,25 @@ struct PawseWindowView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Section("End Break Early") {
+                Toggle(
+                    "Allow Ending Breaks Early",
+                    isOn: $settings.enableBreakSkipping
+                )
+                DurationSliderSetting(
+                    title: "Minimum Break Time",
+                    value: $settings.minimumBreakSecondsBeforeSkipping,
+                    range: SettingsStore.breakSkipDelayRange,
+                    scale: .logarithmic,
+                    defaultUnit: .seconds
+                )
+                .disabled(!settings.enableBreakSkipping)
+                Text(
+                    "After this much rest, you can end the current Break without using Emergency Exit."
+                )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             Section("Discreet Mode") {
                 Toggle(
                     "Start Breaks in Discreet Mode",
