@@ -32,20 +32,47 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Assemble static site
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v1
+        with:
+          version: 11.23.0
+          runtime: node@24
+          cache: true
+          cache-dependency-path: website/pnpm-lock.yaml
+          install: false
+
+      - name: Resolve release metadata
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p _site
-          cp -R website/. _site/
           metadata_url="$(
             gh api "repos/$GITHUB_REPOSITORY/releases?per_page=20" \
               --jq '[.[] | select(.draft == false) | .assets[] | select(.name | endswith(".release.json"))][0].browser_download_url // empty'
           )"
           if [[ -n "$metadata_url" ]]; then
-            curl --fail --location --silent --show-error "$metadata_url" --output _site/release.json
+            curl --fail --location --silent --show-error \
+              "$metadata_url" \
+              --output website/src/data/release.json
           fi
-          touch _site/.nojekyll
+
+      - name: Install website dependencies
+        working-directory: website
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website
+        working-directory: website
+        run: pnpm run check
+
+      - name: Build website
+        working-directory: website
+        run: pnpm run build
+
+      - name: Validate website output
+        working-directory: website
+        run: pnpm run validate
+
+      - name: Disable Jekyll processing
+        run: touch website/dist/.nojekyll
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -53,7 +80,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: website/dist
 
       - name: Deploy to GitHub Pages
         id: deployment

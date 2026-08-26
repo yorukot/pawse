@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Added Discreet Mode, which keeps the desktop visible during a committed break while Pawse continues blocking input, with optional automatic entry and a yellow menu-bar indicator.
+- Added configurable early Break completion after a minimum rest time, with normal cycle continuation and a distinct skipped outcome instead of Emergency Exit.
+- Added a complete Markdown user guide covering installation, the Focus cycle, natural breaks, settings, Analytics, privacy, and troubleshooting.
+
+### Changed
+
+- Rebuilt the product website with Astro and Starlight while preserving Pawse's dark, calm visual identity and release-owned download metadata.
+- Standardized website development and GitHub Pages builds on pnpm with a frozen lockfile.
+
 ## [0.1.2] - 2026-08-26
 
 ### Added

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="website/assets/pawse-hero.webp" width="100%" alt="Pawse — Focus deeply. Rest naturally. A calm white shepherd above an illustrated mountain landscape.">
+  <img src="website/public/assets/pawse-hero.webp" width="100%" alt="Pawse — Focus deeply. Rest naturally. A calm white shepherd above an illustrated mountain landscape.">
 </p>
 
 <div align="center">
@@ -8,6 +8,7 @@
   <p>
     <a href="https://pawse.yorukot.me/download/"><strong>Download for macOS</strong></a>
     · <a href="https://pawse.yorukot.me/">Website</a>
+    · <a href="https://pawse.yorukot.me/docs/">Documentation</a>
     · <a href="CONTRIBUTING.md">Contribute</a>
   </p>
 
@@ -24,6 +25,8 @@ Pawse lives quietly in your menu bar and guides you through Focus, Short Break, 
 - **Break naturally.** A small **Break soon** reminder waits for a click or a brief pause in keyboard and pointer activity.
 - **Stay in rhythm.** Focus and breaks flow automatically, with a longer rest after a configurable number of cycles.
 - **Rest without distraction.** A calm full-screen break appears across your displays, with Emergency Exit always available.
+- **Keep your place.** Discreet Mode leaves the desktop visible while Pawse continues the break and blocks input.
+- **Finish deliberately.** After a configurable minimum rest time, end a break early without using Emergency Exit.
 - **Make it yours.** Adjust durations, sounds, backgrounds, automatic transitions, and what appears in the menu bar.
 - **Keep it private.** Settings and session history stay on your Mac. Pawse has no account, telemetry, or server analytics.
 
@@ -35,6 +38,8 @@ Pawse lives quietly in your menu bar and guides you through Focus, Short Break, 
 4. After the break, Pawse starts the next Focus and continues the cycle.
 
 If activity resumes while the break is appearing, Pawse steps back and waits for a fresh natural stopping point.
+
+Read the complete [Pawse documentation](https://pawse.yorukot.me/docs/) for installation, settings, Discreet Mode, End Break Early, Analytics, privacy, and troubleshooting.
 
 ## Download
 

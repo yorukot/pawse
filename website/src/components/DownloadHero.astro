@@ -1,0 +1,51 @@
+---
+import { releaseMetadata as release } from '../data/release';
+
+const accessLabel = release.earlyAccess ? 'Early access' : 'Stable release';
+---
+
+<header class="download-hero">
+  <div>
+    <h1>Download Pawse.</h1>
+    <p class="download-hero__lede">
+      Pawse is free and open source. No account, email, subscription, ads, or tracking.
+    </p>
+    <p class="download-hero__link">
+      <a class="download-link" href={release.downloadURL}>Download Pawse {release.version} ↓</a>
+    </p>
+    <p class="release-facts">
+      DMG <span aria-hidden="true">·</span> {release.fileSize}
+      <span aria-hidden="true">·</span> {release.architectureShortLabel}
+      <span aria-hidden="true">·</span> macOS {release.minimumMacOS}+
+      <span aria-hidden="true">·</span> {accessLabel}
+    </p>
+    <p class="quiet-links">
+      <a href={release.releaseURL}>Release notes</a>
+      <span aria-hidden="true">·</span>
+      <a href={release.checksumURL}>Checksum file</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://github.com/yorukot/pawse">Source</a>
+    </p>
+  </div>
+  <img
+    class="download-hero__dog"
+    src="/assets/pawse-download-dog.webp"
+    width="720"
+    height="720"
+    alt="A happy white shepherd carrying a small package"
+  />
+</header>
+
+{
+  !release.notarized && (
+    <aside class="trust-note" aria-labelledby="trust-note-title">
+      <h2 id="trust-note-title">Before you install</h2>
+      <p>
+        Pawse {release.version} is {release.earlyAccess ? 'an early-access build' : 'not notarized'}.
+        It is {release.signature.toLowerCase()} signed and has not yet been notarized by Apple, so
+        macOS asks you to approve it manually the first time it opens.
+      </p>
+      <p>Only continue when the DMG came from this website or the official GitHub release.</p>
+    </aside>
+  )
+}

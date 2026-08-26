@@ -1,0 +1,26 @@
+{
+  "name": "pawse-website",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.23.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12 <25",
+    "pnpm": ">=11.23"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "validate": "node scripts/validate-build.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.9",
+    "astro": "^7.2.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
+  }
+}

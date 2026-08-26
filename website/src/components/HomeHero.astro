@@ -1,0 +1,33 @@
+---
+import { releaseMetadata as release } from '../data/release';
+
+const accessLabel = release.earlyAccess ? 'Early access' : 'Stable release';
+---
+
+<section class="home-hero" aria-labelledby="home-hero-title">
+  <div class="home-hero__copy">
+    <h1 id="home-hero-title">The timer reaches zero.<br />Pawse waits.</h1>
+    <p class="home-hero__lede">
+      Finish the sentence, save the file, or complete the thought. Pawse starts your break when
+      you naturally pause—not the instant your focus session ends.
+    </p>
+    <p class="home-hero__links">
+      <a class="download-link" href="/download/">Download Pawse for macOS ↓</a>
+      <a href="https://github.com/yorukot/pawse">View the source</a>
+    </p>
+    <p class="release-facts">
+      macOS {release.minimumMacOS}+ <span aria-hidden="true">·</span>
+      {release.architectureLabel} <span aria-hidden="true">·</span>
+      No account <span aria-hidden="true">·</span> {accessLabel}
+    </p>
+  </div>
+
+  <figure class="home-hero__shot">
+    <img
+      src="/assets/pawse-menu.webp"
+      width="640"
+      height="966"
+      alt="Pawse menu bar timer showing an active Focus session and upcoming breaks"
+    />
+  </figure>
+</section>

@@ -1,0 +1,36 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+
+const routeId = Astro.locals.starlightRoute.id;
+const isStandalonePage = routeId === '' || routeId === 'download';
+---
+
+{!isStandalonePage && <Default><slot /></Default>}
+
+<footer class="pawse-footer">
+  Made with <span class="pawse-footer__heart" aria-label="love">♥</span> by <a href="https://github.com/yorukot">Yorukot</a>
+</footer>
+
+<style>
+  .pawse-footer {
+    margin-top: 2rem;
+    padding-block: 1rem 1.25rem;
+    border-top: 1px solid var(--sl-color-hairline-light);
+    color: var(--sl-color-gray-4);
+    font-size: var(--sl-text-xs);
+    line-height: 1.4;
+  }
+
+  .pawse-footer__heart {
+    color: var(--sl-color-accent);
+  }
+
+  .pawse-footer a {
+    color: var(--sl-color-gray-4);
+    text-decoration-color: var(--sl-color-gray-5);
+  }
+
+  .pawse-footer a:hover {
+    color: var(--sl-color-accent);
+  }
+</style>

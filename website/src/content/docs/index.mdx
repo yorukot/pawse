@@ -1,0 +1,103 @@
+---
+title: Pawse — A macOS focus timer that waits
+description: A private macOS focus timer that waits for a natural stopping point before starting your break.
+template: splash
+tableOfContents: false
+editUrl: false
+prev: false
+next: false
+pagefind: false
+head:
+  - tag: title
+    content: Pawse — A macOS focus timer that waits
+  - tag: meta
+    attrs:
+      property: og:title
+      content: The timer reaches zero. Pawse waits.
+  - tag: meta
+    attrs:
+      property: og:description
+      content: A macOS focus timer that starts breaks at a natural stopping point.
+---
+
+import HomeHero from '../../components/HomeHero.astro';
+
+<HomeHero />
+
+<section class="story-note story-note--with-art" aria-labelledby="why-pawse">
+  <div>
+    <h2 id="why-pawse">Why I made it.</h2>
+    <p>I tried a number of focus timers, but never found one that felt quite at home on the Mac or handled the end of a session the way I wanted. So I made a small one for myself.</p>
+    <p>Instead of interrupting the moment Focus ends, Pawse shows a quiet reminder and waits. Click it when you are ready, or pause the keyboard and pointer for a moment. If you immediately start working again, Pawse backs out and waits for the next pause.</p>
+  </div>
+  <img
+    class="story-art story-art--working"
+    src="/assets/pawse-working-dog.webp"
+    width="600"
+    height="481"
+    alt="A white shepherd quietly working beside a laptop"
+  />
+</section>
+
+<figure class="story-figure story-reminders" aria-label="Pawse reminder before and when a break is ready">
+  <img
+    src="/assets/pawse-break-soon.webp"
+    width="672"
+    height="224"
+    alt="Pawse Long break soon reminder waiting quietly"
+  />
+  <img
+    src="/assets/pawse-break-ready.webp"
+    width="672"
+    height="224"
+    alt="Pawse Long break ready reminder asking for attention"
+  />
+</figure>
+
+<section class="story-note story-note--with-art story-note--reverse" aria-labelledby="break-screen">
+  <div>
+    <h2 id="break-screen">When you stop, it steps in.</h2>
+    <p>A break can use your wallpaper or an image you choose. It fills every display, keeps an Emergency Exit available, and cleans up when the break is over.</p>
+    <p>As I kept using Pawse, I wanted breaks to feel a little less rigid without making them easy to ignore. Discreet Mode can leave the desktop visible while a committed break continues. End Break Early lets me move on normally after a minimum amount of rest, instead of counting it as an Emergency Exit.</p>
+    <p class="story-links"><a href="/docs/how-pawse-works/discreet-mode/">How Discreet Mode works</a> · <a href="/docs/how-pawse-works/end-break-early/">How End Break Early works</a></p>
+  </div>
+  <img
+    class="story-art story-art--stretching"
+    src="/assets/pawse-stretching-dog.webp"
+    width="680"
+    height="454"
+    alt="A relaxed white shepherd stretching before a break"
+  />
+</section>
+
+<figure class="story-figure story-break-shot">
+  <img
+    src="/assets/pawse-break-latest.webp"
+    width="2048"
+    height="1365"
+    alt="Pawse full-screen Short Break over a mountain lake wallpaper with End Break Early, Discreet Mode, and Emergency Exit controls"
+  />
+  <div class="story-break-shot__detail" aria-hidden="true">
+    <img src="/assets/pawse-break-latest.webp" width="2048" height="1365" alt="" />
+  </div>
+</figure>
+
+<section class="story-note" aria-labelledby="privacy">
+  <h2 id="privacy">Nothing leaves your Mac.</h2>
+  <p>Settings and session history stay local. Pawse has no account, cloud sync, telemetry, advertising, or networking feature. Natural-break detection reads only aggregate system idle time—not keys, pointer positions, app names, windows, or screen contents.</p>
+</section>
+
+<figure class="story-figure">
+  <img
+    src="/assets/pawse-analytics.webp"
+    width="1966"
+    height="1418"
+    alt="Pawse Analytics showing local focus and break history"
+  />
+</figure>
+
+<section class="story-note story-note--last" aria-labelledby="open-source">
+  <h2 id="open-source">Open source.</h2>
+  <p>Pawse is a small independent project, released under the MIT License. The code is public, so you can read it, build it yourself, report a problem, or shape it into something that works better for you.</p>
+  <p class="story-links"><a href="https://github.com/yorukot/pawse">Browse the source on GitHub</a> · <a href="/download/">Download the current release</a></p>
+</section>

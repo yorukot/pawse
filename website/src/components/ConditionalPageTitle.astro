@@ -1,0 +1,8 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+
+const routeId = Astro.locals.starlightRoute.id;
+const usesCustomTitle = routeId === '' || routeId === 'download';
+---
+
+{!usesCustomTitle && <Default><slot /></Default>}

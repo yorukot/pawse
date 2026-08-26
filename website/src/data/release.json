@@ -1,0 +1,18 @@
+{
+  "version": "0.1.2",
+  "fileSize": "4.6 MB",
+  "minimumMacOS": "14",
+  "architectures": [
+    "arm64",
+    "x86_64"
+  ],
+  "architectureLabel": "Apple silicon and Intel",
+  "architectureShortLabel": "Universal app",
+  "downloadURL": "https://github.com/yorukot/pawse/releases/download/v0.1.2/Pawse-0.1.2.dmg",
+  "releaseURL": "https://github.com/yorukot/pawse/releases/tag/v0.1.2",
+  "checksumURL": "https://github.com/yorukot/pawse/releases/download/v0.1.2/Pawse-0.1.2.dmg.sha256",
+  "sha256": "ac0eb97a7f69260a858efcdd4019d1f180de675f0b7d31b9cb846b770c59a160",
+  "earlyAccess": true,
+  "notarized": false,
+  "signature": "ad-hoc"
+}

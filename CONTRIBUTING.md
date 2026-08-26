@@ -26,6 +26,24 @@ make test
 
 The equivalent direct commands are documented in [README.md](README.md). Build output is written under `.build/` and is ignored by Git.
 
+### Website
+
+The Astro/Starlight website requires Node.js 22.12 or later and pnpm 11.23 or later.
+
+```bash
+cd website
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+Before submitting website changes, run:
+
+```bash
+pnpm run check
+pnpm run build
+pnpm run validate
+```
+
 ## Making a Change
 
 1. Fork the repository and create a focused branch from `main`.

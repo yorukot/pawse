@@ -1,0 +1,46 @@
+---
+import { releaseMetadata as release } from '../data/release';
+---
+
+<section aria-labelledby="install-title">
+  <h2 id="install-title">Install</h2>
+  <ol>
+    <li>Open the Pawse <code>.dmg</code> from Downloads.</li>
+    <li>Drag Pawse into Applications, then eject the disk image.</li>
+    <li>Open Pawse from Applications.</li>
+    {
+      !release.notarized && (
+        <li>
+          If macOS blocks this build, open <strong>System Settings → Privacy &amp; Security</strong>,
+          click <strong>Open Anyway</strong> next to Pawse, then confirm with <strong>Open</strong>.
+          This is required only once for that build.
+        </li>
+      )
+    }
+  </ol>
+  <p>
+    For screenshots and alternate first-launch paths, see <a href="/docs/install/">Install Pawse</a>.
+  </p>
+</section>
+
+<style>
+  section {
+    margin-block: 4rem;
+  }
+
+  li {
+    margin-block: 0.7rem;
+    padding-inline-start: 0.35rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  li::marker {
+    color: var(--sl-color-accent);
+    font-weight: 750;
+  }
+
+  p {
+    color: var(--sl-color-gray-2);
+  }
+
+</style>

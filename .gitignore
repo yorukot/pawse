@@ -41,3 +41,9 @@ dist/
 # Local browser validation artifacts
 .playwright-cli/
 output/playwright/
+
+# Astro website dependencies and build output
+website/node_modules/
+website/.astro/
+website/dist/
+.pnpm-store/

@@ -1,0 +1,58 @@
+---
+const currentPath = Astro.url.pathname;
+
+const links = [
+  { label: 'Docs', href: '/docs/' },
+  { label: 'Source', href: 'https://github.com/yorukot/pawse', external: true },
+  { label: 'Download', href: '/download/' },
+];
+---
+
+<nav class="pawse-header-links" aria-label="Primary navigation">
+  {
+    links.map(({ label, href, external }) => (
+      <a
+        href={href}
+        aria-current={!external && currentPath.startsWith(href) ? 'page' : undefined}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+      >
+        {label}
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .pawse-header-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: var(--sl-text-sm);
+    white-space: nowrap;
+  }
+
+  a {
+    color: var(--sl-color-gray-2);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  a:hover,
+  a[aria-current='page'] {
+    color: var(--sl-color-accent-high);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 36rem) {
+    .pawse-header-links {
+      gap: 0.7rem;
+      font-size: var(--sl-text-xs);
+    }
+  }
+</style>
