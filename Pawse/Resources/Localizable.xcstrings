@@ -6301,6 +6301,202 @@
         }
       }
     },
+    "Discreet Mode": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo discreto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "控えめモード"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低調模式"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低调模式"
+          }
+        }
+      }
+    },
+    "Discreet Mode keeps the desktop visible while Pawse blocks input. Any keyboard or mouse activity brings back the Break screen.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El modo discreto mantiene visible el escritorio mientras Pawse bloquea las entradas. Cualquier actividad del teclado o del ratón vuelve a mostrar la pantalla de descanso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "控えめモードでは、Pawse が入力をブロックしている間もデスクトップが表示されます。キーボードまたはマウスを操作すると、休憩画面に戻ります。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低調模式會在 Pawse 阻擋輸入時保持桌面可見。任何鍵盤或滑鼠操作都會恢復休息畫面。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低调模式会在 Pawse 阻止输入时保持桌面可见。任何键盘或鼠标操作都会恢复休息画面。"
+          }
+        }
+      }
+    },
+    "Discreet break active. Any keyboard or mouse activity will show the Break screen.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso discreto activo. Cualquier actividad del teclado o del ratón mostrará la pantalla de descanso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "控えめな休憩が進行中です。キーボードまたはマウスを操作すると、休憩画面が表示されます。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低調休息已啟用。任何鍵盤或滑鼠操作都會顯示休息畫面。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低调休息已启用。任何键盘或鼠标操作都会显示休息画面。"
+          }
+        }
+      }
+    },
+    "Keep the desktop visible while Pawse continues the Break.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén visible el escritorio mientras Pawse continúa el descanso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse が休憩を続けている間、デスクトップを表示したままにします。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Pawse 繼續休息時保持桌面可見。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Pawse 继续休息时保持桌面可见。"
+          }
+        }
+      }
+    },
+    "Pawse, discreet %@, %@ remaining": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse, %@ en modo discreto, quedan %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse、控えめモードの%@、残り%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse，低調%@，剩餘%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawse，低调%@，剩余%@"
+          }
+        }
+      }
+    },
+    "Show Yellow Ring in Discreet Mode": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar el anillo amarillo en modo discreto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "控えめモードで黄色いリングを表示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在低調模式中顯示黃色圓環"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在低调模式中显示黄色圆环"
+          }
+        }
+      }
+    },
+    "Start Breaks in Discreet Mode": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar los descansos en modo discreto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休憩を控えめモードで開始"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以低調模式開始休息"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以低调模式开始休息"
+          }
+        }
+      }
+    },
     "min": {
       "localizations": {
         "es": {

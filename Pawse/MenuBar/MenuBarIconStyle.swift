@@ -27,3 +27,8 @@ enum MenuBarRingDirection: String, CaseIterable, Identifiable, Sendable {
         }
     }
 }
+
+enum MenuBarRingAppearance: String, Sendable {
+    case standard
+    case discreet
+}

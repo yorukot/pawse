@@ -36,9 +36,28 @@ final class ExperienceTests: XCTestCase {
         XCTAssertEqual(settings.soundVolume, 0.7)
         XCTAssertEqual(settings.menuBarIconStyle, .sleepingDog)
         XCTAssertEqual(settings.menuBarRingDirection, .clockwise)
+        XCTAssertFalse(settings.startBreaksInDiscreetMode)
+        XCTAssertTrue(settings.showDiscreetBreakRing)
         XCTAssertEqual(settings.breakBackgroundMode, .systemWallpaper)
         XCTAssertNil(settings.customBreakImageBookmark)
         XCTAssertNil(settings.systemWallpaperFolderBookmark)
+    }
+
+    func testDiscreetModePreferencesPersistAndRestoreTheirDefaults() {
+        let (defaults, suiteName) = isolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var settings = SettingsStore(defaults: defaults)
+        settings.startBreaksInDiscreetMode = true
+        settings.showDiscreetBreakRing = false
+
+        settings = SettingsStore(defaults: defaults)
+        XCTAssertTrue(settings.startBreaksInDiscreetMode)
+        XCTAssertFalse(settings.showDiscreetBreakRing)
+
+        settings.resetToDefaults()
+        XCTAssertFalse(settings.startBreaksInDiscreetMode)
+        XCTAssertTrue(settings.showDiscreetBreakRing)
     }
 
     func testLongBreakPreferencePersistsResetsTheCycleAndRestoresItsDefault() {

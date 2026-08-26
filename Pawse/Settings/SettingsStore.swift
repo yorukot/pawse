@@ -18,6 +18,8 @@ final class SettingsStore {
         static let waitForNaturalBreak = "waitForNaturalBreak"
         static let idleBeforeBreak = "idleBeforeBreak"
         static let breakEntryGracePeriod = "breakEntryGracePeriod"
+        static let startBreaksInDiscreetMode = "startBreaksInDiscreetMode"
+        static let showDiscreetBreakRing = "showDiscreetBreakRing"
         static let enableSounds = "enableSounds"
         static let sessionStartSound = "sessionStartSound"
         static let breakReadySound = "breakReadySound"
@@ -104,6 +106,12 @@ final class SettingsStore {
             }
             persist(Key.breakEntryGracePeriod, breakEntryGracePeriod)
         }
+    }
+    var startBreaksInDiscreetMode = false {
+        didSet { persist(Key.startBreaksInDiscreetMode, startBreaksInDiscreetMode) }
+    }
+    var showDiscreetBreakRing = true {
+        didSet { persist(Key.showDiscreetBreakRing, showDiscreetBreakRing) }
     }
     var enableSounds = true { didSet { persist(Key.enableSounds, enableSounds) } }
     var sessionStartSound = "Submarine" { didSet { persist(Key.sessionStartSound, sessionStartSound) } }
@@ -208,6 +216,8 @@ final class SettingsStore {
         waitForNaturalBreak = true
         idleBeforeBreak = 2
         breakEntryGracePeriod = 3
+        startBreaksInDiscreetMode = false
+        showDiscreetBreakRing = true
         enableSounds = true
         sessionStartSound = "Submarine"
         breakReadySound = "None"
@@ -233,6 +243,8 @@ final class SettingsStore {
         waitForNaturalBreak = defaults.bool(forKey: Key.waitForNaturalBreak)
         idleBeforeBreak = defaults.double(forKey: Key.idleBeforeBreak)
         breakEntryGracePeriod = defaults.double(forKey: Key.breakEntryGracePeriod)
+        startBreaksInDiscreetMode = defaults.bool(forKey: Key.startBreaksInDiscreetMode)
+        showDiscreetBreakRing = defaults.bool(forKey: Key.showDiscreetBreakRing)
         enableSounds = defaults.bool(forKey: Key.enableSounds)
         sessionStartSound = defaults.string(forKey: Key.sessionStartSound) ?? "Submarine"
         breakReadySound = defaults.string(forKey: Key.breakReadySound) ?? "None"
@@ -304,6 +316,8 @@ final class SettingsStore {
         Key.waitForNaturalBreak: true,
         Key.idleBeforeBreak: 2.0,
         Key.breakEntryGracePeriod: 3.0,
+        Key.startBreaksInDiscreetMode: false,
+        Key.showDiscreetBreakRing: true,
         Key.enableSounds: true,
         Key.sessionStartSound: "Submarine",
         Key.breakReadySound: "None",

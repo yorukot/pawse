@@ -13,17 +13,27 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
     init(
         settings: SettingsStore,
         backgroundProvider: BreakBackgroundProviding,
+        presentationState: BreakPresentationState = BreakPresentationState(),
         locale: Locale = .autoupdatingCurrent,
         reminderCoordinator: BreakReminderCoordinator? = nil,
         presentationController: PresentationOptionsController = PresentationOptionsController()
     ) {
-        self.reminderCoordinator = reminderCoordinator ?? BreakReminderCoordinator(locale: locale)
-        overlayCoordinator = OverlayCoordinator(
+        let overlayCoordinator = OverlayCoordinator(
             settings: settings,
             backgroundProvider: backgroundProvider,
+            presentationState: presentationState,
             locale: locale
         )
+        self.reminderCoordinator = reminderCoordinator ?? BreakReminderCoordinator(locale: locale)
+        self.overlayCoordinator = overlayCoordinator
         self.presentationController = presentationController
+        overlayCoordinator.onDiscreetModeChanged = { [weak presentationController] isDiscreet in
+            if isDiscreet {
+                presentationController?.applyForDiscreetBreak()
+            } else {
+                presentationController?.applyForCommittedBreak()
+            }
+        }
     }
 
     func connect(controller: SessionController) {
@@ -48,6 +58,7 @@ final class BreakEnvironmentCoordinator: BreakEnvironmentManaging {
 
     func commitPresentation() {
         presentationController.applyForCommittedBreak()
+        overlayCoordinator.commitBreak()
     }
 
     func cleanup(animated: Bool) {

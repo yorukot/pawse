@@ -6,9 +6,27 @@ struct BreakOverlayView: View {
     let controller: SessionController
     let settings: SettingsStore
     let backgroundImage: NSImage?
+    let presentationState: BreakPresentationState
+    let onEnterDiscreetMode: @MainActor () -> Void
     @Environment(\.locale) private var locale
 
     var body: some View {
+        Group {
+            if presentationState.isDiscreet {
+                Color.clear
+                    .ignoresSafeArea()
+                    .accessibilityElement()
+                    .accessibilityLabel(
+                        "Discreet break active. Any keyboard or mouse activity will show the Break screen."
+                    )
+            } else {
+                visibleBreak
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var visibleBreak: some View {
         ZStack {
             breakBackground
 
@@ -41,6 +59,19 @@ struct BreakOverlayView: View {
                 Spacer()
                 HStack {
                     Spacer()
+                    if presentationState.isBreakCommitted {
+                        Button {
+                            onEnterDiscreetMode()
+                        } label: {
+                            Label("Discreet Mode", systemImage: "eye.slash")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .accessibilityLabel("Discreet Mode")
+                        .accessibilityHint(
+                            "Keep the desktop visible while Pawse continues the Break."
+                        )
+                    }
                     Button("Emergency Exit", role: .destructive) {
                         controller.requestEmergencyExit()
                     }

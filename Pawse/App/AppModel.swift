@@ -10,6 +10,7 @@ final class AppModel {
     let analyticsStore: AnalyticsStore
     let modelContainer: ModelContainer
     let breakEnvironment: BreakEnvironmentCoordinator
+    let breakPresentationState: BreakPresentationState
     let breakBackgroundService: BreakBackgroundService
     let soundService: SoundService
     let launchAtLoginService: LaunchAtLoginService
@@ -42,10 +43,12 @@ final class AppModel {
             }
         }
         let analyticsStore = AnalyticsStore(modelContainer: container)
+        let breakPresentationState = BreakPresentationState()
         let breakBackgroundService = BreakBackgroundService(settings: settings)
         let breakEnvironment = BreakEnvironmentCoordinator(
             settings: settings,
             backgroundProvider: breakBackgroundService,
+            presentationState: breakPresentationState,
             locale: languageStore.locale
         )
         let soundService = SoundService(settings: settings)
@@ -53,6 +56,7 @@ final class AppModel {
         self.analyticsStore = analyticsStore
         modelContainer = container
         self.breakEnvironment = breakEnvironment
+        self.breakPresentationState = breakPresentationState
         self.breakBackgroundService = breakBackgroundService
         self.soundService = soundService
         self.languageStore = languageStore

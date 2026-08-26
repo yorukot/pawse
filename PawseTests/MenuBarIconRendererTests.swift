@@ -84,11 +84,40 @@ final class MenuBarIconRendererTests: XCTestCase {
         XCTAssertTrue(first === second)
     }
 
+    func testDiscreetRingIsYellowWhileTheCenterMarkRemainsNeutral() throws {
+        let discreet = try renderedImage(
+            fractionRemaining: 0.75,
+            showsRing: true,
+            ringAppearance: .discreet
+        )
+        let discreetWithoutRing = try renderedImage(
+            fractionRemaining: 0.75,
+            showsRing: false,
+            ringAppearance: .discreet
+        )
+
+        XCTAssertGreaterThan(chromaticPixelCount(in: discreet), 20)
+        XCTAssertEqual(chromaticPixelCount(in: discreetWithoutRing), 0)
+        XCTAssertGreaterThan(visiblePixelCount(in: discreetWithoutRing), 0)
+    }
+
+    func testRingAppearanceUsesDistinctCachedImages() throws {
+        let standard = try renderedImage(fractionRemaining: 0.5, showsRing: true)
+        let discreet = try renderedImage(
+            fractionRemaining: 0.5,
+            showsRing: true,
+            ringAppearance: .discreet
+        )
+
+        XCTAssertFalse(standard === discreet)
+    }
+
     private func renderedImage(
         iconStyle: MenuBarIconStyle = .timer,
         fractionRemaining: Double?,
         showsRing: Bool,
-        ringDirection: MenuBarRingDirection = .clockwise
+        ringDirection: MenuBarRingDirection = .clockwise,
+        ringAppearance: MenuBarRingAppearance = .standard
     ) throws -> NSImage {
         try XCTUnwrap(
             MenuBarIconRenderer.image(
@@ -98,6 +127,7 @@ final class MenuBarIconRendererTests: XCTestCase {
                 showsRing: showsRing,
                 ringDirection: ringDirection,
                 colorScheme: .dark,
+                ringAppearance: ringAppearance,
                 scale: 2
             )
         )

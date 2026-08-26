@@ -8,12 +8,16 @@ struct MenuBarLabel: View {
 
     var body: some View {
         let controller = model.controller
+        let isDiscreet = model.breakPresentationState.isDiscreet
         CountdownRingIcon(
             iconStyle: model.settings.menuBarIconStyle,
             symbolName: controller.currentMode.symbolName,
             fractionRemaining: controller.countdownFractionRemaining,
-            showsRing: model.settings.showSessionProgressInMenuBar,
+            showsRing: isDiscreet
+                ? model.settings.showDiscreetBreakRing
+                : model.settings.showSessionProgressInMenuBar,
             ringDirection: model.settings.menuBarRingDirection,
+            ringAppearance: isDiscreet ? .discreet : .standard,
             colorScheme: colorScheme
         )
         .accessibilityLabel(accessibilityText)
@@ -23,6 +27,12 @@ struct MenuBarLabel: View {
         let controller = model.controller
         let modeName = LocalizationText.string(controller.currentMode.displayName, locale: locale)
         let remaining = DurationFormatter.spoken(controller.remainingTime, locale: locale)
+        if model.breakPresentationState.isDiscreet {
+            return String(
+                localized: "Pawse, discreet \(modeName), \(remaining) remaining",
+                locale: locale
+            )
+        }
         if case .running = controller.state {
             return String(localized: "Pawse, \(modeName), \(remaining) remaining", locale: locale)
         }
@@ -42,6 +52,7 @@ private struct CountdownRingIcon: View {
     let fractionRemaining: Double?
     let showsRing: Bool
     let ringDirection: MenuBarRingDirection
+    let ringAppearance: MenuBarRingAppearance
     let colorScheme: ColorScheme
 
     var body: some View {
@@ -52,7 +63,8 @@ private struct CountdownRingIcon: View {
                 fractionRemaining: fractionRemaining,
                 showsRing: showsRing,
                 ringDirection: ringDirection,
-                colorScheme: colorScheme
+                colorScheme: colorScheme,
+                ringAppearance: ringAppearance
             ) {
                 Image(nsImage: image)
                     .renderingMode(.original)
@@ -108,6 +120,7 @@ enum MenuBarIconRenderer {
         showsRing: Bool,
         ringDirection: MenuBarRingDirection,
         colorScheme: ColorScheme,
+        ringAppearance: MenuBarRingAppearance = .standard,
         scale: CGFloat = NSScreen.main?.backingScaleFactor ?? 2
     ) -> NSImage? {
         let clampedScale = max(1, scale)
@@ -120,6 +133,7 @@ enum MenuBarIconRenderer {
             fractionStep.map(String.init) ?? "inactive",
             showsRing ? "ring" : "mark",
             ringDirection.rawValue,
+            ringAppearance.rawValue,
             colorScheme == .dark ? "dark" : "light",
             String(Int((clampedScale * 100).rounded()))
         ].joined(separator: ":"))
@@ -145,6 +159,12 @@ enum MenuBarIconRenderer {
         graphicsContext.cgContext.scaleBy(x: clampedScale, y: clampedScale)
 
         let foregroundColor: NSColor = colorScheme == .dark ? .white : .black
+        let ringColor: NSColor = switch ringAppearance {
+        case .standard:
+            foregroundColor
+        case .discreet:
+            discreetRingColor(for: colorScheme)
+        }
         drawCenterMark(
             iconStyle: iconStyle,
             symbolName: symbolName,
@@ -154,7 +174,7 @@ enum MenuBarIconRenderer {
             drawRing(
                 fraction: fractionStep.map { Double($0) / Double(fractionStepCount) },
                 direction: ringDirection,
-                foregroundColor: foregroundColor
+                foregroundColor: ringColor
             )
         }
         NSGraphicsContext.restoreGraphicsState()
@@ -169,6 +189,17 @@ enum MenuBarIconRenderer {
             cost: representation.pixelsWide * representation.pixelsHigh * 4
         )
         return image
+    }
+
+    private static func discreetRingColor(for colorScheme: ColorScheme) -> NSColor {
+        switch colorScheme {
+        case .dark:
+            NSColor(calibratedRed: 1.00, green: 0.80, blue: 0.08, alpha: 1)
+        case .light:
+            NSColor(calibratedRed: 0.72, green: 0.45, blue: 0.00, alpha: 1)
+        @unknown default:
+            NSColor.systemYellow
+        }
     }
 
     private static func bitmapRepresentation(scale: CGFloat) -> NSBitmapImageRep? {

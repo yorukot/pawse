@@ -345,6 +345,21 @@ struct PawseWindowView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Section("Discreet Mode") {
+                Toggle(
+                    "Start Breaks in Discreet Mode",
+                    isOn: $settings.startBreaksInDiscreetMode
+                )
+                Toggle(
+                    "Show Yellow Ring in Discreet Mode",
+                    isOn: $settings.showDiscreetBreakRing
+                )
+                Text(
+                    "Discreet Mode keeps the desktop visible while Pawse blocks input. Any keyboard or mouse activity brings back the Break screen."
+                )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
